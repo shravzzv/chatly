@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/utils/supabase/server'
+import SignOutButton from '@/components/signout-button'
 
 export default async function Page() {
   const supabase = await createClient()
@@ -9,5 +10,10 @@ export default async function Page() {
     redirect('/login')
   }
 
-  return <p>Hello {data.user.email}</p>
+  return (
+    <div>
+      <p>Hello {data.user.email}</p>
+      <SignOutButton />
+    </div>
+  )
 }
