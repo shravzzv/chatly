@@ -12,8 +12,7 @@ export async function signup(formData: FormData) {
   }
 
   const { error } = await supabase.auth.signUp({
-    email: data.email,
-    password: data.password,
+    ...data,
     options: {
       emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL_ROOT}/dashboard`,
     },
@@ -37,7 +36,7 @@ export async function signin(formData: FormData) {
   const { error } = await supabase.auth.signInWithPassword(data)
 
   if (error) {
-    redirect('/error')
+    return { error: error.message }
   }
 
   redirect('/dashboard')
