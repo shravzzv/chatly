@@ -6,7 +6,6 @@ import { Menu, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 const navLinks = [
-  // these appear in the middle section in larger displays, and inside the hamburger menu in smaller ones
   { name: 'Pricing', href: '/pricing' },
   { name: 'Features', href: '/features' },
   { name: 'About', href: '/about' },
@@ -20,17 +19,16 @@ export default function Navbar() {
   }
 
   return (
-    <nav className='sticky top-0 z-50 bg-white shadow-sm border-b border-gray-100'>
+    <nav className='sticky top-0 z-50 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-sm transition-colors'>
       <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
         <div className='flex justify-between items-center h-16'>
           <Link href='/' className='shrink-0'>
-            {isOpen ? (
-              <span className='font-bold text-lg' onClick={toggleMenu}>
-                Chatly
-              </span>
-            ) : (
-              <span className='font-bold text-lg'>Chatly</span>
-            )}
+            <span
+              className='font-bold text-lg text-gray-900 dark:text-gray-100 cursor-pointer'
+              onClick={() => isOpen && toggleMenu()}
+            >
+              Chatly
+            </span>
           </Link>
 
           <div className='hidden md:flex grow justify-center space-x-1'>
@@ -38,7 +36,7 @@ export default function Navbar() {
               <Link
                 key={link.name}
                 href={link.href}
-                className='text-sm font-medium px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors flex items-center group'
+                className='text-sm font-medium px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors'
               >
                 {link.name}
               </Link>
@@ -48,7 +46,7 @@ export default function Navbar() {
           <div className='hidden md:flex items-center space-x-2 lg:space-x-4'>
             <Link
               href='/signin'
-              className='text-sm font-medium text-gray-700 hover:text-gray-900'
+              className='text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100'
             >
               Sign in
             </Link>
@@ -61,7 +59,6 @@ export default function Navbar() {
             </Button>
           </div>
 
-          {/* Mobile Menu Button & Primary CTA (Right) */}
           <div className='flex md:hidden items-center space-x-4'>
             <Button
               asChild
@@ -70,11 +67,10 @@ export default function Navbar() {
               <Link href='/signup'>Sign up</Link>
             </Button>
 
-            {/* Hamburger/Close Icon */}
             <Button
-              variant={'outline'}
+              variant='outline'
               onClick={toggleMenu}
-              className='p-2 text-gray-700 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-200 cursor-pointer'
+              className='p-2 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:focus:ring-gray-700 cursor-pointer'
               aria-expanded={isOpen}
               aria-label='Toggle navigation'
             >
@@ -85,14 +81,14 @@ export default function Navbar() {
       </div>
 
       {isOpen && (
-        <div className='fixed inset-0 top-16 bg-white z-40 overflow-y-auto md:hidden'>
+        <div className='fixed inset-0 top-16 bg-white dark:bg-gray-900 z-40 overflow-y-auto md:hidden transition-colors'>
           <div className='pt-2 pb-3 px-4 flex flex-col h-full'>
             <div className='grow space-y-2 py-4'>
               {navLinks.map((link) => (
                 <a
                   key={link.name}
                   href={link.href}
-                  className='font-semibold text-lg text-gray-800 hover:bg-gray-50 rounded-lg flex justify-between items-center transition-colors cursor-pointer'
+                  className='font-semibold text-lg text-gray-800 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg flex justify-between items-center transition-colors cursor-pointer'
                   onClick={toggleMenu}
                 >
                   {link.name}
@@ -100,7 +96,7 @@ export default function Navbar() {
               ))}
             </div>
 
-            <div className='p-4 space-y-3 border-t border-gray-100 sticky bottom-0 bg-white'>
+            <div className='p-4 space-y-3 border-t border-gray-200 dark:border-gray-800 sticky bottom-0 bg-white dark:bg-gray-900'>
               <Button
                 className='w-full font-semibold px-4 py-3 rounded-lg shadow-md cursor-pointer'
                 onClick={toggleMenu}
@@ -110,7 +106,7 @@ export default function Navbar() {
               </Button>
 
               <Button
-                variant={'outline'}
+                variant='outline'
                 className='w-full font-semibold px-4 py-3 rounded-lg cursor-pointer'
                 onClick={toggleMenu}
                 asChild

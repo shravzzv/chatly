@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { ModeToggle } from './mode-toggle'
 
 export default function Footer() {
   return (
@@ -15,6 +16,9 @@ export default function Footer() {
               Realtime chat, audio & video calls, and more — built for seamless
               communication anywhere.
             </p>
+            <div className='mt-4'>
+              <ModeToggle />
+            </div>
           </div>
 
           <div className='grid grid-cols-2 md:grid-cols-3 gap-8'>
