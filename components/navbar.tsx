@@ -92,7 +92,7 @@ export default function Navbar() {
                 <a
                   key={link.name}
                   href={link.href}
-                  className='font-semibold text-gray-800 hover:bg-gray-50 rounded-lg flex justify-between items-center transition-colors cursor-pointer'
+                  className='font-semibold text-lg text-gray-800 hover:bg-gray-50 rounded-lg flex justify-between items-center transition-colors cursor-pointer'
                   onClick={toggleMenu}
                 >
                   {link.name}
@@ -104,6 +104,7 @@ export default function Navbar() {
               <Button
                 className='w-full font-semibold px-4 py-3 rounded-lg shadow-md cursor-pointer'
                 onClick={toggleMenu}
+                asChild
               >
                 <Link href='/signup'>Sign up</Link>
               </Button>
@@ -112,6 +113,7 @@ export default function Navbar() {
                 variant={'outline'}
                 className='w-full font-semibold px-4 py-3 rounded-lg cursor-pointer'
                 onClick={toggleMenu}
+                asChild
               >
                 <Link href='/signin'>Sign in</Link>
               </Button>
