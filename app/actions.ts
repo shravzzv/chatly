@@ -41,3 +41,56 @@ export async function signin(formData: FormData) {
 
   redirect('/dashboard')
 }
+
+export async function signInWithGoogle() {
+  const supabase = await createClient()
+
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL_ROOT}/auth/callback?next=/dashboard`,
+    },
+  })
+
+  if (error) {
+    redirect('/error')
+  }
+
+  redirect(data.url)
+}
+
+export async function signInWithGithub() {
+  const supabase = await createClient()
+
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: 'github',
+    options: {
+      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL_ROOT}/auth/callback?next=/dashboard`,
+    },
+  })
+
+  if (error) {
+    redirect('/error')
+  }
+
+  redirect(data.url)
+}
+
+export async function signInWithMeta() {
+  const supabase = await createClient()
+
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: 'facebook',
+    options: {
+      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL_ROOT}/auth/callback?next=/dashboard`,
+    },
+  })
+
+  if (error) {
+    redirect('/error')
+  }
+
+  if (data.url) {
+    redirect(data.url)
+  }
+}
