@@ -13,7 +13,7 @@ function SubmitButton() {
       className='cursor-pointer w-full h-10 p-0 flex items-center justify-center'
       // disabled={pending}
       disabled
-      title='Sign up with Meta'
+      title='Continue with Meta'
     >
       {pending ? (
         <Spinner />
@@ -25,7 +25,7 @@ function SubmitButton() {
               fill='currentColor'
             />
           </svg>
-          <span className='sr-only'>Sign up with Meta</span>
+          <span className='sr-only'>Continue with Meta</span>
         </>
       )}
     </Button>

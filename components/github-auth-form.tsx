@@ -12,7 +12,7 @@ function SubmitButton() {
       type='submit'
       className='cursor-pointer w-full h-10 p-0 flex items-center justify-center'
       disabled={pending}
-      title='Sign up with GitHub'
+      title='Continue with GitHub'
     >
       {pending ? (
         <Spinner />
@@ -24,7 +24,7 @@ function SubmitButton() {
               fill='currentColor'
             />
           </svg>
-          <span className='sr-only'>Sign up with GitHub</span>
+          <span className='sr-only'>Continue with GitHub</span>
         </>
       )}
     </Button>
