@@ -57,14 +57,14 @@ export function SignupForm({
     },
   })
 
-  function onSubmit(data: z.infer<typeof formSchema>) {
+  async function onSubmit(data: z.infer<typeof formSchema>) {
     setLoading(true)
 
     const formData = new FormData()
     formData.append('email', data.email)
     formData.append('password', data.password)
 
-    signup(formData).finally(() => setLoading(false))
+    await signup(formData)
   }
 
   return (
