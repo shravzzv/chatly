@@ -11,7 +11,8 @@ function SubmitButton() {
       variant='outline'
       type='submit'
       className='cursor-pointer w-full h-10 p-0 flex items-center justify-center'
-      disabled={pending}
+      // disabled={pending}
+      disabled
       title='Sign up with Meta'
     >
       {pending ? (
