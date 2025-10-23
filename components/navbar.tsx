@@ -1,9 +1,12 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Menu, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { createClient } from '@/utils/supabase/client'
+import type { User } from '@supabase/supabase-js'
+import { Spinner } from './ui/spinner'
 
 const navLinks = [
   { name: 'Pricing', href: '/pricing' },
@@ -13,6 +16,25 @@ const navLinks = [
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
+  const [user, setUser] = useState<User | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const supabase = createClient()
+
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user)
+      setLoading(false)
+    })
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null)
+    })
+
+    return () => subscription.unsubscribe()
+  }, [])
 
   const toggleMenu = () => {
     setIsOpen(!isOpen)
@@ -44,28 +66,52 @@ export default function Navbar() {
           </div>
 
           <div className='hidden md:flex items-center space-x-2 lg:space-x-4'>
-            <Link
-              href='/signin'
-              className='text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100'
-            >
-              Sign in
-            </Link>
+            {loading ? (
+              <Spinner />
+            ) : (
+              <>
+                {user ? (
+                  <Button
+                    asChild
+                    className='text-sm font-medium px-4 py-2 rounded-lg shadow-md cursor-pointer'
+                  >
+                    <Link href='/dashboard'>Dashboard</Link>
+                  </Button>
+                ) : (
+                  <>
+                    <Link
+                      href='/signin'
+                      className='text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100'
+                    >
+                      Sign in
+                    </Link>
 
-            <Button
-              asChild
-              className='text-sm font-medium px-4 py-2 rounded-lg shadow-md cursor-pointer'
-            >
-              <Link href='/signup'>Sign up</Link>
-            </Button>
+                    <Button
+                      asChild
+                      className='text-sm font-medium px-4 py-2 rounded-lg shadow-md cursor-pointer'
+                    >
+                      <Link href='/signup'>Sign up</Link>
+                    </Button>
+                  </>
+                )}
+              </>
+            )}
           </div>
 
           <div className='flex md:hidden items-center space-x-4'>
-            <Button
-              asChild
-              className='text-sm font-medium px-3 py-1.5 rounded-lg shadow-md'
-            >
-              <Link href='/signup'>Sign up</Link>
-            </Button>
+            {loading ? (
+              <Spinner />
+            ) : (
+              !user && (
+                <Button
+                  asChild
+                  className='text-sm font-medium px-3 py-1.5 rounded-lg shadow-md'
+                  onClick={() => isOpen && toggleMenu()}
+                >
+                  <Link href='/signup'>Sign up</Link>
+                </Button>
+              )
+            )}
 
             <Button
               variant='outline'
@@ -85,35 +131,53 @@ export default function Navbar() {
           <div className='pt-2 pb-3 px-4 flex flex-col h-full'>
             <div className='grow space-y-2 py-4'>
               {navLinks.map((link) => (
-                <a
+                <Link
                   key={link.name}
                   href={link.href}
                   className='font-semibold text-lg text-gray-800 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg flex justify-between items-center transition-colors cursor-pointer'
                   onClick={toggleMenu}
                 >
                   {link.name}
-                </a>
+                </Link>
               ))}
             </div>
 
-            <div className='p-4 space-y-3 border-t border-gray-200 dark:border-gray-800 sticky bottom-0 bg-white dark:bg-gray-900'>
-              <Button
-                className='w-full font-semibold px-4 py-3 rounded-lg shadow-md cursor-pointer'
-                onClick={toggleMenu}
-                asChild
-              >
-                <Link href='/signup'>Sign up</Link>
-              </Button>
+            {loading ? (
+              <div className='p-4 flex justify-center border-t border-gray-200 dark:border-gray-800 sticky bottom-0 bg-white dark:bg-gray-900'>
+                <Spinner />
+              </div>
+            ) : (
+              <div className='p-4 space-y-3 border-t border-gray-200 dark:border-gray-800 sticky bottom-0 bg-white dark:bg-gray-900'>
+                {user ? (
+                  <Button
+                    className='w-full font-semibold px-4 py-3 rounded-lg shadow-md cursor-pointer'
+                    onClick={toggleMenu}
+                    asChild
+                  >
+                    <Link href='/dashboard'>Dashboard</Link>
+                  </Button>
+                ) : (
+                  <>
+                    <Button
+                      className='w-full font-semibold px-4 py-3 rounded-lg shadow-md cursor-pointer'
+                      onClick={toggleMenu}
+                      asChild
+                    >
+                      <Link href='/signup'>Sign up</Link>
+                    </Button>
 
-              <Button
-                variant='outline'
-                className='w-full font-semibold px-4 py-3 rounded-lg cursor-pointer'
-                onClick={toggleMenu}
-                asChild
-              >
-                <Link href='/signin'>Sign in</Link>
-              </Button>
-            </div>
+                    <Button
+                      variant='outline'
+                      className='w-full font-semibold px-4 py-3 rounded-lg cursor-pointer'
+                      onClick={toggleMenu}
+                      asChild
+                    >
+                      <Link href='/signin'>Sign in</Link>
+                    </Button>
+                  </>
+                )}
+              </div>
+            )}
           </div>
         </div>
       )}
