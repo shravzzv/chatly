@@ -94,3 +94,14 @@ export async function signInWithMeta() {
     redirect(data.url)
   }
 }
+
+export async function signout() {
+  const supabase = await createClient()
+  const { error } = await supabase.auth.signOut({ scope: 'local' })
+
+  if (error) {
+    console.error('Sign out failed on server:', error)
+  }
+
+  redirect('/signin')
+}

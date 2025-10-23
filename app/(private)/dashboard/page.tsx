@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/utils/supabase/server'
-import SignOutButton from '@/components/signout-button'
+import SignoutForm from '@/components/signout-form'
 
 export default async function Page() {
   const supabase = await createClient()
@@ -13,7 +13,7 @@ export default async function Page() {
   return (
     <div>
       <p>Hello {data.user.email}</p>
-      <SignOutButton />
+      <SignoutForm />
     </div>
   )
 }
