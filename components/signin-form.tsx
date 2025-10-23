@@ -46,21 +46,14 @@ export function SigninForm({
     setLoading(true)
     setError(null)
 
-    try {
-      const formData = new FormData()
-      formData.append('email', data.email)
-      formData.append('password', data.password)
+    const formData = new FormData()
+    formData.append('email', data.email)
+    formData.append('password', data.password)
 
-      const result = await signin(formData)
+    const result = await signin(formData)
 
-      if (result?.error) {
-        setError(result.error)
-        return
-      }
-    } catch (err) {
-      setError('Something went wrong. Please try again.')
-      console.error(err)
-    } finally {
+    if (result?.error) {
+      setError(result.error)
       setLoading(false)
     }
   }
