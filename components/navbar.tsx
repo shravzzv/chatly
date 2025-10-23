@@ -101,16 +101,21 @@ export default function Navbar() {
           <div className='flex md:hidden items-center space-x-4'>
             {loading ? (
               <Spinner />
+            ) : user ? (
+              <Button
+                className='text-sm font-medium px-3 py-1.5 rounded-lg shadow-md'
+                asChild
+              >
+                <Link href='/dashboard'>Dashboard</Link>
+              </Button>
             ) : (
-              !user && (
-                <Button
-                  asChild
-                  className='text-sm font-medium px-3 py-1.5 rounded-lg shadow-md'
-                  onClick={() => isOpen && toggleMenu()}
-                >
-                  <Link href='/signup'>Sign up</Link>
-                </Button>
-              )
+              <Button
+                asChild
+                className='text-sm font-medium px-3 py-1.5 rounded-lg shadow-md'
+                onClick={() => isOpen && toggleMenu()}
+              >
+                <Link href='/signup'>Sign up</Link>
+              </Button>
             )}
 
             <Button
