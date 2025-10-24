@@ -21,8 +21,6 @@ export async function signup(formData: FormData) {
   if (error) {
     return redirect('/error')
   }
-
-  redirect('/confirm-email')
 }
 
 export async function signin(formData: FormData) {

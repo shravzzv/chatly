@@ -24,6 +24,8 @@ import { signup } from '@/app/actions'
 import GitHubAuthForm from './github-auth-form'
 import GoogleAuthForm from './google-auth-form'
 import AppleAuthForm from './apple-auth-form'
+import { Alert, AlertDescription, AlertTitle } from './ui/alert'
+import { CheckCircle2Icon } from 'lucide-react'
 
 const formSchema = z
   .object({
@@ -47,6 +49,7 @@ export function SignupForm({
   ...props
 }: React.ComponentProps<'div'>) {
   const [loading, setLoading] = useState(false)
+  const [message, setMessage] = useState<string | null>(null)
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -59,12 +62,19 @@ export function SignupForm({
 
   async function onSubmit(data: z.infer<typeof formSchema>) {
     setLoading(true)
+    setMessage(null)
 
     const formData = new FormData()
     formData.append('email', data.email)
     formData.append('password', data.password)
 
     await signup(formData)
+
+    setLoading(false)
+    setMessage(
+      `Almost there! If this email isn't already registered, you'll receive a confirmation link shortly. Please check your inbox (and spam folder) to confirm your account.`
+    )
+    form.reset()
   }
 
   return (
@@ -154,6 +164,14 @@ export function SignupForm({
                     )}
                   />
                 </Field>
+
+                {message && (
+                  <Alert>
+                    <CheckCircle2Icon className='h-4 w-4' />
+                    <AlertTitle>Success</AlertTitle>
+                    <AlertDescription>{message}</AlertDescription>
+                  </Alert>
+                )}
 
                 <Field>
                   <Button
