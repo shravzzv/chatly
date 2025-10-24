@@ -24,6 +24,8 @@ import { signin } from '@/app/actions'
 import GoogleAuthForm from './google-auth-form'
 import GitHubAuthForm from './github-auth-form'
 import AppleAuthForm from './apple-auth-form'
+import { Alert, AlertDescription, AlertTitle } from './ui/alert'
+import { AlertCircleIcon } from 'lucide-react'
 
 const formSchema = z.object({
   email: z.email('Email is required').trim(),
@@ -113,7 +115,11 @@ export function SigninForm({
                 />
 
                 {error && (
-                  <FieldError errors={[{ message: error as string }]} />
+                  <Alert variant='destructive'>
+                    <AlertCircleIcon className='h-4 w-4' />
+                    <AlertTitle>Error</AlertTitle>
+                    <AlertDescription>{error}</AlertDescription>
+                  </Alert>
                 )}
 
                 <Field>
