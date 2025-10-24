@@ -105,3 +105,16 @@ export async function signout() {
 
   redirect('/signin')
 }
+
+export async function sendPasswordResetEmail(formData: FormData) {
+  const supabase = await createClient()
+  const email = formData.get('email') as string
+
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${process.env.NEXT_PUBLIC_APP_URL_ROOT}/update-password`,
+  })
+
+  if (error) {
+    return { error: error.message }
+  }
+}
