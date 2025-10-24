@@ -23,7 +23,7 @@ import { Spinner } from './ui/spinner'
 import { signup } from '@/app/actions'
 import GitHubAuthForm from './github-auth-form'
 import GoogleAuthForm from './google-auth-form'
-import MetaAuthForm from './meta-auth-form'
+import AppleAuthForm from './apple-auth-form'
 
 const formSchema = z
   .object({
@@ -181,7 +181,7 @@ export function SignupForm({
             <div className='grid grid-cols-3 gap-4 my-6'>
               <GoogleAuthForm />
               <GitHubAuthForm />
-              <MetaAuthForm />
+              <AppleAuthForm />
             </div>
 
             <FieldDescription className='text-center mt-6'>

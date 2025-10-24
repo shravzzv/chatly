@@ -76,11 +76,11 @@ export async function signInWithGithub() {
   redirect(data.url)
 }
 
-export async function signInWithMeta() {
+export async function signInWithApple() {
   const supabase = await createClient()
 
   const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: 'facebook',
+    provider: 'apple',
     options: {
       redirectTo: `${process.env.NEXT_PUBLIC_APP_URL_ROOT}/auth/callback?next=/dashboard`,
     },
