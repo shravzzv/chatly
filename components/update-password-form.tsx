@@ -5,41 +5,46 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import {
   Field,
-  FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel,
 } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
-import Link from 'next/link'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Controller, useForm } from 'react-hook-form'
 import * as z from 'zod'
 import { useState } from 'react'
 import { Spinner } from './ui/spinner'
-import { sendPasswordResetEmail } from '@/app/actions'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { CheckCircle2Icon, AlertCircleIcon } from 'lucide-react'
+import { AlertCircleIcon } from 'lucide-react'
+import { updatePassword } from '@/app/actions'
 
-interface Message {
-  type: 'success' | 'error'
-  text: string
-}
+const formSchema = z
+  .object({
+    password: z
+      .string()
+      .min(8, 'Password must be at least 8 characters long')
+      .trim(),
+    confirmPassword: z
+      .string()
+      .min(8, 'Confirm password must be at least 8 characters long')
+      .trim(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: 'Passwords do not match',
+    path: ['confirmPassword'],
+  })
 
-const formSchema = z.object({
-  email: z.email('A valid email is required').trim(),
-})
-
-export function ForgotPasswordEmailForm({
+export function UpdatePasswordForm({
   className,
   ...props
 }: React.ComponentProps<'div'>) {
   const [loading, setLoading] = useState(false)
-  const [message, setMessage] = useState<Message | null>(null)
+  const [message, setMessage] = useState<string | null>(null)
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: { email: '' },
+    defaultValues: { password: '', confirmPassword: '' },
   })
 
   async function onSubmit(data: z.infer<typeof formSchema>) {
@@ -47,19 +52,13 @@ export function ForgotPasswordEmailForm({
     setMessage(null)
 
     const formData = new FormData()
-    formData.append('email', data.email)
+    formData.append('password', data.password)
 
-    const result = await sendPasswordResetEmail(formData)
+    const result = await updatePassword(formData)
     setLoading(false)
 
     if (result?.error) {
-      setMessage({ type: 'error', text: result.error })
-    } else {
-      setMessage({
-        type: 'success',
-        text: 'Password reset email sent successfully! Please check your inbox.',
-      })
-      form.reset()
+      setMessage(result.error)
     }
   }
 
@@ -71,24 +70,48 @@ export function ForgotPasswordEmailForm({
             <form onSubmit={form.handleSubmit(onSubmit)}>
               <FieldGroup>
                 <div className='flex flex-col items-center gap-2 text-center'>
-                  <h1 className='text-2xl font-bold'>Reset your password</h1>
+                  <h1 className='text-2xl font-bold'>Update your password</h1>
                   <p className='text-muted-foreground text-sm text-balance'>
-                    Enter your email below to receive a password reset link.
+                    Enter your new password below to update your account.
                   </p>
                 </div>
 
                 <Controller
-                  name='email'
+                  name='password'
                   control={form.control}
                   render={({ field, fieldState }) => (
                     <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel htmlFor={field.name}>Email</FieldLabel>
+                      <FieldLabel htmlFor={field.name}>New Password</FieldLabel>
                       <Input
                         {...field}
                         id={field.name}
+                        type='password'
                         aria-invalid={fieldState.invalid}
-                        placeholder='m@example.com'
-                        autoComplete='on'
+                        placeholder='••••••••'
+                        autoComplete='new-password'
+                      />
+                      {fieldState.invalid && (
+                        <FieldError errors={[fieldState.error]} />
+                      )}
+                    </Field>
+                  )}
+                />
+
+                <Controller
+                  name='confirmPassword'
+                  control={form.control}
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={fieldState.invalid}>
+                      <FieldLabel htmlFor={field.name}>
+                        Confirm Password
+                      </FieldLabel>
+                      <Input
+                        {...field}
+                        id={field.name}
+                        type='password'
+                        aria-invalid={fieldState.invalid}
+                        placeholder='••••••••'
+                        autoComplete='new-password'
                       />
                       {fieldState.invalid && (
                         <FieldError errors={[fieldState.error]} />
@@ -106,38 +129,21 @@ export function ForgotPasswordEmailForm({
                     {loading ? (
                       <>
                         <Spinner />
-                        Sending Link
+                        Updating
                       </>
                     ) : (
-                      'Send Reset Link'
+                      'Update Password'
                     )}
                   </Button>
                 </Field>
 
                 {message && (
-                  <Alert
-                    variant={
-                      message.type === 'error' ? 'destructive' : 'default'
-                    }
-                  >
-                    {message.type === 'error' ? (
-                      <AlertCircleIcon className='h-4 w-4' />
-                    ) : (
-                      <CheckCircle2Icon className='h-4 w-4' />
-                    )}
-                    <AlertTitle>
-                      {message.type === 'error' ? 'Error' : 'Success'}
-                    </AlertTitle>
-                    <AlertDescription>{message.text}</AlertDescription>
+                  <Alert variant='destructive'>
+                    <AlertCircleIcon className='h-4 w-4' />
+                    <AlertTitle>Error</AlertTitle>
+                    <AlertDescription>{message}</AlertDescription>
                   </Alert>
                 )}
-
-                <FieldDescription className='text-center mt-6'>
-                  Remembered your password?{' '}
-                  <Link href='/signin' className='underline'>
-                    Sign in
-                  </Link>
-                </FieldDescription>
               </FieldGroup>
             </form>
           </div>
