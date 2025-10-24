@@ -13,14 +13,8 @@ export default function ErrorPage() {
           <AlertCircle className='h-5 w-5' />
           <AlertTitle>Something went wrong</AlertTitle>
           <AlertDescription>
-            <p>
-              We couldn&apos;t complete your sign-up or sign-in request. This
-              might be due to an invalid link, expired session, or a temporary
-              issue.
-            </p>
-            <p className='mt-2 text-sm'>
-              Please try again or choose another sign-in method.
-            </p>
+            We couldn&apos;t complete your authentication request. This might be
+            due to an invalid link, expired session, or a temporary issue.
           </AlertDescription>
         </Alert>
 
@@ -34,7 +28,7 @@ export default function ErrorPage() {
         </div>
 
         <p className='text-sm text-muted-foreground mt-4'>
-          Still having trouble? Try refreshing the page or come back later.
+          Still having trouble? Try contacting support or come back later.
         </p>
       </div>
     </div>
