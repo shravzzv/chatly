@@ -26,6 +26,9 @@ export const metadata: Metadata = {
     'Chat App',
   ],
   authors: [{ name: 'Sai Shravan Vadla', url: 'https://github.com/shravzzv' }],
+  verification: {
+    google: 'Rpa-EHLE7jJCx3KyAo9bRdCW76ppRqG92gxYZwGlSa8',
+  },
 }
 
 export default function RootLayout({
