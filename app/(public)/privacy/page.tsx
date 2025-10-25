@@ -238,6 +238,16 @@ export default function Page() {
         </section>
 
         <section className='space-y-2'>
+          <h2 className='text-2xl font-semibold'>Analytics and Tracking</h2>
+          <p>
+            We use Vercel Analytics to monitor general usage trends on our
+            website. This service is fully anonymized, does not use cookies, and
+            does not collect personally identifiable information. No tracking
+            beyond this occurs on our site.
+          </p>
+        </section>
+
+        <section className='space-y-2'>
           <h2 className='text-2xl font-semibold'>Links to Other Websites</h2>
           <p>
             We are not responsible for third-party websites. Review their

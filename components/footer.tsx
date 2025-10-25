@@ -82,11 +82,6 @@ export default function Footer() {
                     Terms of Service
                   </Link>
                 </li>
-                <li>
-                  <Link href='#' className='hover:underline'>
-                    Cookie Policy
-                  </Link>
-                </li>
               </ul>
             </div>
           </div>
