@@ -5,7 +5,7 @@ export default function Page() {
     <div className='min-h-svh bg-muted flex flex-col items-center justify-start py-12 px-4'>
       <div className='w-full max-w-7xl bg-background p-8 md:p-12 rounded-2xl shadow-sm space-y-8'>
         <header className='text-center space-y-2'>
-          <h1 className='text-3xl font-bold'>Terms and Conditions</h1>
+          <h1 className='text-3xl font-bold'>Terms of service</h1>
           <p className='text-sm text-muted-foreground'>
             Last updated: October 25, 2025
           </p>

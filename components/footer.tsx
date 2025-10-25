@@ -47,24 +47,24 @@ export default function Footer() {
               <h3 className='font-semibold mb-3'>Socials</h3>
               <ul className='space-y-2 text-sm'>
                 <li>
-                  <a
+                  <Link
                     href='https://discord.gg/VdWBPWeVnm'
                     target='_blank'
                     rel='noopener noreferrer'
                     className='hover:underline'
                   >
                     Discord
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a
+                  <Link
                     href='https://www.reddit.com/r/chatly_app'
                     target='_blank'
                     rel='noopener noreferrer'
                     className='hover:underline'
                   >
                     Reddit
-                  </a>
+                  </Link>
                 </li>
               </ul>
             </div>
@@ -73,12 +73,12 @@ export default function Footer() {
               <h3 className='font-semibold mb-3'>Legal</h3>
               <ul className='space-y-2 text-sm'>
                 <li>
-                  <Link href='#' className='hover:underline'>
+                  <Link href='/privacy' className='hover:underline'>
                     Privacy Policy
                   </Link>
                 </li>
                 <li>
-                  <Link href='#' className='hover:underline'>
+                  <Link href='/tos' className='hover:underline'>
                     Terms of Service
                   </Link>
                 </li>
