@@ -2,6 +2,35 @@ import Image from 'next/image'
 import Link from 'next/link'
 import heroImage from '@/public/landing-hero.jpg'
 import { Button } from '@/components/ui/button'
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion'
+
+export const faqs = [
+  {
+    question: 'Is Chatly free to use?',
+    answer:
+      'Yes! Chatly is free to start, so you can explore all the essential features without paying a cent. Our goal is to make communication effortless for everyone. In the future, we’ll introduce paid plans for teams who need advanced analytics, integrations, and storage — but the free tier will always stay generous.',
+  },
+  {
+    question: 'Do I need to install anything?',
+    answer:
+      'Nope. Chatly runs entirely in your browser — no downloads, updates, or installations required. You can log in and start chatting instantly from any device. This means your team stays in sync, no matter where they’re working from.',
+  },
+  {
+    question: 'Can I use Chatly for my business?',
+    answer:
+      'Absolutely. Chatly is built for teams, startups, and creators of all sizes. You can host meetings, manage team channels, and even integrate with your favorite tools. Whether you’re a solo creator or a 50-person company, Chatly adapts to your workflow.',
+  },
+  {
+    question: 'Is my data secure?',
+    answer:
+      'Yes. Your messages are encrypted end-to-end, and we use industry-standard security to protect your data. We’ll never sell your information or show ads — privacy is at the core of Chatly’s design philosophy.',
+  },
+]
 
 export default function HomePage() {
   return (
@@ -37,109 +66,38 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Trusted By Section */}
-      <section className='w-full bg-gray-50 py-16'>
-        <div className='max-w-6xl mx-auto px-6 text-center'>
-          <h2 className='text-2xl font-semibold mb-8'>
-            Trusted by early teams and creators
-          </h2>
-          <div className='flex justify-center flex-wrap gap-12 opacity-80'>
-            <Image src={heroImage} alt='Company logo' width={100} height={40} />
-            <Image src={heroImage} alt='Company logo' width={100} height={40} />
-            <Image src={heroImage} alt='Company logo' width={100} height={40} />
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials Section */}
-      <section className='w-full max-w-6xl px-6 py-24 text-center'>
-        <h2 className='text-3xl font-semibold mb-10'>
-          What early users are saying
-        </h2>
-        <div className='grid gap-8 sm:grid-cols-2 md:grid-cols-3'>
-          {[
-            {
-              name: 'Alex R.',
-              quote:
-                'Chatly made remote communication so smooth — love the simplicity!',
-            },
-            {
-              name: 'Samantha K.',
-              quote:
-                'A clean UI and powerful features. Perfect for our small team.',
-            },
-            {
-              name: 'Jordan M.',
-              quote:
-                'Fast, reliable, and feels modern. Excited for what’s next!',
-            },
-          ].map((t, i) => (
-            <div
-              key={i}
-              className='p-6 border rounded-2xl shadow-sm bg-white flex flex-col items-center'
-            >
-              <Image
-                src={heroImage}
-                alt={t.name}
-                width={80}
-                height={80}
-                className='rounded-full mb-4'
-              />
-              <p className='text-gray-600 italic mb-2'>“{t.quote}”</p>
-              <span className='text-sm font-medium text-gray-900'>
-                {t.name}
-              </span>
-              <span className='text-xs text-gray-400'>Beta User</span>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* FAQ Section */}
-      <section className='w-full bg-gray-50 py-24'>
-        <div className='max-w-4xl mx-auto px-6'>
-          <h2 className='text-3xl font-semibold text-center mb-10'>
+      <section className='w-full py-16 sm:py-20 md:py-24 bg-background'>
+        <div className='max-w-4xl mx-auto px-6 text-center'>
+          <h2 className='text-3xl sm:text-4xl font-bold tracking-tight mb-10'>
             Frequently Asked Questions
           </h2>
-          <div className='space-y-6'>
-            {[
-              {
-                q: 'Is Chatly free to use?',
-                a: 'Yes! Chatly is free to start. Paid plans will unlock additional features in the future.',
-              },
-              {
-                q: 'Do I need to install anything?',
-                a: 'Nope. Chatly runs entirely in your browser — no downloads required.',
-              },
-              {
-                q: 'Can I use Chatly for my business?',
-                a: 'Absolutely. Chatly is built for teams, startups, and creators of all sizes.',
-              },
-              {
-                q: 'Is my data secure?',
-                a: 'Yes, your messages are encrypted and stored securely. We take privacy seriously.',
-              },
-            ].map((item, i) => (
-              <div key={i} className='border-b pb-4'>
-                <h3 className='font-semibold text-lg'>{item.q}</h3>
-                <p className='text-gray-600 mt-2'>{item.a}</p>
-              </div>
+
+          <Accordion
+            type='single'
+            collapsible
+            className='w-full text-left space-y-2 md:space-y-4'
+          >
+            {faqs.map((item, i) => (
+              <AccordionItem key={i} value={`item-${i}`}>
+                <AccordionTrigger className='text-base font-medium hover:no-underline cursor-pointer'>
+                  {item.question}
+                </AccordionTrigger>
+                <AccordionContent className='text-muted-foreground leading-relaxed'>
+                  {item.answer}
+                </AccordionContent>
+              </AccordionItem>
             ))}
-          </div>
+          </Accordion>
         </div>
       </section>
 
-      {/* Final CTA Section */}
       <section className='w-full py-24 text-center'>
         <h2 className='text-3xl font-semibold mb-6'>
           Start chatting instantly with your team — for free.
         </h2>
-        <Link
-          href='/signup'
-          className='px-8 py-4 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition text-lg'
-        >
-          Get Started
-        </Link>
+        <Button asChild size='lg'>
+          <Link href='/signup'>Get Started</Link>
+        </Button>
       </section>
     </main>
   )
