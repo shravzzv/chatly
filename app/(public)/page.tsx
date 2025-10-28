@@ -91,7 +91,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className='w-full py-24 text-center bg-linear-to-b from-background to-muted/30'>
+      <section className='w-full py-24 text-center'>
         <div className='max-w-2xl mx-auto px-6'>
           <h2 className='text-3xl sm:text-4xl font-bold tracking-tight'>
             Ready to simplify how your team communicates?
