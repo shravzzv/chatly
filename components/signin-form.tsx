@@ -12,7 +12,7 @@ import {
   FieldSeparator,
 } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
-import signinBanner from '@/public/signin banner.jpg'
+import signinBanner from '@/public/signin-banner.jpg'
 import Image from 'next/image'
 import Link from 'next/link'
 import { zodResolver } from '@hookform/resolvers/zod'

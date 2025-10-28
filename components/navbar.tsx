@@ -9,15 +9,15 @@ import type { User } from '@supabase/supabase-js'
 import { Spinner } from './ui/spinner'
 
 const navLinks = [
-  { name: 'Pricing', href: '/pricing' },
   { name: 'Features', href: '/features' },
-  { name: 'About', href: '/about' },
+  { name: 'Pricing', href: '/pricing' },
 ]
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
+  const [isScrolled, setIsScrolled] = useState(false)
 
   useEffect(() => {
     const supabase = createClient()
@@ -36,12 +36,24 @@ export default function Navbar() {
     return () => subscription.unsubscribe()
   }, [])
 
+  useEffect(() => {
+    const handleScroll = () => setIsScrolled(window.scrollY > 0)
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
   const toggleMenu = () => {
     setIsOpen(!isOpen)
   }
 
   return (
-    <nav className='sticky top-0 z-50 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-sm transition-colors'>
+    <nav
+      className={`sticky top-0 z-50 transition-all duration-300 bg-white dark:bg-black ${
+        isScrolled
+          ? 'border-b border-gray-200 dark:border-gray-800 shadow-sm '
+          : 'border-b-0 shadow-none'
+      }`}
+    >
       <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
         <div className='flex justify-between items-center h-16'>
           <Link href='/' className='shrink-0'>
@@ -132,7 +144,7 @@ export default function Navbar() {
       </div>
 
       {isOpen && (
-        <div className='fixed inset-0 top-16 bg-white dark:bg-gray-900 z-40 overflow-y-auto md:hidden transition-colors'>
+        <div className='fixed inset-0 top-16 bg-white dark:bg-black z-40 overflow-y-auto md:hidden transition-colors'>
           <div className='pt-2 pb-3 px-4 flex flex-col h-full'>
             <div className='grow space-y-2 py-4'>
               {navLinks.map((link) => (
@@ -152,7 +164,7 @@ export default function Navbar() {
                 <Spinner />
               </div>
             ) : (
-              <div className='p-4 space-y-3 border-t border-gray-200 dark:border-gray-800 sticky bottom-0 bg-white dark:bg-gray-900'>
+              <div className='p-4 space-y-3 border-t border-gray-200 dark:border-gray-800 sticky bottom-0 bg-white dark:bg-black'>
                 {user ? (
                   <Button
                     className='w-full font-semibold px-4 py-3 rounded-lg shadow-md cursor-pointer'
