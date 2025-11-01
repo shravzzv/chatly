@@ -22,11 +22,11 @@ export default async function Layout({
       }
     >
       <AppSidebar />
-      <SidebarInset>
-        <main>
+      <SidebarInset className='max-h-[calc(100vh-1rem)]'>
+        <div className='flex flex-col h-full rounded-2xl'>
           <SiteHeader />
-          {children}
-        </main>
+          <div className='flex-1 min-h-0'>{children}</div>
+        </div>
       </SidebarInset>
     </SidebarProvider>
   )
