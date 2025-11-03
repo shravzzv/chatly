@@ -47,37 +47,21 @@ const fakeUsers: User[] = [
 ]
 
 const fakeMessages: Message[] = [
-  { id: '1', senderId: '1', text: 'Hey there 👋', time: '09:42 AM' },
+  {
+    id: '1',
+    senderId: '1',
+    receiverId: 'me',
+    text: 'Hey there 👋',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
   {
     id: '2',
     senderId: 'me',
+    receiverId: '1',
     text: 'Hey Alice! How are you?',
-    time: '09:43 AM',
-  },
-  { id: '3', senderId: '1', text: 'All good, thanks!', time: '09:44 AM' },
-  {
-    id: '4',
-    senderId: '1',
-    text: 'Just finished the layout fixes. It looks much better now!',
-    time: '09:45 AM',
-  },
-  {
-    id: '5',
-    senderId: 'me',
-    text: 'Awesome! That was fast. The scrolling issue was driving me crazy.',
-    time: '09:46 AM',
-  },
-  {
-    id: '6',
-    senderId: '1',
-    text: "It's all about setting the container heights correctly in the flex hierarchy. We just needed to ensure the main chat area fills the viewport.",
-    time: '09:47 AM',
-  },
-  {
-    id: '7',
-    senderId: 'me',
-    text: 'Got it. Height inheritance is key.',
-    time: '09:48 AM',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   },
 ]
 
@@ -114,16 +98,17 @@ export default function Page() {
   }, [selectedUser])
 
   const handleSubmit = () => {
-    if (!message.trim()) return
+    if (!message.trim() || !selectedUser) return
+
+    const now = new Date().toISOString()
 
     const newMessage: Message = {
       id: Date.now().toString(),
-      senderId: 'me',
       text: message,
-      time: new Date().toLocaleTimeString('en-US', {
-        hour: '2-digit',
-        minute: '2-digit',
-      }),
+      senderId: 'me',
+      receiverId: selectedUser.id,
+      createdAt: now,
+      updatedAt: now,
     }
 
     setMessages([...messages, newMessage])
@@ -273,17 +258,13 @@ export default function Page() {
               {messages.map((msg) => (
                 <MessageBubble
                   key={msg.id}
-                  id={msg.id}
-                  text={msg.text}
-                  time={msg.time}
-                  senderId={msg.senderId}
+                  {...msg}
                   onDelete={() => handleDeleteMessage(msg.id)}
                   onEdit={(updatedText) =>
                     handleEditMessage(msg.id, updatedText)
                   }
                 />
               ))}
-
               <div ref={messagesEndRef} />
             </div>
 

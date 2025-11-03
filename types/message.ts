@@ -1,6 +1,8 @@
 export interface Message {
   id: string
-  senderId: string
   text: string
-  time: string
+  senderId: string
+  receiverId: string
+  createdAt: string
+  updatedAt: string
 }
