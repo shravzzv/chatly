@@ -1,4 +1,4 @@
-import { Trash } from 'lucide-react'
+import { Pencil, Trash } from 'lucide-react'
 import { Button } from './ui/button'
 import {
   AlertDialog,
@@ -11,6 +11,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
+import EditMessageForm from './edit-message-form'
+import { useState } from 'react'
 
 type MessageBubbleProps = {
   id: string
@@ -18,6 +20,7 @@ type MessageBubbleProps = {
   time: string
   senderId: string
   onDelete: (id: string) => void
+  onEdit: (updatedText: string) => void
 }
 
 export function MessageBubble({
@@ -26,11 +29,17 @@ export function MessageBubble({
   time,
   senderId,
   onDelete,
+  onEdit,
 }: MessageBubbleProps) {
   const isOwn = senderId === 'me'
+  const [open, setOpen] = useState(false)
 
   return (
-    <div className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}>
+    <div
+      className={`flex flex-col ${
+        isOwn ? 'items-end' : 'items-start'
+      } space-y-1`}
+    >
       <div
         className={`px-3 py-2 rounded-xl max-w-xs text-sm ${
           isOwn ? 'bg-primary text-primary-foreground' : 'bg-muted'
@@ -43,33 +52,66 @@ export function MessageBubble({
       </div>
 
       {isOwn && (
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button variant='ghost' size='icon-sm' className='cursor-pointer'>
-              <Trash />
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Delete message?</AlertDialogTitle>
-              <AlertDialogDescription>
-                This action cannot be undone. This will permanently delete your
-                message from the chat.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel className='cursor-pointer'>
-                Cancel
-              </AlertDialogCancel>
-              <AlertDialogAction
-                className='cursor-pointer'
-                onClick={() => onDelete(id)}
+        <div className='flex'>
+          <AlertDialog open={open} onOpenChange={setOpen}>
+            <AlertDialogTrigger asChild>
+              <Button
+                variant='ghost'
+                size='icon-sm'
+                className='cursor-pointer text-muted-foreground hover:text-foreground'
               >
-                Continue
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+                <Pencil className='h-4 w-4' />
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Edit message</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Modify your message below and save changes.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+
+              <EditMessageForm
+                defaultText={text}
+                onSubmit={(newText) => onEdit(newText)}
+                onClose={() => setOpen(false)}
+              />
+            </AlertDialogContent>
+          </AlertDialog>
+
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                variant='ghost'
+                size='icon-sm'
+                className='cursor-pointer text-muted-foreground hover:text-destructive'
+              >
+                <Trash className='h-4 w-4' />
+              </Button>
+            </AlertDialogTrigger>
+
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete message?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete
+                  your message from the chat.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel className='cursor-pointer'>
+                  Cancel
+                </AlertDialogCancel>
+                <AlertDialogAction
+                  className='cursor-pointer'
+                  onClick={() => onDelete(id)}
+                >
+                  Continue
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
       )}
     </div>
   )

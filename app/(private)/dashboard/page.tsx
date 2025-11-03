@@ -29,18 +29,13 @@ import {
 import { Kbd } from '@/components/ui/kbd'
 import { ButtonGroup } from '@/components/ui/button-group'
 import { MessageBubble } from '@/components/message-bubble'
+import { toast } from 'sonner'
+import { Message } from '@/types/message'
 
 interface User {
   id: string
   name: string
   avatar: string | StaticImageData
-}
-
-interface Message {
-  id: string
-  senderId: string
-  text: string
-  time: string
 }
 
 const fakeUsers: User[] = [
@@ -142,6 +137,14 @@ export default function Page() {
 
   const handleDeleteMessage = (id: string) => {
     setMessages((prev) => prev.filter((msg) => msg.id !== id))
+    toast.success('Message deleted')
+  }
+
+  const handleEditMessage = (id: string, updatedText: string) => {
+    setMessages((prev) =>
+      prev.map((msg) => (msg.id === id ? { ...msg, text: updatedText } : msg))
+    )
+    toast.success('Message updated')
   }
 
   return (
@@ -275,6 +278,9 @@ export default function Page() {
                   time={msg.time}
                   senderId={msg.senderId}
                   onDelete={() => handleDeleteMessage(msg.id)}
+                  onEdit={(updatedText) =>
+                    handleEditMessage(msg.id, updatedText)
+                  }
                 />
               ))}
 
