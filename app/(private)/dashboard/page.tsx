@@ -276,7 +276,7 @@ export default function Page() {
                         : 'bg-muted'
                     }`}
                   >
-                    <p>{msg.text}</p>
+                    <p className='whitespace-pre-wrap'>{msg.text}</p>
                     <span className='block text-[10px] text-muted-foreground text-right mt-1'>
                       {msg.time}
                     </span>
