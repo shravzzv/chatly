@@ -28,6 +28,7 @@ import {
 } from '@/components/ui/input-group'
 import { Kbd } from '@/components/ui/kbd'
 import { ButtonGroup } from '@/components/ui/button-group'
+import { MessageBubble } from '@/components/message-bubble'
 
 interface User {
   id: string
@@ -137,6 +138,10 @@ export default function Page() {
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }
+
+  const handleDeleteMessage = (id: string) => {
+    setMessages((prev) => prev.filter((msg) => msg.id !== id))
   }
 
   return (
@@ -263,26 +268,16 @@ export default function Page() {
 
             <div className='flex-1 overflow-y-auto p-4 space-y-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden'>
               {messages.map((msg) => (
-                <div
+                <MessageBubble
                   key={msg.id}
-                  className={`flex ${
-                    msg.senderId === 'me' ? 'justify-end' : 'justify-start'
-                  }`}
-                >
-                  <div
-                    className={`px-3 py-2 rounded-xl max-w-xs text-sm ${
-                      msg.senderId === 'me'
-                        ? 'bg-primary text-primary-foreground'
-                        : 'bg-muted'
-                    }`}
-                  >
-                    <p className='whitespace-pre-wrap'>{msg.text}</p>
-                    <span className='block text-[10px] text-muted-foreground text-right mt-1'>
-                      {msg.time}
-                    </span>
-                  </div>
-                </div>
+                  id={msg.id}
+                  text={msg.text}
+                  time={msg.time}
+                  senderId={msg.senderId}
+                  onDelete={() => handleDeleteMessage(msg.id)}
+                />
               ))}
+
               <div ref={messagesEndRef} />
             </div>
 
