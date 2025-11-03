@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   Search,
   Phone,
@@ -19,6 +19,15 @@ import heroImage from '@/public/landing-hero.jpg'
 import { Button } from '@/components/ui/button'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+  InputGroupTextarea,
+} from '@/components/ui/input-group'
+import { Kbd } from '@/components/ui/kbd'
+import { ButtonGroup } from '@/components/ui/button-group'
 
 interface User {
   id: string
@@ -33,7 +42,7 @@ interface Message {
   time: string
 }
 
-const users: User[] = [
+const fakeUsers: User[] = [
   { id: '1', name: 'Alice Johnson', avatar: heroImage },
   { id: '2', name: 'Bob Smith', avatar: heroImage },
   { id: '3', name: 'Charlie Davis', avatar: heroImage },
@@ -77,8 +86,58 @@ const fakeMessages: Message[] = [
 ]
 
 export default function Page() {
+  const [message, setMessage] = useState('')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [users, setUsers] = useState<User[]>(fakeUsers)
+  const [messages, setMessages] = useState<Message[]>(fakeMessages)
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const searchInputRef = useRef<HTMLInputElement>(null)
   const isMobileView = useIsMobile()
+
+  const filteredUsers = users.filter((user) =>
+    user.name.toLowerCase().includes(searchQuery.toLowerCase())
+  )
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f') {
+        e.preventDefault()
+        searchInputRef.current?.focus()
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [])
+
+  useEffect(() => {
+    if (selectedUser) {
+      setTimeout(scrollToBottom, 100)
+    }
+  }, [selectedUser])
+
+  const handleSubmit = () => {
+    if (!message.trim()) return
+
+    const newMessage: Message = {
+      id: Date.now().toString(),
+      senderId: 'me',
+      text: message,
+      time: new Date().toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+      }),
+    }
+
+    setMessages([...messages, newMessage])
+    setMessage('')
+    setTimeout(scrollToBottom, 100)
+  }
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }
 
   return (
     <div className='flex h-full bg-background text-foreground rounded-2xl'>
@@ -98,18 +157,28 @@ export default function Page() {
         </div>
 
         <div className='px-3 pb-4 border-b'>
-          <div className='flex items-center gap-2 bg-muted px-3 py-2 rounded-lg'>
-            <Search className='w-4 h-4' />
-            <input
+          <InputGroup>
+            <InputGroupInput
               type='text'
-              placeholder='Search users...'
-              className='bg-transparent outline-none w-full text-sm'
+              placeholder='Type to search...'
+              ref={searchInputRef}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
-          </div>
+            <InputGroupAddon>
+              <Search className='w-4 h-4' />
+            </InputGroupAddon>
+            {!isMobileView && (
+              <InputGroupAddon align='inline-end'>
+                <Kbd>⌘</Kbd>
+                <Kbd>F</Kbd>
+              </InputGroupAddon>
+            )}
+          </InputGroup>
         </div>
 
         <ScrollArea className='h-full rounded-md px-2 flex-1 overflow-y-scroll [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden'>
-          {users.map((user) => (
+          {filteredUsers.map((user) => (
             <Button
               key={user.id}
               onClick={() => setSelectedUser(user)}
@@ -165,10 +234,10 @@ export default function Page() {
                 <span className='font-semibold'>{selectedUser.name}</span>
               </div>
 
-              <div className='flex gap-2'>
+              <ButtonGroup>
                 <Button
                   variant='outline'
-                  size='icon-sm'
+                  size='icon-lg'
                   className='cursor-pointer'
                 >
                   <Phone className='w-5 h-5 cursor-pointer' />
@@ -176,7 +245,7 @@ export default function Page() {
 
                 <Button
                   variant='outline'
-                  size='icon-sm'
+                  size='icon-lg'
                   className='cursor-pointer'
                 >
                   <Video className='w-5 h-5 cursor-pointer' />
@@ -184,16 +253,16 @@ export default function Page() {
 
                 <Button
                   variant='outline'
-                  size='icon-sm'
+                  size='icon-lg'
                   className='cursor-pointer'
                 >
                   <MoreVertical className='w-5 h-5 cursor-pointer' />
                 </Button>
-              </div>
+              </ButtonGroup>
             </div>
 
             <div className='flex-1 overflow-y-auto p-4 space-y-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden'>
-              {fakeMessages.map((msg) => (
+              {messages.map((msg) => (
                 <div
                   key={msg.id}
                   className={`flex ${
@@ -214,46 +283,59 @@ export default function Page() {
                   </div>
                 </div>
               ))}
+              <div ref={messagesEndRef} />
             </div>
 
-            <div className='p-2 flex items-center gap-2 border-t'>
-              <Button
-                variant='outline'
-                size='icon-sm'
-                className='shrink-0 cursor-pointer'
-              >
-                <ImagePlus className='w-5 h-5 text-muted-foreground' />
-              </Button>
+            <div className='p-2'>
+              <InputGroup className='flex items-end'>
+                <InputGroupAddon>
+                  <InputGroupButton
+                    variant='ghost'
+                    size='icon-sm'
+                    className='cursor-pointer'
+                  >
+                    <ImagePlus className='w-5 h-5 text-muted-foreground' />
+                  </InputGroupButton>
+                  <InputGroupButton
+                    variant='ghost'
+                    size='icon-sm'
+                    className='cursor-pointer'
+                  >
+                    <Paperclip className='w-5 h-5 text-muted-foreground' />
+                  </InputGroupButton>
+                  <InputGroupButton
+                    variant='ghost'
+                    size='icon-sm'
+                    className='cursor-pointer'
+                  >
+                    <AudioLines className='w-5 h-5 text-muted-foreground' />
+                  </InputGroupButton>
+                </InputGroupAddon>
 
-              <Button
-                variant='outline'
-                size='icon-sm'
-                className='shrink-0 cursor-pointer'
-              >
-                <Paperclip className='w-5 h-5 text-muted-foreground' />
-              </Button>
+                <InputGroupTextarea
+                  placeholder='Type a message...'
+                  value={message}
+                  className='min-h-10 max-h-[200px] resize-none overflow-y-auto bg-transparent text-sm placeholder:text-muted-foreground focus-visible:ring-0 outline-none border-0 pt-2.5'
+                  onChange={(e) => setMessage(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey && !isMobileView) {
+                      e.preventDefault()
+                      handleSubmit()
+                    }
+                  }}
+                />
 
-              <Button
-                variant='outline'
-                size='icon-sm'
-                className='shrink-0 cursor-pointer'
-              >
-                <AudioLines className='w-5 h-5 text-muted-foreground' />
-              </Button>
-
-              <input
-                type='text'
-                placeholder='Type a message...'
-                className='flex-1 bg-muted rounded-xl px-4 py-2 text-sm outline-none min-w-0 w-full'
-              />
-
-              <Button
-                variant='outline'
-                size='icon-sm'
-                className='shrink-0 cursor-pointer'
-              >
-                <Send className='w-5 h-5 text-muted-foreground' />
-              </Button>
+                <InputGroupAddon align='inline-end'>
+                  <InputGroupButton
+                    onClick={handleSubmit}
+                    variant='default'
+                    size='icon-sm'
+                    className='cursor-pointer'
+                  >
+                    <Send className='w-4 h-4' />
+                  </InputGroupButton>
+                </InputGroupAddon>
+              </InputGroup>
             </div>
           </>
         ) : (
