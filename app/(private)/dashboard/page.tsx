@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import Image from 'next/image'
 import {
   Search,
   Phone,
@@ -14,8 +15,6 @@ import {
   ImagePlus,
   Send,
 } from 'lucide-react'
-import Image, { StaticImageData } from 'next/image'
-import heroImage from '@/public/landing-hero.jpg'
 import { Button } from '@/components/ui/button'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -31,54 +30,202 @@ import { ButtonGroup } from '@/components/ui/button-group'
 import { MessageBubble } from '@/components/message-bubble'
 import { toast } from 'sonner'
 import { Message } from '@/types/message'
-
-interface User {
-  id: string
-  name: string
-  avatar: string | StaticImageData
-}
-
-const fakeUsers: User[] = [
-  { id: '1', name: 'Alice Johnson', avatar: heroImage },
-  { id: '2', name: 'Bob Smith', avatar: heroImage },
-  { id: '3', name: 'Charlie Davis', avatar: heroImage },
-  { id: '4', name: 'Diana Prince', avatar: heroImage },
-  { id: '5', name: 'Ethan Hunt', avatar: heroImage },
-]
-
-const fakeMessages: Message[] = [
-  {
-    id: '1',
-    senderId: '1',
-    receiverId: 'me',
-    text: 'Hey there 👋',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: '2',
-    senderId: 'me',
-    receiverId: '1',
-    text: 'Hey Alice! How are you?',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-]
+import { Profile } from '@/types/profile'
+import { createClient } from '@/utils/supabase/client'
+import type {
+  RealtimePostgresChangesPayload,
+  User as SupabaseUser,
+} from '@supabase/supabase-js'
+import { Skeleton } from '@/components/ui/skeleton'
+import defaultAvatar from '@/public/default-avatar.jpg'
+import { v4 as uuidv4 } from 'uuid'
 
 export default function Page() {
-  const [message, setMessage] = useState('')
-  const [searchQuery, setSearchQuery] = useState('')
-  const [users, setUsers] = useState<User[]>(fakeUsers)
-  const [messages, setMessages] = useState<Message[]>(fakeMessages)
-  const [selectedUser, setSelectedUser] = useState<User | null>(null)
+  const [profiles, setProfiles] = useState<Profile[]>([])
+  const [message, setMessage] = useState<string>('')
+  const [messages, setMessages] = useState<Message[]>([])
+  const [searchQuery, setSearchQuery] = useState<string>('')
+  const [profilesLoading, setProfilesLoading] = useState<boolean>(true)
+  const [selectedUser, setSelectedUser] = useState<Profile | null>(null)
+  const [messagesLoading, setMessagesLoading] = useState<boolean>(false)
+  const [currentUser, setCurrentUser] = useState<SupabaseUser | null>(null)
+  const [currentUserLoading, setCurrentUserLoading] = useState<boolean>(true)
+
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const searchInputRef = useRef<HTMLInputElement>(null)
   const isMobileView = useIsMobile()
 
-  const filteredUsers = users.filter((user) =>
-    user.name.toLowerCase().includes(searchQuery.toLowerCase())
-  )
+  // Fetch current authenticated user
+  useEffect(() => {
+    const supabase = createClient()
 
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setCurrentUser(user)
+      setCurrentUserLoading(false)
+    })
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setCurrentUser(session?.user ?? null)
+    })
+
+    return () => subscription.unsubscribe()
+  }, [])
+
+  // Fetch all profiles
+  useEffect(() => {
+    const supabase = createClient()
+
+    const fetchUsers = async () => {
+      setProfilesLoading(true)
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .order('name', { ascending: true })
+
+      if (error) {
+        console.error('Error fetching profiles:', error)
+        toast.error('Failed to load profiles')
+        return
+      }
+
+      setProfiles(data)
+      setProfilesLoading(false)
+    }
+
+    if (currentUser) {
+      fetchUsers()
+    }
+  }, [currentUser])
+
+  // Fetch messages when selectedUser changes
+  useEffect(() => {
+    if (!selectedUser || !currentUser) return
+    const supabase = createClient()
+
+    const fetchMessages = async () => {
+      setMessagesLoading(true)
+      const condition = [
+        `and(sender_id.eq.${currentUser.id},receiver_id.eq.${selectedUser.id})`,
+        `and(sender_id.eq.${selectedUser.id},receiver_id.eq.${currentUser.id})`,
+      ].join(',')
+
+      const { data, error } = await supabase
+        .from('messages')
+        .select('*')
+        .or(condition)
+        .order('created_at', { ascending: true })
+
+      if (error) {
+        console.error('Error fetching messages:', error)
+        toast.error('Failed to load messages')
+        return
+      }
+
+      setMessages(data)
+      setTimeout(scrollToBottom, 100)
+      setMessagesLoading(false)
+    }
+
+    fetchMessages()
+  }, [selectedUser, currentUser])
+
+  // Enable real-time subscription for messages
+  useEffect(() => {
+    if (!selectedUser || !currentUser) return
+    const supabase = createClient()
+
+    const channel = supabase
+      .channel('messages-channel')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'messages',
+          // Listen to all messages involving current user
+          filter: `sender_id=eq.${currentUser.id}`,
+        },
+        (payload) => {
+          // Only process if it's related to the selected conversation
+          const msg = payload.new as Message
+          if (
+            (payload.eventType === 'INSERT' ||
+              payload.eventType === 'UPDATE') &&
+            (msg.receiver_id === selectedUser.id ||
+              msg.sender_id === selectedUser.id)
+          ) {
+            handlePayload(payload as RealtimePostgresChangesPayload<Message>)
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'messages',
+          // Listen to messages where current user is receiver
+          filter: `receiver_id=eq.${currentUser.id}`,
+        },
+        (payload) => {
+          const msg = (payload.new as Message) || (payload.old as Message)
+          if (
+            msg.sender_id === selectedUser.id ||
+            msg.receiver_id === selectedUser.id
+          ) {
+            handlePayload(payload as RealtimePostgresChangesPayload<Message>)
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'DELETE',
+          schema: 'public',
+          table: 'messages',
+        },
+        (payload) => {
+          setMessages((prev) => prev.filter((msg) => msg.id !== payload.old.id))
+        }
+      )
+      .subscribe()
+
+    function handlePayload(payload: RealtimePostgresChangesPayload<Message>) {
+      switch (payload.eventType) {
+        case 'INSERT': {
+          const newMsg = payload.new as Message
+          if (currentUser) {
+            if (newMsg.sender_id === currentUser.id) return
+          }
+          setMessages((prev) => [...prev, newMsg])
+          setTimeout(scrollToBottom, 100)
+          break
+        }
+
+        case 'UPDATE': {
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === payload.new.id ? (payload.new as Message) : msg
+            )
+          )
+          break
+        }
+
+        default: {
+          console.warn('Unhandled realtime event type:', payload)
+          break
+        }
+      }
+    }
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [selectedUser, currentUser])
+
+  // Allow profiles to focus on the search input using ctrl + f
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f') {
@@ -86,50 +233,178 @@ export default function Page() {
         searchInputRef.current?.focus()
       }
     }
-
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [])
-
-  useEffect(() => {
-    if (selectedUser) {
-      setTimeout(scrollToBottom, 100)
-    }
-  }, [selectedUser])
-
-  const handleSubmit = () => {
-    if (!message.trim() || !selectedUser) return
-
-    const now = new Date().toISOString()
-
-    const newMessage: Message = {
-      id: Date.now().toString(),
-      text: message,
-      senderId: 'me',
-      receiverId: selectedUser.id,
-      createdAt: now,
-      updatedAt: now,
-    }
-
-    setMessages([...messages, newMessage])
-    setMessage('')
-    setTimeout(scrollToBottom, 100)
-  }
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
 
-  const handleDeleteMessage = (id: string) => {
+  const handleSubmit = async () => {
+    if (!message.trim() || !selectedUser || !currentUser) return
+    const supabase = createClient()
+    const tempId = uuidv4()
+    const now = new Date().toISOString()
+
+    const newMessage: Message = {
+      id: tempId,
+      text: message,
+      sender_id: currentUser.id,
+      receiver_id: selectedUser.id,
+      created_at: now,
+      updated_at: now,
+    }
+
+    // Optimistically add to UI
+    setMessages((prev) => [...prev, newMessage])
+    setMessage('')
+    setTimeout(scrollToBottom, 100)
+
+    const { id, ...messageWithoutId } = newMessage
+
+    // Send to database
+    const { data, error } = await supabase
+      .from('messages')
+      .insert([messageWithoutId])
+      .select()
+      .single()
+
+    if (error) {
+      // Remove optimistic message on error
+      setMessages((prev) => prev.filter((msg) => msg.id !== tempId))
+      toast.error('Failed to send message')
+      return
+    }
+
+    setMessages((prev) => prev.map((msg) => (msg.id === tempId ? data : msg)))
+  }
+
+  const handleDeleteMessage = async (id: string) => {
+    const prevMessages = messages
     setMessages((prev) => prev.filter((msg) => msg.id !== id))
+
+    const supabase = createClient()
+    const { error } = await supabase.from('messages').delete().eq('id', id)
+
+    if (error) {
+      console.error('Error deleting message:', error)
+      toast.error('Failed to delete message')
+      setMessages(prevMessages)
+      return
+    }
+
     toast.success('Message deleted')
   }
 
-  const handleEditMessage = (id: string, updatedText: string) => {
+  const handleEditMessage = async (id: string, updatedText: string) => {
+    const prevMessages = messages
+
     setMessages((prev) =>
-      prev.map((msg) => (msg.id === id ? { ...msg, text: updatedText } : msg))
+      prev.map((msg) =>
+        msg.id === id
+          ? { ...msg, text: updatedText, updated_at: new Date().toISOString() }
+          : msg
+      )
     )
+
+    const supabase = createClient()
+    const { error } = await supabase
+      .from('messages')
+      .update({ text: updatedText })
+      .eq('id', id)
+
+    if (error) {
+      console.error('Error updating message:', error)
+      toast.error('Failed to update message')
+      setMessages(prevMessages)
+      return
+    }
+
     toast.success('Message updated')
+  }
+
+  const filteredProfiles: Profile[] = profiles.filter(
+    (user) =>
+      user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchQuery.toLowerCase())
+  )
+
+  if (currentUserLoading || !currentUser) {
+    return (
+      <div className='flex h-full bg-background text-foreground rounded-2xl'>
+        {/* Sidebar skeleton */}
+        <div className='flex flex-col h-full p-2 w-full md:w-80 shrink-0 border-r'>
+          <div className='flex items-center justify-between p-4'>
+            <Skeleton className='h-6 w-32 rounded-md' />
+            <Skeleton className='h-8 w-8 rounded-md' />
+          </div>
+
+          <div className='px-3 pb-4 border-b'>
+            <Skeleton className='h-10 w-full rounded-md' />
+          </div>
+
+          <div className='p-4 space-y-4 overflow-y-hidden'>
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className='flex items-center gap-3'>
+                <Skeleton className='w-10 h-10 rounded-full' />
+                <div className='flex flex-col gap-2 flex-1'>
+                  <Skeleton className='h-4 w-3/4 rounded-md' />
+                  <Skeleton className='h-3 w-1/2 rounded-md' />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Chat area skeleton */}
+        <div className='flex flex-col flex-1 h-full'>
+          {/* Header */}
+          <div className='flex items-center justify-between p-4 border-b'>
+            <div className='flex items-center gap-3'>
+              <Skeleton className='w-8 h-8 rounded-full' />
+              <Skeleton className='h-5 w-32 rounded-md' />
+            </div>
+            <div className='flex gap-2'>
+              {[...Array(3)].map((_, i) => (
+                <Skeleton key={i} className='h-8 w-8 rounded-md' />
+              ))}
+            </div>
+          </div>
+
+          {/* Message bubbles */}
+          <div className='flex-1 p-4 space-y-4 overflow-y-hidden'>
+            {[...Array(6)].map((_, i) => (
+              <div
+                key={i}
+                className={`flex ${
+                  i % 2 === 0 ? 'justify-start' : 'justify-end'
+                }`}
+              >
+                <Skeleton
+                  className={`h-16 w-1/2 rounded-2xl ${
+                    i % 2 === 0 ? 'bg-muted' : 'bg-primary/20'
+                  }`}
+                />
+              </div>
+            ))}
+          </div>
+
+          {/* Input area */}
+          <div className='p-2 border-t'>
+            <div className='flex items-end gap-2'>
+              <div className='flex gap-2'>
+                {[...Array(3)].map((_, i) => (
+                  <Skeleton key={i} className='h-8 w-8 rounded-md' />
+                ))}
+              </div>
+              <Skeleton className='flex-1 h-10 rounded-md' />
+              <Skeleton className='h-8 w-8 rounded-md' />
+            </div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -171,33 +446,63 @@ export default function Page() {
         </div>
 
         <ScrollArea className='h-full rounded-md px-2 flex-1 overflow-y-scroll [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden'>
-          {filteredUsers.map((user) => (
-            <Button
-              key={user.id}
-              onClick={() => setSelectedUser(user)}
-              variant='ghost'
-              size='lg'
-              className={`
-                  w-full justify-start gap-3 px-4 py-8 rounded-xl hover:bg-muted transition text-left cursor-pointer ${
-                    selectedUser?.id === user.id ? 'bg-muted' : ''
-                  }`}
-            >
-              <Image
-                src={user.avatar}
-                alt={user.name}
-                className='w-10 h-10 rounded-full object-cover'
-                width={40}
-                height={40}
-              />
+          {profilesLoading ? (
+            // Skeleton UI
+            <div className='space-y-3 px-2 py-4'>
+              {[...Array(8)].map((_, i) => (
+                <div
+                  key={i}
+                  className='flex items-center gap-4 rounded-xl px-4 py-3 hover:bg-muted/40 transition'
+                >
+                  {/* Avatar */}
+                  <Skeleton className='h-10 w-10 rounded-full shrink-0' />
 
-              <div className='flex flex-col text-left overflow-hidden'>
-                <span className='font-medium truncate'>{user.name}</span>
-                <span className='text-xs text-muted-foreground truncate'>
-                  Last message preview...
-                </span>
-              </div>
-            </Button>
-          ))}
+                  {/* Name + last message */}
+                  <div className='flex flex-col gap-2 flex-1'>
+                    <Skeleton className='h-4 w-3/4' />
+                    <Skeleton className='h-3 w-1/2' />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : filteredProfiles.length === 0 ? (
+            // Empty state when no profiles match search
+            <div className='flex flex-col items-center justify-center h-full text-center p-4'>
+              <p className='text-muted-foreground'>
+                {searchQuery ? 'No profiles found' : 'No profiles available'}
+              </p>
+            </div>
+          ) : (
+            filteredProfiles.map((profile) => (
+              <Button
+                key={profile.id}
+                onClick={() => setSelectedUser(profile)}
+                variant='ghost'
+                size='lg'
+                className={`
+          w-full justify-start gap-3 px-4 py-8 rounded-xl hover:bg-muted transition text-left cursor-pointer ${
+            selectedUser?.id === profile.id ? 'bg-muted' : ''
+          }`}
+              >
+                <Image
+                  src={profile.avatar_url || defaultAvatar}
+                  alt={profile.name}
+                  className='w-10 h-10 rounded-full object-cover'
+                  width={40}
+                  height={40}
+                />
+
+                <div className='flex flex-col text-left overflow-hidden'>
+                  <span className='font-medium truncate'>
+                    {profile.name || profile.email?.split('@')[0] || 'User'}
+                  </span>
+                  <span className='text-xs text-muted-foreground truncate'>
+                    Last message preview...
+                  </span>
+                </div>
+              </Button>
+            ))
+          )}
         </ScrollArea>
       </div>
 
@@ -217,7 +522,7 @@ export default function Page() {
                 )}
 
                 <Image
-                  src={selectedUser.avatar}
+                  src={selectedUser.avatar_url || defaultAvatar}
                   alt={selectedUser.name}
                   className='w-8 h-8 rounded-full object-cover'
                   width={32}
@@ -255,16 +560,46 @@ export default function Page() {
             </div>
 
             <div className='flex-1 overflow-y-auto p-4 space-y-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden'>
-              {messages.map((msg) => (
-                <MessageBubble
-                  key={msg.id}
-                  {...msg}
-                  onDelete={() => handleDeleteMessage(msg.id)}
-                  onEdit={(updatedText) =>
-                    handleEditMessage(msg.id, updatedText)
-                  }
-                />
-              ))}
+              {messagesLoading ? (
+                // Message skeletons
+                <div className='space-y-4'>
+                  {[...Array(6)].map((_, i) => (
+                    <div
+                      key={i}
+                      className={`flex ${
+                        i % 3 === 0 ? 'justify-end' : 'justify-start'
+                      }`}
+                    >
+                      <div
+                        className={`max-w-[70%] rounded-2xl p-3 ${
+                          i % 3 === 0 ? 'bg-primary/20' : 'bg-muted'
+                        }`}
+                      >
+                        <div className='h-4 bg-muted-foreground/20 rounded animate-pulse w-48 mb-2' />
+                        <div className='h-4 bg-muted-foreground/20 rounded animate-pulse w-32' />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : messages.length === 0 ? (
+                <div className='flex items-center justify-center h-full'>
+                  <p className='text-muted-foreground'>
+                    No messages yet. Start the conversation!
+                  </p>
+                </div>
+              ) : (
+                messages.map((msg) => (
+                  <MessageBubble
+                    key={msg.id}
+                    {...msg}
+                    currentUserId={currentUser.id}
+                    onDelete={() => handleDeleteMessage(msg.id)}
+                    onEdit={(updatedText) =>
+                      handleEditMessage(msg.id, updatedText)
+                    }
+                  />
+                ))
+              )}
               <div ref={messagesEndRef} />
             </div>
 

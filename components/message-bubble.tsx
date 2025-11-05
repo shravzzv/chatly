@@ -17,10 +17,10 @@ import { useState } from 'react'
 type MessageBubbleProps = {
   id: string
   text: string
-  senderId: string
-  receiverId: string
-  createdAt: string
-  updatedAt: string
+  sender_id: string
+  created_at: string
+  updated_at: string
+  currentUserId: string
   onDelete: (id: string) => void
   onEdit: (updatedText: string) => void
 }
@@ -28,25 +28,26 @@ type MessageBubbleProps = {
 export function MessageBubble({
   id,
   text,
-  senderId,
-  createdAt,
-  updatedAt,
+  sender_id,
+  created_at,
+  updated_at,
+  currentUserId,
   onDelete,
   onEdit,
 }: MessageBubbleProps) {
-  const isOwn = senderId === 'me'
+  const isOwn = sender_id === currentUserId
   const [open, setOpen] = useState(false)
-  const createdTime = new Date(createdAt).toLocaleTimeString('en-US', {
+  const createdTime = new Date(created_at).toLocaleTimeString('en-US', {
     hour: '2-digit',
     minute: '2-digit',
   })
 
-  const updatedTime = new Date(updatedAt).toLocaleTimeString('en-US', {
+  const updatedTime = new Date(updated_at).toLocaleTimeString('en-US', {
     hour: '2-digit',
     minute: '2-digit',
   })
 
-  const isEdited = updatedAt !== createdAt
+  const isEdited = updated_at !== created_at
 
   return (
     <div
