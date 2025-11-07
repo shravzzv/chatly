@@ -50,10 +50,10 @@ export default function Page() {
   const [messagesLoading, setMessagesLoading] = useState<boolean>(false)
   const [currentUser, setCurrentUser] = useState<SupabaseUser | null>(null)
   const [currentUserLoading, setCurrentUserLoading] = useState<boolean>(true)
+  const [lastMessagesLoading, setLastMessagesLoading] = useState<boolean>(true)
   const [lastMessages, setLastMessages] = useState<
     Record<string, Message | null>
   >({})
-  const [lastMessagesLoading, setLastMessagesLoading] = useState(true)
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const searchInputRef = useRef<HTMLInputElement>(null)
@@ -62,19 +62,10 @@ export default function Page() {
   // Fetch current authenticated user
   useEffect(() => {
     const supabase = createClient()
-
     supabase.auth.getUser().then(({ data: { user } }) => {
       setCurrentUser(user)
       setCurrentUserLoading(false)
     })
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setCurrentUser(session?.user ?? null)
-    })
-
-    return () => subscription.unsubscribe()
   }, [])
 
   // Fetch all profiles
@@ -98,10 +89,8 @@ export default function Page() {
       setProfilesLoading(false)
     }
 
-    if (currentUser) {
-      fetchUsers()
-    }
-  }, [currentUser])
+    fetchUsers()
+  }, [])
 
   // Fetch messages when selectedUser changes
   useEffect(() => {
@@ -110,6 +99,8 @@ export default function Page() {
 
     const fetchMessages = async () => {
       setMessagesLoading(true)
+
+      // Fetch messages where the logged-in user and the selected user are participants — meaning one is the sender and the other is the receiver.
       const condition = [
         `and(sender_id.eq.${currentUser.id},receiver_id.eq.${selectedUser.id})`,
         `and(sender_id.eq.${selectedUser.id},receiver_id.eq.${currentUser.id})`,
@@ -135,101 +126,7 @@ export default function Page() {
     fetchMessages()
   }, [selectedUser, currentUser])
 
-  // Enable real-time subscription for messages
-  useEffect(() => {
-    if (!selectedUser || !currentUser) return
-    const supabase = createClient()
-
-    const channel = supabase
-      .channel('messages-channel')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'messages',
-          // Listen to all messages involving current user
-          filter: `sender_id=eq.${currentUser.id}`,
-        },
-        (payload) => {
-          // Only process if it's related to the selected conversation
-          const msg = payload.new as Message
-          if (
-            (payload.eventType === 'INSERT' ||
-              payload.eventType === 'UPDATE') &&
-            (msg.receiver_id === selectedUser.id ||
-              msg.sender_id === selectedUser.id)
-          ) {
-            handlePayload(payload as RealtimePostgresChangesPayload<Message>)
-          }
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'messages',
-          // Listen to messages where current user is receiver
-          filter: `receiver_id=eq.${currentUser.id}`,
-        },
-        (payload) => {
-          const msg = (payload.new as Message) || (payload.old as Message)
-          if (
-            msg.sender_id === selectedUser.id ||
-            msg.receiver_id === selectedUser.id
-          ) {
-            handlePayload(payload as RealtimePostgresChangesPayload<Message>)
-          }
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'DELETE',
-          schema: 'public',
-          table: 'messages',
-        },
-        (payload) => {
-          setMessages((prev) => prev.filter((msg) => msg.id !== payload.old.id))
-        }
-      )
-      .subscribe()
-
-    function handlePayload(payload: RealtimePostgresChangesPayload<Message>) {
-      switch (payload.eventType) {
-        case 'INSERT': {
-          const newMsg = payload.new as Message
-          if (currentUser) {
-            if (newMsg.sender_id === currentUser.id) return
-          }
-          setMessages((prev) => [...prev, newMsg])
-          setTimeout(scrollToBottom, 100)
-          break
-        }
-
-        case 'UPDATE': {
-          setMessages((prev) =>
-            prev.map((msg) =>
-              msg.id === payload.new.id ? (payload.new as Message) : msg
-            )
-          )
-          break
-        }
-
-        default: {
-          console.warn('Unhandled realtime event type:', payload)
-          break
-        }
-      }
-    }
-
-    return () => {
-      supabase.removeChannel(channel)
-    }
-  }, [selectedUser, currentUser])
-
-  // Allow profiles to focus on the search input using ctrl + f
+  // Allow profiles to focus on the search input using "ctrl + f"
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f') {
@@ -245,6 +142,7 @@ export default function Page() {
   useEffect(() => {
     if (!currentUser) return
     const supabase = createClient()
+    const lastMap: Record<string, Message> = {}
 
     const fetchLastMessages = async () => {
       const { data, error } = await supabase
@@ -259,18 +157,166 @@ export default function Page() {
         return
       }
 
-      const lastMap: Record<string, Message> = {}
       for (const msg of data) {
+        // Determine who the other participant is in this message.
+        // Since messages are sorted newest → oldest, the first message we find
+        // for each user is already their latest one.
+        // So we only store it once as that user's "last message".
         const otherId =
           msg.sender_id === currentUser.id ? msg.receiver_id : msg.sender_id
         if (!lastMap[otherId]) lastMap[otherId] = msg
       }
+
       setLastMessages(lastMap)
       setLastMessagesLoading(false)
     }
 
     fetchLastMessages()
   }, [currentUser])
+
+  // Enable real-time subscription for messages
+  useEffect(() => {
+    if (!selectedUser || !currentUser) return
+    const supabase = createClient()
+
+    function handlePayload(payload: RealtimePostgresChangesPayload<Message>) {
+      if (!selectedUser || !currentUser) return
+      const msg = (payload.new as Message) || (payload.old as Message)
+
+      // Determine the ID of the other participant for lastMessages update
+      const otherId =
+        msg.sender_id === currentUser.id ? msg.receiver_id : msg.sender_id
+
+      // Guard: Only process if the event involves the currently selected chat OR
+      // if it's an INSERT/UPDATE that affects the sidebar preview.
+      // Since we are filtering on receiver_id, this check is mostly about
+      // whether the message belongs to the currently open chat.
+      const isCurrentChat = selectedUser.id === otherId
+
+      switch (payload.eventType) {
+        case 'INSERT': {
+          const newMsg = payload.new as Message
+
+          if (isCurrentChat) {
+            // 1. Update main messages array (only if chat is open)
+            setMessages((prev) => [...prev, newMsg])
+            setTimeout(scrollToBottom, 100)
+          }
+
+          // 2. Update lastMessages state for the sidebar
+          setLastMessages((prev) => ({
+            ...prev,
+            [otherId]: newMsg, // The new message is now the last message
+          }))
+          break
+        }
+
+        case 'UPDATE': {
+          const updatedMsg = payload.new as Message
+
+          if (isCurrentChat) {
+            // 1. Update main messages array
+            setMessages((prev) =>
+              prev.map((m) => (m.id === updatedMsg.id ? updatedMsg : m))
+            )
+          }
+
+          // 2. Update lastMessages state for the sidebar
+          setLastMessages((prevLast) => {
+            // Only update the lastMessages preview if the updated message
+            // is the one currently displayed in the sidebar preview.
+            if (prevLast[otherId]?.id === updatedMsg.id) {
+              return {
+                ...prevLast,
+                [otherId]: updatedMsg,
+              }
+            }
+            return prevLast // Otherwise, keep the old last message
+          })
+          break
+        }
+
+        default: {
+          break
+        }
+      }
+    }
+
+    const channel = supabase
+      .channel('messages-channel')
+      .on(
+        'postgres_changes',
+        {
+          event: 'DELETE',
+          schema: 'public',
+          table: 'messages',
+        },
+        (payload) => {
+          const deletedId = payload.old.id as string
+
+          // Find the deleted message object in the current state *before* filtering it out.
+          const deletedMessage = messages.find((msg) => msg.id === deletedId)
+
+          if (deletedMessage) {
+            const otherId =
+              deletedMessage.sender_id === currentUser.id
+                ? deletedMessage.receiver_id
+                : deletedMessage.sender_id
+
+            // 1. Update messages state (removes it from the open chat view)
+            setMessages((prev) => prev.filter((msg) => msg.id !== deletedId))
+
+            // 2. Update the lastMessages state for the sidebar
+            setLastMessages((prevLast) => {
+              const updated = { ...prevLast }
+
+              // Re-calculate the remaining messages in this *conversation*
+              const remainingMessages = messages
+                .filter(
+                  (msg) =>
+                    msg.id !== deletedId && // Exclude the deleted message
+                    ((msg.sender_id === currentUser.id &&
+                      msg.receiver_id === otherId) ||
+                      (msg.sender_id === otherId &&
+                        msg.receiver_id === currentUser.id))
+                )
+                .sort(
+                  (a, b) =>
+                    new Date(b.created_at).getTime() -
+                    new Date(a.created_at).getTime()
+                )
+
+              const newLastMessage = remainingMessages[0] || null
+
+              if (newLastMessage) {
+                updated[otherId] = newLastMessage
+              } else {
+                delete updated[otherId]
+              }
+              return updated
+            })
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'messages',
+          // Listen to all INSERT/UPDATE events where I am the receiver
+          filter: `receiver_id=eq.${currentUser.id}`,
+        },
+        (payload) => {
+          handlePayload(payload as RealtimePostgresChangesPayload<Message>)
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [selectedUser, currentUser, messages])
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
