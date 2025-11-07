@@ -291,28 +291,49 @@ export default function Page() {
       updated_at: now,
     }
 
-    // Optimistically add to UI
+    // Optimistic UI update
     setMessages((prev) => [...prev, newMessage])
     setMessage('')
     setTimeout(scrollToBottom, 100)
 
-    const { id, ...messageWithoutId } = newMessage
+    // Update last message preview
+    setLastMessages((prev) => ({
+      ...prev,
+      [selectedUser.id]: newMessage,
+    }))
 
-    // Send to database
+    // Send to Supabase
     const { data, error } = await supabase
       .from('messages')
-      .insert([messageWithoutId])
+      .insert([
+        {
+          text: message,
+          sender_id: currentUser.id,
+          receiver_id: selectedUser.id,
+          created_at: now,
+          updated_at: now,
+        },
+      ])
       .select()
       .single()
 
     if (error) {
-      // Remove optimistic message on error
       setMessages((prev) => prev.filter((msg) => msg.id !== tempId))
+      setLastMessages((prev) => {
+        const updated = { ...prev }
+        delete updated[selectedUser.id]
+        return updated
+      })
       toast.error('Failed to send message')
       return
     }
 
+    // Replace temp message with real DB message
     setMessages((prev) => prev.map((msg) => (msg.id === tempId ? data : msg)))
+    setLastMessages((prev) => ({
+      ...prev,
+      [selectedUser.id]: data,
+    }))
   }
 
   const handleDeleteMessage = async (id: string) => {
