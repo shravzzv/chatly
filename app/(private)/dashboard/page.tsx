@@ -50,6 +50,10 @@ export default function Page() {
   const [messagesLoading, setMessagesLoading] = useState<boolean>(false)
   const [currentUser, setCurrentUser] = useState<SupabaseUser | null>(null)
   const [currentUserLoading, setCurrentUserLoading] = useState<boolean>(true)
+  const [lastMessages, setLastMessages] = useState<
+    Record<string, Message | null>
+  >({})
+  const [lastMessagesLoading, setLastMessagesLoading] = useState(true)
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const searchInputRef = useRef<HTMLInputElement>(null)
@@ -236,6 +240,37 @@ export default function Page() {
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [])
+
+  // Fetch last messages for all users
+  useEffect(() => {
+    if (!currentUser) return
+    const supabase = createClient()
+
+    const fetchLastMessages = async () => {
+      const { data, error } = await supabase
+        .from('messages')
+        .select('*')
+        .or(`sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`)
+        .order('created_at', { ascending: false })
+
+      if (error) {
+        console.error('Error fetching last messages:', error)
+        setLastMessagesLoading(false)
+        return
+      }
+
+      const lastMap: Record<string, Message> = {}
+      for (const msg of data) {
+        const otherId =
+          msg.sender_id === currentUser.id ? msg.receiver_id : msg.sender_id
+        if (!lastMap[otherId]) lastMap[otherId] = msg
+      }
+      setLastMessages(lastMap)
+      setLastMessagesLoading(false)
+    }
+
+    fetchLastMessages()
+  }, [currentUser])
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -498,7 +533,17 @@ export default function Page() {
                     {profile.id === currentUser.id && ' (You)'}
                   </span>
                   <span className='text-xs text-muted-foreground truncate'>
-                    Last message preview...
+                    {lastMessagesLoading ? (
+                      <Skeleton className='h-4 w-24 rounded-md' />
+                    ) : lastMessages[profile.id] ? (
+                      `${
+                        lastMessages[profile.id]?.sender_id === currentUser.id
+                          ? 'You: '
+                          : ''
+                      }${lastMessages[profile.id]?.text}`
+                    ) : (
+                      'No messages yet'
+                    )}
                   </span>
                 </div>
               </Button>
