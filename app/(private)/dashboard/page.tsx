@@ -337,6 +337,7 @@ export default function Page() {
   }
 
   const handleDeleteMessage = async (id: string) => {
+    if (!currentUser) return
     const prevMessages = messages
     setMessages((prev) => prev.filter((msg) => msg.id !== id))
 
@@ -348,6 +349,41 @@ export default function Page() {
       toast.error('Failed to delete message')
       setMessages(prevMessages)
       return
+    }
+
+    // Check if deleted message was the last one for this chat
+    const deletedMessage = prevMessages.find((msg) => msg.id === id)
+    if (deletedMessage) {
+      const otherId =
+        deletedMessage.sender_id === currentUser.id
+          ? deletedMessage.receiver_id
+          : deletedMessage.sender_id
+
+      // Find the most recent message in this conversation (after deletion)
+      const remainingMessages = prevMessages
+        .filter(
+          (msg) =>
+            msg.id !== id &&
+            ((msg.sender_id === currentUser.id &&
+              msg.receiver_id === otherId) ||
+              (msg.sender_id === otherId && msg.receiver_id === currentUser.id))
+        )
+        .sort(
+          (a, b) =>
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        )
+
+      const newLastMessage = remainingMessages[0] || null
+
+      setLastMessages((prev) => {
+        const updated = { ...prev }
+        if (newLastMessage) {
+          updated[otherId] = newLastMessage
+        } else {
+          delete updated[otherId]
+        }
+        return updated
+      })
     }
 
     toast.success('Message deleted')
