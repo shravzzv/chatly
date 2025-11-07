@@ -343,6 +343,17 @@ export default function Page() {
       )
     )
 
+    // If this message is the last message for the relevant user, update lastMessages too
+    setLastMessages((prev) => {
+      const updated = { ...prev }
+      for (const [userId, msg] of Object.entries(prev)) {
+        if (msg?.id === id) {
+          updated[userId] = { ...msg, text: updatedText }
+        }
+      }
+      return updated
+    })
+
     const supabase = createClient()
     const { error } = await supabase
       .from('messages')
