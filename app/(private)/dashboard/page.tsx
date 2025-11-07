@@ -495,6 +495,7 @@ export default function Page() {
                 <div className='flex flex-col text-left overflow-hidden'>
                   <span className='font-medium truncate'>
                     {profile.name || profile.email?.split('@')[0] || 'User'}
+                    {profile.id === currentUser.id && ' (You)'}
                   </span>
                   <span className='text-xs text-muted-foreground truncate'>
                     Last message preview...
@@ -529,7 +530,12 @@ export default function Page() {
                   height={32}
                 />
 
-                <span className='font-semibold'>{selectedUser.name}</span>
+                <span className='font-semibold'>
+                  {selectedUser.name ||
+                    selectedUser.email?.split('@')[0] ||
+                    'User'}
+                  {selectedUser.id === currentUser.id && ' (You)'}
+                </span>
               </div>
 
               <ButtonGroup>
