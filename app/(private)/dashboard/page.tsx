@@ -39,6 +39,7 @@ import type {
 import { Skeleton } from '@/components/ui/skeleton'
 import defaultAvatar from '@/public/default-avatar.jpg'
 import { v4 as uuidv4 } from 'uuid'
+import { Badge } from '@/components/ui/badge'
 
 export default function Page() {
   const [profiles, setProfiles] = useState<Profile[]>([])
@@ -473,6 +474,55 @@ export default function Page() {
     toast.success('Message updated')
   }
 
+  function formatDateHeader(date: Date): string {
+    const today = new Date()
+    const yesterday = new Date(today)
+    yesterday.setDate(yesterday.getDate() - 1)
+
+    const messageDate = new Date(date)
+    messageDate.setHours(0, 0, 0, 0)
+    today.setHours(0, 0, 0, 0)
+    yesterday.setHours(0, 0, 0, 0)
+
+    if (messageDate.getTime() === today.getTime()) {
+      return 'Today'
+    } else if (messageDate.getTime() === yesterday.getTime()) {
+      return 'Yesterday'
+    } else {
+      return messageDate.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      })
+    }
+  }
+
+  function getDateKey(dateString: string): string {
+    const date = new Date(dateString)
+    return date.toISOString().split('T')[0]
+  }
+
+  function groupMessagesByDate(messages: Message[]) {
+    const groups: { date: string; messages: Message[] }[] = []
+    const groupMap = new Map<string, Message[]>()
+
+    messages.forEach((msg) => {
+      const dateKey = getDateKey(msg.created_at)
+      if (!groupMap.has(dateKey)) {
+        groupMap.set(dateKey, [])
+      }
+      groupMap.get(dateKey)!.push(msg)
+    })
+
+    Array.from(groupMap.entries())
+      .sort(([dateA], [dateB]) => dateA.localeCompare(dateB))
+      .forEach(([date, msgs]) => {
+        groups.push({ date, messages: msgs })
+      })
+
+    return groups
+  }
+
   const filteredProfiles: Profile[] = profiles.filter(
     (user) =>
       user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -726,7 +776,6 @@ export default function Page() {
 
             <div className='flex-1 overflow-y-auto p-4 space-y-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden'>
               {messagesLoading ? (
-                // Message skeletons
                 <div className='space-y-4'>
                   {[...Array(6)].map((_, i) => (
                     <div
@@ -735,13 +784,8 @@ export default function Page() {
                         i % 3 === 0 ? 'justify-end' : 'justify-start'
                       }`}
                     >
-                      <div
-                        className={`max-w-[70%] rounded-2xl p-3 ${
-                          i % 3 === 0 ? 'bg-primary/20' : 'bg-muted'
-                        }`}
-                      >
-                        <div className='h-4 bg-muted-foreground/20 rounded animate-pulse w-48 mb-2' />
-                        <div className='h-4 bg-muted-foreground/20 rounded animate-pulse w-32' />
+                      <div className='space-y-2'>
+                        <Skeleton className='h-16 w-[250px] rounded-2xl' />
                       </div>
                     </div>
                   ))}
@@ -753,17 +797,29 @@ export default function Page() {
                   </p>
                 </div>
               ) : (
-                messages.map((msg) => (
-                  <MessageBubble
-                    key={msg.id}
-                    {...msg}
-                    currentUserId={currentUser.id}
-                    onDelete={() => handleDeleteMessage(msg.id)}
-                    onEdit={(updatedText) =>
-                      handleEditMessage(msg.id, updatedText)
-                    }
-                  />
-                ))
+                <>
+                  {groupMessagesByDate(messages).map((group) => (
+                    <div key={group.date}>
+                      <div className='flex items-center justify-center my-4'>
+                        <Badge>{formatDateHeader(new Date(group.date))}</Badge>
+                      </div>
+
+                      <div className='space-y-4'>
+                        {group.messages.map((msg) => (
+                          <MessageBubble
+                            key={msg.id}
+                            {...msg}
+                            currentUserId={currentUser.id}
+                            onDelete={() => handleDeleteMessage(msg.id)}
+                            onEdit={(updatedText) =>
+                              handleEditMessage(msg.id, updatedText)
+                            }
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </>
               )}
               <div ref={messagesEndRef} />
             </div>
