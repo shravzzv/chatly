@@ -13,7 +13,6 @@ import {
   SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
-  SidebarMenuBadge,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
@@ -48,7 +47,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { setOpenMobile } = useSidebar()
   const pathname = usePathname()
   const router = useRouter()
-  const badgeCount = 20
 
   React.useEffect(() => {
     const supabase = createClient()
@@ -124,9 +122,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         <span>{item.title}</span>
                       </Link>
                     </SidebarMenuButton>
-                    {item.href === '/dashboard' && (
-                      <SidebarMenuBadge>{badgeCount}</SidebarMenuBadge>
-                    )}
                   </SidebarMenuItem>
                 )
               })}
