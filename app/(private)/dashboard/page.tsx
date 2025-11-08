@@ -40,6 +40,13 @@ import { Skeleton } from '@/components/ui/skeleton'
 import defaultAvatar from '@/public/default-avatar.jpg'
 import { v4 as uuidv4 } from 'uuid'
 import { Badge } from '@/components/ui/badge'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 
 type TypingState = {
   user_id: string
@@ -57,6 +64,7 @@ export default function Page() {
   const [messagesLoading, setMessagesLoading] = useState<boolean>(false)
   const [currentUser, setCurrentUser] = useState<SupabaseUser | null>(null)
   const [currentUserLoading, setCurrentUserLoading] = useState<boolean>(true)
+  const [isNewMessageDialogOpen, setIsNewMessageDialogOpen] = useState(false)
   const [lastMessagesLoading, setLastMessagesLoading] = useState<boolean>(true)
   const [typingUsers, setTypingUsers] = useState<Record<string, TypingState>>(
     {}
@@ -611,6 +619,11 @@ export default function Page() {
     }
   }
 
+  const handleSelectProfile = (profile: Profile) => {
+    setSelectedUser(profile)
+    setIsNewMessageDialogOpen(false)
+  }
+
   const filteredProfiles: Profile[] = profiles.filter(
     (user) =>
       user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -709,7 +722,12 @@ export default function Page() {
             Inbox <MessagesSquare />
           </h2>
 
-          <Button variant='outline' size='icon-sm' className='cursor-pointer'>
+          <Button
+            variant='outline'
+            size='icon-sm'
+            className='cursor-pointer'
+            onClick={() => setIsNewMessageDialogOpen(true)}
+          >
             <FilePen className='w-5 h-5' />
           </Button>
         </div>
@@ -770,9 +788,9 @@ export default function Page() {
                 variant='ghost'
                 size='lg'
                 className={`
-          w-full justify-start gap-3 px-4 py-8 rounded-xl hover:bg-muted transition text-left cursor-pointer ${
-            selectedUser?.id === profile.id ? 'bg-muted' : ''
-          }`}
+                    w-full justify-start gap-3 px-4 py-8 rounded-xl hover:bg-muted transition text-left cursor-pointer ${
+                      selectedUser?.id === profile.id ? 'bg-muted' : ''
+                    }`}
               >
                 <Image
                   src={profile.avatar_url || defaultAvatar}
@@ -985,10 +1003,100 @@ export default function Page() {
           <div className='flex flex-col items-center justify-center gap-4 text-muted-foreground h-full'>
             <FilePen />
             <p>Select a chat to start messaging</p>
-            <Button className='cursor-pointer'>Send Message</Button>
+            <Button
+              className='cursor-pointer'
+              onClick={() => setIsNewMessageDialogOpen(true)}
+            >
+              Send Message
+            </Button>
           </div>
         )}
       </div>
+
+      <Dialog
+        open={isNewMessageDialogOpen}
+        onOpenChange={setIsNewMessageDialogOpen}
+      >
+        <DialogContent className='sm:max-w-md'>
+          <DialogHeader>
+            <DialogTitle>New Message</DialogTitle>
+            <DialogDescription>
+              Select a contact to start a conversation
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className='mt-4'>
+            <InputGroup className='mb-4'>
+              <InputGroupInput
+                type='text'
+                placeholder='Search contacts...'
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              <InputGroupAddon>
+                <Search className='w-4 h-4' />
+              </InputGroupAddon>
+            </InputGroup>
+
+            <ScrollArea className='h-[400px] pr-4'>
+              {profilesLoading ? (
+                <div className='space-y-3'>
+                  {[...Array(5)].map((_, i) => (
+                    <div
+                      key={i}
+                      className='flex items-center gap-3 p-3 rounded-lg'
+                    >
+                      <Skeleton className='h-10 w-10 rounded-full shrink-0' />
+                      <div className='flex flex-col gap-2 flex-1'>
+                        <Skeleton className='h-4 w-3/4' />
+                        <Skeleton className='h-3 w-1/2' />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : filteredProfiles.length === 0 ? (
+                <div className='flex flex-col items-center justify-center h-full text-center p-8'>
+                  <p className='text-muted-foreground'>
+                    {searchQuery
+                      ? 'No contacts found'
+                      : 'No contacts available'}
+                  </p>
+                </div>
+              ) : (
+                <div className='space-y-1'>
+                  {filteredProfiles.map((profile) => (
+                    <Button
+                      key={profile.id}
+                      variant='ghost'
+                      className='w-full justify-start gap-3 h-auto py-3 px-3 rounded-lg hover:bg-muted cursor-pointer'
+                      onClick={() => handleSelectProfile(profile)}
+                    >
+                      <Image
+                        src={profile.avatar_url || defaultAvatar}
+                        alt={profile.name}
+                        className='w-10 h-10 rounded-full object-cover shrink-0'
+                        width={40}
+                        height={40}
+                      />
+                      <div className='flex flex-col text-left overflow-hidden min-w-0 flex-1'>
+                        <span className='font-medium truncate'>
+                          {profile.name ||
+                            profile.email?.split('@')[0] ||
+                            'User'}
+                          {profile.id === currentUser.id && ' (You)'}
+                        </span>
+                        <span className='text-xs text-muted-foreground truncate'>
+                          {profile.email}
+                        </span>
+                      </div>
+                    </Button>
+                  ))}
+                </div>
+              )}
+            </ScrollArea>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
