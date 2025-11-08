@@ -41,6 +41,12 @@ import defaultAvatar from '@/public/default-avatar.jpg'
 import { v4 as uuidv4 } from 'uuid'
 import { Badge } from '@/components/ui/badge'
 
+type TypingState = {
+  user_id: string
+  typing_to: string
+  timestamp: number
+}
+
 export default function Page() {
   const [profiles, setProfiles] = useState<Profile[]>([])
   const [message, setMessage] = useState<string>('')
@@ -52,12 +58,16 @@ export default function Page() {
   const [currentUser, setCurrentUser] = useState<SupabaseUser | null>(null)
   const [currentUserLoading, setCurrentUserLoading] = useState<boolean>(true)
   const [lastMessagesLoading, setLastMessagesLoading] = useState<boolean>(true)
+  const [typingUsers, setTypingUsers] = useState<Record<string, TypingState>>(
+    {}
+  )
   const [lastMessages, setLastMessages] = useState<
     Record<string, Message | null>
   >({})
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const searchInputRef = useRef<HTMLInputElement>(null)
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const isMobileView = useIsMobile()
 
   // Fetch current authenticated user
@@ -319,12 +329,60 @@ export default function Page() {
     }
   }, [selectedUser, currentUser, messages])
 
+  // Show typing status
+  useEffect(() => {
+    if (!currentUser) return
+    const supabase = createClient()
+
+    const channel = supabase.channel('typing-presence', {
+      config: {
+        presence: {
+          key: currentUser.id,
+        },
+      },
+    })
+
+    channel
+      .on('presence', { event: 'sync' }, () => {
+        const state = channel.presenceState<TypingState>()
+        const typingMap: Record<string, TypingState> = {}
+
+        Object.values(state).forEach((presences) => {
+          presences.forEach((presence) => {
+            if (presence.typing_to === currentUser.id) {
+              typingMap[presence.user_id] = presence
+            }
+          })
+        })
+
+        setTypingUsers(typingMap)
+        setTimeout(scrollToBottom, 100)
+      })
+      .subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+          await channel.track({
+            user_id: currentUser.id,
+            typing_to: '',
+            timestamp: Date.now(),
+          })
+        }
+      })
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [currentUser])
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
 
   const handleSubmit = async () => {
     if (!message.trim() || !selectedUser || !currentUser) return
+    updateTypingStatus(false)
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current)
+    }
     const supabase = createClient()
     const tempId = uuidv4()
     const now = new Date().toISOString()
@@ -523,11 +581,44 @@ export default function Page() {
     return groups
   }
 
+  const updateTypingStatus = async (isTyping: boolean) => {
+    if (!currentUser || !selectedUser) return
+    const supabase = createClient()
+    const channel = supabase.channel('typing-presence')
+
+    await channel.track({
+      user_id: currentUser.id,
+      typing_to: isTyping ? selectedUser.id : '',
+      timestamp: Date.now(),
+    })
+  }
+
+  const handleMessageChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const value = e.target.value
+    setMessage(value)
+
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current)
+    }
+
+    if (value.trim()) {
+      updateTypingStatus(true)
+      typingTimeoutRef.current = setTimeout(() => {
+        updateTypingStatus(false)
+      }, 3000)
+    } else {
+      updateTypingStatus(false)
+    }
+  }
+
   const filteredProfiles: Profile[] = profiles.filter(
     (user) =>
       user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       user.email.toLowerCase().includes(searchQuery.toLowerCase())
   )
+
+  const isSelectedUserTyping =
+    selectedUser && typingUsers[selectedUser.id]?.typing_to === currentUser?.id
 
   if (currentUserLoading || !currentUser) {
     return (
@@ -821,6 +912,20 @@ export default function Page() {
                   ))}
                 </>
               )}
+              {isSelectedUserTyping && (
+                <div className='flex justify-start'>
+                  <div className='bg-muted rounded-2xl px-4 py-3 flex items-center gap-2'>
+                    <div className='flex gap-1'>
+                      <div className='w-2 h-2 bg-muted-foreground/60 rounded-full animate-bounce [animation-delay:-0.3s]' />
+                      <div className='w-2 h-2 bg-muted-foreground/60 rounded-full animate-bounce [animation-delay:-0.15s]' />
+                      <div className='w-2 h-2 bg-muted-foreground/60 rounded-full animate-bounce' />
+                    </div>
+                    <span className='text-xs text-muted-foreground'>
+                      typing...
+                    </span>
+                  </div>
+                </div>
+              )}
               <div ref={messagesEndRef} />
             </div>
 
@@ -854,7 +959,7 @@ export default function Page() {
                   placeholder='Type a message...'
                   value={message}
                   className='min-h-10 max-h-[200px] resize-none overflow-y-auto bg-transparent text-sm placeholder:text-muted-foreground focus-visible:ring-0 outline-none border-0 pt-2.5'
-                  onChange={(e) => setMessage(e.target.value)}
+                  onChange={handleMessageChange}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && !e.shiftKey && !isMobileView) {
                       e.preventDefault()
