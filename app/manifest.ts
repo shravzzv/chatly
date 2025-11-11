@@ -6,9 +6,8 @@ export default function manifest(): MetadataRoute.Manifest {
     short_name: 'Chatly',
     description:
       'Chatly is a modern real-time chat SaaS built with Next.js and Supabase. Features include messaging, profiles, paywall, AI integration, dark mode, push notifications, and voice/video calls.',
-    start_url: '/',
+    start_url: '/dashboard',
     display: 'standalone',
-    background_color: '#ffffff',
     theme_color: '#84cc16',
     icons: [
       {
