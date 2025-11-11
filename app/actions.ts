@@ -2,6 +2,7 @@
 
 import { redirect } from 'next/navigation'
 import { createClient } from '@/utils/supabase/server'
+import type { PushSubscription } from 'web-push'
 
 export async function signup(formData: FormData) {
   const supabase = await createClient()
@@ -130,4 +131,46 @@ export async function updatePassword(formData: FormData) {
   }
 
   redirect('/dashboard')
+}
+
+export async function subscribeUser(sub: PushSubscription) {
+  try {
+    const supabase = await createClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    if (!user) throw new Error('Not authenticated')
+
+    const { error } = await supabase.from('push_subscriptions').upsert({
+      user_id: user.id,
+      subscription: sub,
+    })
+
+    if (error) throw error
+    return { success: true }
+  } catch (error) {
+    console.error('subscribeUser error:', error)
+    return { success: false, error: error }
+  }
+}
+
+export async function unsubscribeUser() {
+  try {
+    const supabase = await createClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    if (!user) throw new Error('Not authenticated')
+
+    const { error } = await supabase
+      .from('push_subscriptions')
+      .delete()
+      .eq('user_id', user.id)
+
+    if (error) throw error
+    return { success: true }
+  } catch (error) {
+    console.error('unsubscribeUser error:', error)
+    return { success: false, error: error }
+  }
 }
