@@ -47,6 +47,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { useSearchParams } from 'next/navigation'
 
 type TypingState = {
   user_id: string
@@ -77,6 +78,8 @@ export default function Page() {
   const searchInputRef = useRef<HTMLInputElement>(null)
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const isMobileView = useIsMobile()
+  const searchParams = useSearchParams()
+  const selectedUserId = searchParams.get('selectedUserId')
 
   // Fetch current authenticated user
   useEffect(() => {
@@ -380,6 +383,16 @@ export default function Page() {
       supabase.removeChannel(channel)
     }
   }, [currentUser])
+
+  // Handle selectedUserId query parameter
+  useEffect(() => {
+    if (selectedUserId && profiles.length > 0 && !selectedUser) {
+      const userFromParam = profiles.find((p) => p.id === selectedUserId)
+      if (userFromParam) {
+        setSelectedUser(userFromParam)
+      }
+    }
+  }, [selectedUserId, profiles, selectedUser])
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })

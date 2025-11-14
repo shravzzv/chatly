@@ -5,6 +5,7 @@ import { subscribeUser, unsubscribeUser } from '@/app/actions'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 
 function urlBase64ToUint8Array(base64String: string) {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4)
@@ -105,9 +106,15 @@ export default function Page() {
           <CardTitle>Push Notifications</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className='text-sm text-muted-foreground'>
-            Push notifications are not supported in this browser.
-          </p>
+          <Alert className='mb-4' variant='destructive'>
+            <AlertTitle>Heads up!</AlertTitle>
+            <AlertDescription>
+              Your browser doesn&apos;t fully support push notifications. On
+              mobile devices, you can install this website as a PWA (via “Add to
+              Home screen”) to receive notifications even when the browser is
+              closed.
+            </AlertDescription>
+          </Alert>
         </CardContent>
       </Card>
     )
@@ -139,6 +146,17 @@ export default function Page() {
               className='cursor-pointer'
             />
           </div>
+
+          {isSupported && (
+            <Alert className='mb-4'>
+              <AlertTitle>Heads up!</AlertTitle>
+              <AlertDescription>
+                To receive notifications even when the browser is closed,
+                install our app on your device. This is called a PWA, it works
+                like a regular app but installs from your browser.
+              </AlertDescription>
+            </Alert>
+          )}
         </CardContent>
       </Card>
     </div>

@@ -10,7 +10,7 @@ webpush.setVapidDetails(
 
 export async function POST(req: Request) {
   try {
-    const { receiverId, title, body, icon } = await req.json()
+    const { receiverId, senderId, title, body, icon } = await req.json()
     const supabase = await createClient()
 
     // Fetch all subscriptions for this user
@@ -34,7 +34,13 @@ export async function POST(req: Request) {
         try {
           await webpush.sendNotification(
             subscription,
-            JSON.stringify({ title, body, icon })
+            JSON.stringify({
+              title,
+              body,
+              icon,
+              receiverId,
+              senderId,
+            })
           )
         } catch (err) {
           console.error('Push send error:', err)
