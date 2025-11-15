@@ -1,6 +1,12 @@
 import webpush from 'web-push'
 import { NextResponse } from 'next/server'
-import { createClient } from '@/utils/supabase/server'
+import { createClient } from '@supabase/supabase-js'
+
+// Admin client using the service role key (bypasses all RLS). This is safe because the route is server-side only.
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+)
 
 webpush.setVapidDetails(
   'mailto:saishravan384@gmail.com',
@@ -10,8 +16,7 @@ webpush.setVapidDetails(
 
 export async function POST(req: Request) {
   try {
-    const payload = await req.json()
-    const { record } = payload
+    const { record } = await req.json()
 
     const receiverId = record.receiver_id
     const senderId = record.sender_id
@@ -19,10 +24,8 @@ export async function POST(req: Request) {
     const title = 'New message'
     const icon = record.icon ?? undefined
 
-    const supabase = await createClient()
-
-    // Fetch all subscriptions for this user
-    const { data: subs, error } = await supabase
+    // Read all push subscriptions for the receiver. RLS does not block this because we use the service role key.
+    const { data: subs, error } = await supabaseAdmin
       .from('push_subscriptions')
       .select('subscription')
       .eq('user_id', receiverId)
@@ -36,19 +39,13 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: false, message: 'No subscriptions found' })
     }
 
-    // Send a push notification to each subscription
+    // Send the notification to every active subscription.
     await Promise.all(
       subs.map(async ({ subscription }) => {
         try {
           await webpush.sendNotification(
             subscription,
-            JSON.stringify({
-              title,
-              body,
-              icon,
-              receiverId,
-              senderId,
-            })
+            JSON.stringify({ title, body, icon, receiverId, senderId })
           )
         } catch (err) {
           console.error('Push send error:', err)
