@@ -10,7 +10,15 @@ webpush.setVapidDetails(
 
 export async function POST(req: Request) {
   try {
-    const { receiverId, senderId, title, body, icon } = await req.json()
+    const payload = await req.json()
+    const { record } = payload
+
+    const receiverId = record.receiver_id
+    const senderId = record.sender_id
+    const body = record.text
+    const title = 'New message'
+    const icon = record.icon ?? undefined
+
     const supabase = await createClient()
 
     // Fetch all subscriptions for this user
