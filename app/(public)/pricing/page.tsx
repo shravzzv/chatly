@@ -20,6 +20,16 @@ import {
   CardFooter,
 } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Spinner } from '@/components/ui/spinner'
+
+type Plan = 'pro' | 'enterprise'
+type Billing = 'monthly' | 'yearly'
+
+interface CheckoutLink {
+  plan: Plan
+  billing: Billing
+  url: string
+}
 
 const plans = [
   {
@@ -99,7 +109,55 @@ const faqs = [
   },
 ]
 
-export default function PricingPage() {
+const checkoutLinks: CheckoutLink[] = [
+  {
+    plan: 'pro',
+    billing: 'monthly',
+    url: 'https://chatly-store.lemonsqueezy.com/buy/7387a8e5-60bd-4d46-b7e7-52f8376f76db',
+  },
+  {
+    plan: 'pro',
+    billing: 'yearly',
+    url: 'https://chatly-store.lemonsqueezy.com/buy/fa42cdcd-57f1-49a5-ab56-ff4b8d3941ea',
+  },
+  {
+    plan: 'enterprise',
+    billing: 'monthly',
+    url: 'https://chatly-store.lemonsqueezy.com/buy/a3cfbc86-3813-4ef6-9847-e4151d0607cf',
+  },
+  {
+    plan: 'enterprise',
+    billing: 'yearly',
+    url: 'https://chatly-store.lemonsqueezy.com/buy/6ba00985-2df0-41c3-b014-931ac7bfbf9c',
+  },
+]
+
+const getCheckoutUrl = (plan: Plan, billing: Billing, user: User | null) => {
+  const base = checkoutLinks.find(
+    (link) => link.plan === plan && link.billing === billing
+  )?.url
+
+  if (!base) return null
+  if (!user) return base
+
+  const params = new URLSearchParams({
+    'checkout[email]': user.email ?? '',
+    'checkout[custom][user_id]': user.id,
+  })
+
+  return `${base}?${params.toString()}`
+}
+
+const getPlanUrl = (planName: string, billing: Billing, user: User | null) => {
+  const plan = planName.toLowerCase()
+  if (plan === 'free') return user ? '/dashboard' : '/signup'
+
+  return user
+    ? getCheckoutUrl(plan as Plan, billing, user)!
+    : `/signup?redirectToPlan=${plan}&billing=${billing}`
+}
+
+export default function Page() {
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>(
     'monthly'
   )
@@ -113,9 +171,6 @@ export default function PricingPage() {
       setLoading(false)
     })
   }, [])
-
-  const getStartedHref = (plan: string) =>
-    user ? '/dashboard/billing' : `/signup?plan=${plan.toLowerCase()}`
 
   return (
     <main className='flex flex-col items-center justify-center w-full'>
@@ -177,17 +232,31 @@ export default function PricingPage() {
               <p className='text-4xl font-extrabold'>
                 $
                 {billingCycle === 'monthly'
-                  ? `${plan.priceMonthly}`
-                  : `${plan.priceYearly}`}
+                  ? plan.priceMonthly
+                  : plan.priceYearly}
               </p>
 
               <Button
                 asChild
                 className='w-full mt-6'
-                variant={plan.name === 'Pro' ? 'default' : 'outline'}
+                variant={plan.highlight ? 'default' : 'outline'}
               >
-                <Link href={getStartedHref(plan.name)}>
-                  {loading ? '...' : user ? 'Manage Plan' : 'Get Started'}
+                <Link href={getPlanUrl(plan.name, billingCycle, user)}>
+                  {loading ? (
+                    <>
+                      <Spinner /> Loading
+                    </>
+                  ) : plan.name === 'Free' ? (
+                    user ? (
+                      'Go to Dashboard'
+                    ) : (
+                      'Get Started'
+                    )
+                  ) : user ? (
+                    'Upgrade'
+                  ) : (
+                    'Get Started'
+                  )}
                 </Link>
               </Button>
             </CardContent>
