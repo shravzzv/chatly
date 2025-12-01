@@ -31,6 +31,8 @@ interface CheckoutLink {
   url: string
 }
 
+const LS_CUSTOMER_PORTAL_URL = 'https://chatly-store.lemonsqueezy.com/billing'
+
 const plans = [
   {
     name: 'Free',
@@ -148,29 +150,61 @@ const getCheckoutUrl = (plan: Plan, billing: Billing, user: User | null) => {
   return `${base}?${params.toString()}`
 }
 
-const getPlanUrl = (planName: string, billing: Billing, user: User | null) => {
-  const plan = planName.toLowerCase()
-  if (plan === 'free') return user ? '/dashboard' : '/signup'
-
-  return user
-    ? getCheckoutUrl(plan as Plan, billing, user)!
-    : `/signup?redirectToPlan=${plan}&billing=${billing}`
-}
-
 export default function Page() {
-  const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>(
-    'monthly'
-  )
+  const [billingCycle, setBillingCycle] = useState<Billing>('monthly')
   const [user, setUser] = useState<User | null>(null)
+  const [hasSubscription, setHasSubscription] = useState(false)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const supabase = createClient()
-    supabase.auth.getUser().then(({ data: { user } }) => {
+
+    async function load() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
       setUser(user)
+
+      if (user) {
+        const { data: sub } = await supabase
+          .from('subscriptions')
+          .select('*')
+          .eq('user_id', user.id)
+          .maybeSingle()
+
+        setHasSubscription(!!sub)
+      }
+
       setLoading(false)
-    })
+    }
+
+    load()
   }, [])
+
+  const getButtonUrl = (plan: string) => {
+    const lower = plan.toLowerCase()
+    if (lower === 'free') return user ? '/dashboard' : '/signup'
+    if (!user) return `/signup?redirectToPlan=${lower}&billing=${billingCycle}`
+    if (hasSubscription) return LS_CUSTOMER_PORTAL_URL
+    return getCheckoutUrl(lower as Plan, billingCycle, user)!
+  }
+
+  const getButtonText = (plan: string) => {
+    if (loading) {
+      return (
+        <>
+          <Spinner /> Loading
+        </>
+      )
+    }
+
+    if (!user) return 'Get Started'
+
+    if (plan.toLowerCase() === 'free')
+      return user ? 'Go to Dashboard' : 'Get Started'
+    if (hasSubscription) return 'Manage Billing'
+    return 'Upgrade'
+  }
 
   return (
     <main className='flex flex-col items-center justify-center w-full'>
@@ -241,22 +275,8 @@ export default function Page() {
                 className='w-full mt-6'
                 variant={plan.highlight ? 'default' : 'outline'}
               >
-                <Link href={getPlanUrl(plan.name, billingCycle, user)}>
-                  {loading ? (
-                    <>
-                      <Spinner /> Loading
-                    </>
-                  ) : plan.name === 'Free' ? (
-                    user ? (
-                      'Go to Dashboard'
-                    ) : (
-                      'Get Started'
-                    )
-                  ) : user ? (
-                    'Upgrade'
-                  ) : (
-                    'Get Started'
-                  )}
+                <Link href={getButtonUrl(plan.name)}>
+                  {getButtonText(plan.name)}
                 </Link>
               </Button>
             </CardContent>
