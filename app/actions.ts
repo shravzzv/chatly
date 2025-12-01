@@ -7,21 +7,24 @@ import type { PushSubscription } from 'web-push'
 export async function signup(formData: FormData) {
   const supabase = await createClient()
 
-  const data = {
-    email: formData.get('email') as string,
-    password: formData.get('password') as string,
-  }
+  const email = formData.get('email') as string
+  const password = formData.get('password') as string
+  const plan = formData.get('plan') as string
+  const billing = formData.get('billing') as string
+
+  const redirectUrl = `${process.env.NEXT_PUBLIC_APP_URL_ROOT}/dashboard${
+    plan && billing ? `?plan=${plan}&billing=${billing}` : ''
+  }`
 
   const { error } = await supabase.auth.signUp({
-    ...data,
+    email,
+    password,
     options: {
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL_ROOT}/dashboard`,
+      emailRedirectTo: redirectUrl,
     },
   })
 
-  if (error) {
-    return redirect('/error')
-  }
+  if (error) return redirect('/error')
 }
 
 export async function signin(formData: FormData) {

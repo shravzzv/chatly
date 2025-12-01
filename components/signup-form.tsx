@@ -26,6 +26,7 @@ import GoogleAuthForm from './google-auth-form'
 import AppleAuthForm from './apple-auth-form'
 import { Alert, AlertDescription, AlertTitle } from './ui/alert'
 import { CheckCircle2Icon } from 'lucide-react'
+import { useSearchParams } from 'next/navigation'
 
 const formSchema = z
   .object({
@@ -50,6 +51,9 @@ export function SignupForm({
 }: React.ComponentProps<'div'>) {
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
+  const searchParams = useSearchParams()
+  const plan = searchParams.get('plan')
+  const billing = searchParams.get('billing')
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -67,6 +71,8 @@ export function SignupForm({
     const formData = new FormData()
     formData.append('email', data.email)
     formData.append('password', data.password)
+    formData.append('plan', plan ?? '')
+    formData.append('billing', billing ?? '')
 
     await signup(formData)
 
