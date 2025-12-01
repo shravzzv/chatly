@@ -48,6 +48,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { useSearchParams } from 'next/navigation'
+import { useSubscription } from '@/hooks/use-subscription'
 
 type TypingState = {
   user_id: string
@@ -80,6 +81,10 @@ export default function Page() {
   const isMobileView = useIsMobile()
   const searchParams = useSearchParams()
   const selectedUserId = searchParams.get('selectedUserId')
+  const { subscription, loading: subscriptionLoading } = useSubscription(
+    currentUser?.id
+  )
+  console.log(subscription, subscriptionLoading)
 
   // Fetch current authenticated user
   useEffect(() => {
