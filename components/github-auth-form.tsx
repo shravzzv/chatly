@@ -4,6 +4,7 @@ import { useFormStatus } from 'react-dom'
 import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
 import { signInWithGithub } from '@/app/actions'
+import { useSearchParams } from 'next/navigation'
 
 function SubmitButton() {
   const { pending } = useFormStatus()
@@ -34,8 +35,15 @@ function SubmitButton() {
 }
 
 export default function GitHubAuthForm() {
+  const searchParams = useSearchParams()
+  const plan = searchParams.get('plan') ?? ''
+  const billing = searchParams.get('billing') ?? ''
+
   return (
-    <form action={signInWithGithub} className='flex flex-1'>
+    <form
+      action={() => signInWithGithub(plan, billing)}
+      className='flex flex-1'
+    >
       <SubmitButton />
     </form>
   )

@@ -44,57 +44,58 @@ export async function signin(formData: FormData) {
   redirect('/dashboard')
 }
 
-export async function signInWithGoogle() {
+export async function signInWithGoogle(plan?: string, billing?: string) {
   const supabase = await createClient()
+
+  const redirectUrl = `${
+    process.env.NEXT_PUBLIC_APP_URL_ROOT
+  }/auth/callback?next=/dashboard${
+    plan && billing ? `&plan=${plan}&billing=${billing}` : ''
+  }`
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
-    options: {
-      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL_ROOT}/auth/callback?next=/dashboard`,
-    },
+    options: { redirectTo: redirectUrl },
   })
 
-  if (error) {
-    redirect('/error')
-  }
-
+  if (error) redirect('/error')
   redirect(data.url)
 }
 
-export async function signInWithGithub() {
+export async function signInWithGithub(plan?: string, billing?: string) {
   const supabase = await createClient()
+
+  const redirectUrl = `${
+    process.env.NEXT_PUBLIC_APP_URL_ROOT
+  }/auth/callback?next=/dashboard${
+    plan && billing ? `&plan=${plan}&billing=${billing}` : ''
+  }`
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'github',
-    options: {
-      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL_ROOT}/auth/callback?next=/dashboard`,
-    },
+    options: { redirectTo: redirectUrl },
   })
 
-  if (error) {
-    redirect('/error')
-  }
-
+  if (error) redirect('/error')
   redirect(data.url)
 }
 
-export async function signInWithApple() {
+export async function signInWithApple(plan?: string, billing?: string) {
   const supabase = await createClient()
+
+  const redirectUrl = `${
+    process.env.NEXT_PUBLIC_APP_URL_ROOT
+  }/auth/callback?next=/dashboard${
+    plan && billing ? `&plan=${plan}&billing=${billing}` : ''
+  }`
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'apple',
-    options: {
-      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL_ROOT}/auth/callback?next=/dashboard`,
-    },
+    options: { redirectTo: redirectUrl },
   })
 
-  if (error) {
-    redirect('/error')
-  }
-
-  if (data.url) {
-    redirect(data.url)
-  }
+  if (error) redirect('/error')
+  redirect(data.url)
 }
 
 export async function signout() {

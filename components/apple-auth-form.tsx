@@ -4,6 +4,7 @@ import { useFormStatus } from 'react-dom'
 import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
 import { signInWithApple } from '@/app/actions'
+import { useSearchParams } from 'next/navigation'
 
 function SubmitButton() {
   const { pending } = useFormStatus()
@@ -36,8 +37,12 @@ function SubmitButton() {
 }
 
 export default function AppleAuthForm() {
+  const searchParams = useSearchParams()
+  const plan = searchParams.get('plan') ?? ''
+  const billing = searchParams.get('billing') ?? ''
+
   return (
-    <form action={signInWithApple} className='flex flex-1'>
+    <form action={() => signInWithApple(plan, billing)} className='flex flex-1'>
       <SubmitButton />
     </form>
   )
