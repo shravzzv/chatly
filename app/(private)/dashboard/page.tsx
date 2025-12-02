@@ -747,7 +747,7 @@ export default function Page() {
   }
 
   return (
-    <div className='flex h-full bg-background text-foreground rounded-2xl'>
+    <div className='flex h-full bg-background text-foreground rounded-2xl max-h-[calc(100vh-1rem)]'>
       <div
         className={`flex flex-col h-full p-2 w-full md:w-80 shrink-0 border-r ${
           selectedUser && isMobileView ? 'hidden' : 'flex'
