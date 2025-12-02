@@ -1,7 +1,13 @@
 'use client'
 
 import * as React from 'react'
-import { LayoutDashboard, Settings, Star, User as UserIcon } from 'lucide-react'
+import {
+  CreditCard,
+  LayoutDashboard,
+  Settings,
+  Star,
+  User as UserIcon,
+} from 'lucide-react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import {
@@ -38,6 +44,11 @@ const navItems = [
     title: 'Profile',
     href: '/profile',
     icon: UserIcon,
+  },
+  {
+    title: 'Plan',
+    href: '/plan',
+    icon: CreditCard,
   },
 ]
 

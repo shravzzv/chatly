@@ -22,7 +22,7 @@ export default async function Layout({
       }
     >
       <AppSidebar />
-      <SidebarInset className='max-h-[calc(100vh-1rem)]'>
+      <SidebarInset>
         <div className='flex flex-col h-full rounded-2xl'>
           <SiteHeader />
           <div className='flex-1 min-h-0'>{children}</div>

@@ -47,7 +47,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { useSearchParams } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { getCheckoutUrl } from '@/lib/get-checkout-url'
+import { Billing, Plan } from '@/types/subscription'
 
 type TypingState = {
   user_id: string
@@ -74,12 +76,15 @@ export default function Page() {
     Record<string, Message | null>
   >({})
 
+  const router = useRouter()
+  const isMobileView = useIsMobile()
+  const searchParams = useSearchParams()
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const searchInputRef = useRef<HTMLInputElement>(null)
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-  const isMobileView = useIsMobile()
-  const searchParams = useSearchParams()
   const selectedUserId = searchParams.get('selectedUserId')
+  const plan = searchParams.get('plan')
+  const billing = searchParams.get('billing')
 
   // Fetch current authenticated user
   useEffect(() => {
@@ -393,6 +398,19 @@ export default function Page() {
       }
     }
   }, [selectedUserId, profiles, selectedUser])
+
+  // Navigate the user to the checkout page when they've signed up through the pricing page to ensure continuity
+  useEffect(() => {
+    if (!currentUser || !plan || !billing) return
+
+    const checkoutUrl = getCheckoutUrl(
+      plan as Plan,
+      billing as Billing,
+      currentUser
+    )
+
+    if (checkoutUrl) router.replace(checkoutUrl)
+  }, [currentUser, plan, billing, router])
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -724,7 +742,7 @@ export default function Page() {
   }
 
   return (
-    <div className='flex h-full bg-background text-foreground rounded-2xl'>
+    <div className='flex h-full bg-background text-foreground rounded-2xl max-h-[calc(100vh-1rem)]'>
       <div
         className={`flex flex-col h-full p-2 w-full md:w-80 shrink-0 border-r ${
           selectedUser && isMobileView ? 'hidden' : 'flex'
