@@ -48,7 +48,6 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useSubscription } from '@/hooks/use-subscription'
 import { getCheckoutUrl } from '@/lib/get-checkout-url'
 import { Billing, Plan } from '@/types/subscription'
 
@@ -86,10 +85,6 @@ export default function Page() {
   const selectedUserId = searchParams.get('selectedUserId')
   const plan = searchParams.get('plan')
   const billing = searchParams.get('billing')
-  const { subscription, loading: subscriptionLoading } = useSubscription(
-    currentUser?.id
-  )
-  console.log(subscription, subscriptionLoading)
 
   // Fetch current authenticated user
   useEffect(() => {
@@ -414,7 +409,7 @@ export default function Page() {
       currentUser
     )
 
-    router.replace(checkoutUrl!)
+    if (checkoutUrl) router.replace(checkoutUrl)
   }, [currentUser, plan, billing, router])
 
   const scrollToBottom = () => {
