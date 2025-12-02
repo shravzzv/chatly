@@ -23,59 +23,8 @@ import { Badge } from '@/components/ui/badge'
 import { Spinner } from '@/components/ui/spinner'
 import { getCheckoutUrl } from '@/lib/get-checkout-url'
 import { Billing, Plan } from '@/types/subscription'
-
-const LS_CUSTOMER_PORTAL_URL = 'https://chatly-store.lemonsqueezy.com/billing'
-
-const plans = [
-  {
-    name: 'Free',
-    priceMonthly: 0,
-    priceYearly: 0,
-    description: 'Get started with Chatly and explore the basics for free.',
-    features: [
-      'Text chat with basic AI model',
-      '20 messages per day',
-      'Up to 3 image chats per day',
-      'No audio or video calls',
-      '1 workspace',
-      'Community support',
-    ],
-    highlight: false,
-  },
-  {
-    name: 'Pro',
-    priceMonthly: 10,
-    priceYearly: 100,
-    description: 'Unlock advanced AI features, unlimited chats, and calls.',
-    features: [
-      'Everything in Free',
-      'Unlimited messages & image chats',
-      'Audio & video calls (up to 60 mins/session)',
-      'Access to advanced AI models',
-      'Up to 5 workspaces',
-      'Custom prompts & saved chats',
-      'Priority email support',
-    ],
-    highlight: true,
-  },
-  {
-    name: 'Enterprise',
-    priceMonthly: 49,
-    priceYearly: 490,
-    description:
-      'Tailored solutions and premium support for large teams and organizations.',
-    features: [
-      'Everything in Pro',
-      'Unlimited call duration',
-      'Team & admin management dashboard',
-      'Centralized billing',
-      'Dedicated account manager',
-      'Custom security & compliance options',
-      'SLA & onboarding support',
-    ],
-    highlight: false,
-  },
-]
+import { plans } from '@/data/plans'
+import { LS_CUSTOMER_PORTAL_URL } from '@/data/constants'
 
 const faqs = [
   {
@@ -203,13 +152,13 @@ export default function Page() {
           <Card
             key={plan.name}
             className={`transition hover:shadow-lg ${
-              plan.highlight && 'border-2 border-black dark:border-white'
+              plan.name === 'Pro' && 'border-2 border-black dark:border-white'
             }`}
           >
             <CardHeader>
               <CardTitle className='flex gap-4 items-center text-2xl font-bold'>
                 {plan.name}
-                {plan.highlight && <Badge>Most Popular</Badge>}
+                {plan.name === 'Pro' && <Badge>Most Popular</Badge>}
               </CardTitle>
               <CardDescription className='mt-2 text-muted-foreground'>
                 {plan.description}
@@ -227,7 +176,7 @@ export default function Page() {
               <Button
                 asChild
                 className='w-full mt-6'
-                variant={plan.highlight ? 'default' : 'outline'}
+                variant={plan.name === 'Pro' ? 'default' : 'outline'}
               >
                 <Link href={getButtonUrl(plan.name)}>
                   {getButtonText(plan.name)}
