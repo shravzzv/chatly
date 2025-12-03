@@ -11,6 +11,7 @@ import { Spinner } from './ui/spinner'
 const navLinks = [
   { name: 'Features', href: '/features' },
   { name: 'Pricing', href: '/pricing' },
+  { name: 'Download', href: '/download' },
 ]
 
 export default function Navbar() {

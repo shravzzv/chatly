@@ -1,6 +1,5 @@
 'use client'
 
-import { IconDotsVertical, IconLogout } from '@tabler/icons-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   DropdownMenu,
@@ -18,6 +17,8 @@ import {
 } from '@/components/ui/sidebar'
 import { createClient } from '@/utils/supabase/client'
 import { toast } from 'sonner'
+import { Download, EllipsisVertical, LogOut } from 'lucide-react'
+import Link from 'next/link'
 
 interface User {
   name: string
@@ -68,7 +69,7 @@ export function NavUser({ user }: { user: User }) {
                 </span>
               </div>
 
-              <IconDotsVertical className='ml-auto size-4' />
+              <EllipsisVertical className='ml-auto size-4' />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
 
@@ -105,12 +106,21 @@ export function NavUser({ user }: { user: User }) {
 
             <DropdownMenuSeparator />
 
+            <DropdownMenuItem className='cursor-pointer' asChild>
+              <Link href='/download' rel='noopener noreferrer' target='_blank'>
+                <Download />
+                Download apps
+              </Link>
+            </DropdownMenuItem>
+
+            <DropdownMenuSeparator />
+
             <DropdownMenuItem
               variant='destructive'
               className='cursor-pointer'
               onClick={handleLogout}
             >
-              <IconLogout />
+              <LogOut />
               Log out
             </DropdownMenuItem>
           </DropdownMenuContent>
