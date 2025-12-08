@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/utils/supabase/client'
-import { User, AuthError } from '@supabase/supabase-js'
+import type { User, AuthError } from '@supabase/supabase-js'
 
 export function useUser() {
   const [user, setUser] = useState<User | null>(null)
@@ -10,19 +10,28 @@ export function useUser() {
   useEffect(() => {
     const supabase = createClient()
 
-    async function load() {
-      const {
-        data: { user },
-        error,
-      } = await supabase.auth.getUser()
+    async function loadUser() {
+      try {
+        const {
+          data: { user },
+          error,
+        } = await supabase.auth.getUser()
 
-      if (error) setError(error)
-      else setUser(user)
-
-      setLoading(false)
+        if (error) setError(error)
+        else setUser(user)
+      } finally {
+        setLoading(false)
+      }
     }
 
-    load()
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null)
+    })
+
+    loadUser()
+    return () => subscription.unsubscribe()
   }, [])
 
   return { user, loading, error }
