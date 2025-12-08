@@ -16,7 +16,7 @@ export function useProfile(userId: string | undefined) {
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
-        .eq('id', userId) // todo: change id to user_id after updating the table schema
+        .eq('user_id', userId)
         .maybeSingle()
 
       if (error) setError(error)
