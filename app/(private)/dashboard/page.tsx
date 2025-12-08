@@ -32,10 +32,7 @@ import { toast } from 'sonner'
 import { Message } from '@/types/message'
 import { Profile } from '@/types/profile'
 import { createClient } from '@/utils/supabase/client'
-import type {
-  RealtimePostgresChangesPayload,
-  User as SupabaseUser,
-} from '@supabase/supabase-js'
+import type { RealtimePostgresChangesPayload } from '@supabase/supabase-js'
 import { Skeleton } from '@/components/ui/skeleton'
 import defaultAvatar from '@/public/default-avatar.jpg'
 import { v4 as uuidv4 } from 'uuid'
@@ -50,6 +47,12 @@ import {
 import { useRouter, useSearchParams } from 'next/navigation'
 import { getCheckoutUrl } from '@/lib/get-checkout-url'
 import { Billing, Plan } from '@/types/subscription'
+import { useUser } from '@/hooks/use-user'
+import {
+  formatDateHeader,
+  getDisplayName,
+  groupMessagesByDate,
+} from '@/lib/dashboard'
 
 type TypingState = {
   user_id: string
@@ -59,14 +62,12 @@ type TypingState = {
 
 export default function Page() {
   const [profiles, setProfiles] = useState<Profile[]>([])
+  const [profilesLoading, setProfilesLoading] = useState<boolean>(true)
   const [message, setMessage] = useState<string>('')
   const [messages, setMessages] = useState<Message[]>([])
   const [searchQuery, setSearchQuery] = useState<string>('')
-  const [profilesLoading, setProfilesLoading] = useState<boolean>(true)
-  const [selectedUser, setSelectedUser] = useState<Profile | null>(null)
+  const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null)
   const [messagesLoading, setMessagesLoading] = useState<boolean>(false)
-  const [currentUser, setCurrentUser] = useState<SupabaseUser | null>(null)
-  const [currentUserLoading, setCurrentUserLoading] = useState<boolean>(true)
   const [isNewMessageDialogOpen, setIsNewMessageDialogOpen] = useState(false)
   const [lastMessagesLoading, setLastMessagesLoading] = useState<boolean>(true)
   const [typingUsers, setTypingUsers] = useState<Record<string, TypingState>>(
@@ -76,8 +77,10 @@ export default function Page() {
     Record<string, Message | null>
   >({})
 
-  const router = useRouter()
   const isMobileView = useIsMobile()
+  const { user: currentUser, loading: currentUserLoading, error } = useUser()
+
+  const router = useRouter()
   const searchParams = useSearchParams()
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const searchInputRef = useRef<HTMLInputElement>(null)
@@ -86,20 +89,24 @@ export default function Page() {
   const plan = searchParams.get('plan')
   const billing = searchParams.get('billing')
 
-  // Fetch current authenticated user
+  const filteredProfiles = searchQuery
+    ? profiles.filter((p) => {
+        const name = p.name?.toLowerCase() || ''
+        const username = p.username?.toLowerCase() || ''
+        return name.includes(searchQuery) || username.includes(searchQuery)
+      })
+    : profiles
+  // searchQuery is always lowercase because it's being enforced wherever setSearchQuery is being used
+
+  const isSelectedUserTyping =
+    selectedProfile &&
+    typingUsers[selectedProfile.user_id]?.typing_to === currentUser?.id
+
+  // Fetch all profiles ✅
   useEffect(() => {
     const supabase = createClient()
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setCurrentUser(user)
-      setCurrentUserLoading(false)
-    })
-  }, [])
 
-  // Fetch all profiles
-  useEffect(() => {
-    const supabase = createClient()
-
-    const fetchUsers = async () => {
+    const fetchProfiles = async () => {
       setProfilesLoading(true)
       const { data, error } = await supabase
         .from('profiles')
@@ -116,12 +123,12 @@ export default function Page() {
       setProfilesLoading(false)
     }
 
-    fetchUsers()
+    fetchProfiles()
   }, [])
 
-  // Fetch messages when selectedUser changes
+  // Fetch messages when selectedProfile changes ✅
   useEffect(() => {
-    if (!selectedUser || !currentUser) return
+    if (!selectedProfile || !currentUser) return
     const supabase = createClient()
 
     const fetchMessages = async () => {
@@ -129,8 +136,8 @@ export default function Page() {
 
       // Fetch messages where the logged-in user and the selected user are participants — meaning one is the sender and the other is the receiver.
       const condition = [
-        `and(sender_id.eq.${currentUser.id},receiver_id.eq.${selectedUser.id})`,
-        `and(sender_id.eq.${selectedUser.id},receiver_id.eq.${currentUser.id})`,
+        `and(sender_id.eq.${currentUser.id},receiver_id.eq.${selectedProfile.user_id})`,
+        `and(sender_id.eq.${selectedProfile.user_id},receiver_id.eq.${currentUser.id})`,
       ].join(',')
 
       const { data, error } = await supabase
@@ -151,9 +158,9 @@ export default function Page() {
     }
 
     fetchMessages()
-  }, [selectedUser, currentUser])
+  }, [selectedProfile, currentUser])
 
-  // Allow profiles to focus on the search input using "ctrl + f"
+  // Allow profiles to focus on the search input using "ctrl + f" ✅
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f') {
@@ -203,11 +210,11 @@ export default function Page() {
 
   // Enable real-time subscription for messages
   useEffect(() => {
-    if (!selectedUser || !currentUser) return
+    if (!selectedProfile || !currentUser) return
     const supabase = createClient()
 
     function handlePayload(payload: RealtimePostgresChangesPayload<Message>) {
-      if (!selectedUser || !currentUser) return
+      if (!selectedProfile || !currentUser) return
       const msg = (payload.new as Message) || (payload.old as Message)
 
       // Determine the ID of the other participant for lastMessages update
@@ -218,7 +225,7 @@ export default function Page() {
       // if it's an INSERT/UPDATE that affects the sidebar preview.
       // Since we are filtering on receiver_id, this check is mostly about
       // whether the message belongs to the currently open chat.
-      const isCurrentChat = selectedUser.id === otherId
+      const isCurrentChat = selectedProfile.user_id === otherId
 
       switch (payload.eventType) {
         case 'INSERT': {
@@ -343,7 +350,7 @@ export default function Page() {
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [selectedUser, currentUser, messages])
+  }, [selectedProfile, currentUser, messages])
 
   // Show typing status
   useEffect(() => {
@@ -389,17 +396,17 @@ export default function Page() {
     }
   }, [currentUser])
 
-  // Handle selectedUserId query parameter
+  // Handle selectedUserId query parameter ✅
   useEffect(() => {
-    if (selectedUserId && profiles.length > 0 && !selectedUser) {
-      const userFromParam = profiles.find((p) => p.id === selectedUserId)
-      if (userFromParam) {
-        setSelectedUser(userFromParam)
-      }
+    if (selectedUserId && profiles.length > 0 && !selectedProfile) {
+      const userFromParam = profiles.find(
+        (profile) => profile.user_id === selectedUserId
+      )
+      if (userFromParam) setSelectedProfile(userFromParam)
     }
-  }, [selectedUserId, profiles, selectedUser])
+  }, [selectedUserId, profiles, selectedProfile])
 
-  // Navigate the user to the checkout page when they've signed up through the pricing page to ensure continuity
+  // Navigate the user to the checkout page when they've signed up through the pricing page to ensure continuity ✅
   useEffect(() => {
     if (!currentUser || !plan || !billing) return
 
@@ -412,16 +419,10 @@ export default function Page() {
     if (checkoutUrl) router.replace(checkoutUrl)
   }, [currentUser, plan, billing, router])
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }
-
   const handleSubmit = async () => {
-    if (!message.trim() || !selectedUser || !currentUser) return
+    if (!message.trim() || !selectedProfile || !currentUser) return
     updateTypingStatus(false)
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current)
-    }
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current)
     const supabase = createClient()
     const tempId = uuidv4()
     const now = new Date().toISOString()
@@ -430,7 +431,7 @@ export default function Page() {
       id: tempId,
       text: message,
       sender_id: currentUser.id,
-      receiver_id: selectedUser.id,
+      receiver_id: selectedProfile.user_id,
       created_at: now,
       updated_at: now,
     }
@@ -443,7 +444,7 @@ export default function Page() {
     // Update last message preview
     setLastMessages((prev) => ({
       ...prev,
-      [selectedUser.id]: newMessage,
+      [selectedProfile.user_id]: newMessage,
     }))
 
     // Send to Supabase
@@ -453,7 +454,7 @@ export default function Page() {
         {
           text: message,
           sender_id: currentUser.id,
-          receiver_id: selectedUser.id,
+          receiver_id: selectedProfile.user_id,
           created_at: now,
           updated_at: now,
         },
@@ -465,7 +466,7 @@ export default function Page() {
       setMessages((prev) => prev.filter((msg) => msg.id !== tempId))
       setLastMessages((prev) => {
         const updated = { ...prev }
-        delete updated[selectedUser.id]
+        delete updated[selectedProfile.user_id]
         return updated
       })
       toast.error('Failed to send message')
@@ -476,7 +477,7 @@ export default function Page() {
     setMessages((prev) => prev.map((msg) => (msg.id === tempId ? data : msg)))
     setLastMessages((prev) => ({
       ...prev,
-      [selectedUser.id]: data,
+      [selectedProfile.user_id]: data,
     }))
   }
 
@@ -571,63 +572,14 @@ export default function Page() {
     toast.success('Message updated')
   }
 
-  function formatDateHeader(date: Date): string {
-    const today = new Date()
-    const yesterday = new Date(today)
-    yesterday.setDate(yesterday.getDate() - 1)
-
-    const messageDate = new Date(date)
-    messageDate.setHours(0, 0, 0, 0)
-    today.setHours(0, 0, 0, 0)
-    yesterday.setHours(0, 0, 0, 0)
-
-    if (messageDate.getTime() === today.getTime()) {
-      return 'Today'
-    } else if (messageDate.getTime() === yesterday.getTime()) {
-      return 'Yesterday'
-    } else {
-      return messageDate.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      })
-    }
-  }
-
-  function getDateKey(dateString: string): string {
-    const date = new Date(dateString)
-    return date.toISOString().split('T')[0]
-  }
-
-  function groupMessagesByDate(messages: Message[]) {
-    const groups: { date: string; messages: Message[] }[] = []
-    const groupMap = new Map<string, Message[]>()
-
-    messages.forEach((msg) => {
-      const dateKey = getDateKey(msg.created_at)
-      if (!groupMap.has(dateKey)) {
-        groupMap.set(dateKey, [])
-      }
-      groupMap.get(dateKey)!.push(msg)
-    })
-
-    Array.from(groupMap.entries())
-      .sort(([dateA], [dateB]) => dateA.localeCompare(dateB))
-      .forEach(([date, msgs]) => {
-        groups.push({ date, messages: msgs })
-      })
-
-    return groups
-  }
-
   const updateTypingStatus = async (isTyping: boolean) => {
-    if (!currentUser || !selectedUser) return
+    if (!currentUser || !selectedProfile) return
     const supabase = createClient()
     const channel = supabase.channel('typing-presence')
 
     await channel.track({
       user_id: currentUser.id,
-      typing_to: isTyping ? selectedUser.id : '',
+      typing_to: isTyping ? selectedProfile.user_id : '',
       timestamp: Date.now(),
     })
   }
@@ -651,19 +603,15 @@ export default function Page() {
   }
 
   const handleSelectProfile = (profile: Profile) => {
-    setSelectedUser(profile)
+    setSelectedProfile(profile)
     setIsNewMessageDialogOpen(false)
   }
 
-  const filteredProfiles: Profile[] = profiles.filter(
-    (user) =>
-      user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchQuery.toLowerCase())
-  )
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }
 
-  const isSelectedUserTyping =
-    selectedUser && typingUsers[selectedUser.id]?.typing_to === currentUser?.id
-
+  // show skeleton UI while loading
   if (currentUserLoading || !currentUser) {
     return (
       <div className='flex h-full bg-background text-foreground rounded-2xl'>
@@ -745,7 +693,7 @@ export default function Page() {
     <div className='flex h-full bg-background text-foreground rounded-2xl max-h-[calc(100vh-1rem)]'>
       <div
         className={`flex flex-col h-full p-2 w-full md:w-80 shrink-0 border-r ${
-          selectedUser && isMobileView ? 'hidden' : 'flex'
+          selectedProfile && isMobileView ? 'hidden' : 'flex'
         }`}
       >
         <div className='flex items-center justify-between p-4'>
@@ -770,7 +718,7 @@ export default function Page() {
               placeholder='Type to search...'
               ref={searchInputRef}
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => setSearchQuery(e.target.value.toLowerCase())}
             />
             <InputGroupAddon>
               <Search className='w-4 h-4' />
@@ -793,10 +741,7 @@ export default function Page() {
                   key={i}
                   className='flex items-center gap-4 rounded-xl px-4 py-3 hover:bg-muted/40 transition'
                 >
-                  {/* Avatar */}
                   <Skeleton className='h-10 w-10 rounded-full shrink-0' />
-
-                  {/* Name + last message */}
                   <div className='flex flex-col gap-2 flex-1'>
                     <Skeleton className='h-4 w-3/4' />
                     <Skeleton className='h-3 w-1/2' />
@@ -815,17 +760,17 @@ export default function Page() {
             filteredProfiles.map((profile) => (
               <Button
                 key={profile.id}
-                onClick={() => setSelectedUser(profile)}
+                onClick={() => setSelectedProfile(profile)}
                 variant='ghost'
                 size='lg'
                 className={`
                     w-full justify-start gap-3 px-4 py-8 rounded-xl hover:bg-muted transition text-left cursor-pointer ${
-                      selectedUser?.id === profile.id ? 'bg-muted' : ''
+                      selectedProfile?.id === profile.id ? 'bg-muted' : ''
                     }`}
               >
                 <Image
                   src={profile.avatar_url || defaultAvatar}
-                  alt={profile.name}
+                  alt={profile.name || 'profile avatar'}
                   className='w-10 h-10 rounded-full object-cover'
                   width={40}
                   height={40}
@@ -833,18 +778,19 @@ export default function Page() {
 
                 <div className='flex flex-col text-left overflow-hidden'>
                   <span className='font-medium truncate'>
-                    {profile.name || profile.email?.split('@')[0] || 'User'}
-                    {profile.id === currentUser.id && ' (You)'}
+                    {getDisplayName(profile)}
+                    {profile.user_id === currentUser.id && ' (You)'}
                   </span>
                   <span className='text-xs text-muted-foreground truncate'>
                     {lastMessagesLoading ? (
                       <Skeleton className='h-4 w-24 rounded-md' />
-                    ) : lastMessages[profile.id] ? (
+                    ) : lastMessages[profile.user_id] ? (
                       `${
-                        lastMessages[profile.id]?.sender_id === currentUser.id
+                        lastMessages[profile.user_id]?.sender_id ===
+                        currentUser.id
                           ? 'You: '
                           : ''
-                      }${lastMessages[profile.id]?.text}`
+                      }${lastMessages[profile.user_id]?.text}`
                     ) : (
                       'No messages yet'
                     )}
@@ -858,33 +804,38 @@ export default function Page() {
 
       <div
         className={`flex flex-col flex-1 h-full min-w-0 ${
-          !selectedUser && isMobileView ? 'hidden' : 'flex'
+          !selectedProfile && isMobileView ? 'hidden' : 'flex'
         }`}
       >
-        {selectedUser ? (
+        {selectedProfile ? (
           <>
             <div className='flex items-center justify-between p-4 border-b'>
               <div className='flex items-center gap-3'>
                 {isMobileView && (
-                  <button onClick={() => setSelectedUser(null)}>
+                  <button onClick={() => setSelectedProfile(null)}>
                     <ArrowLeft className='w-5 h-5' />
                   </button>
                 )}
 
                 <Image
-                  src={selectedUser.avatar_url || defaultAvatar}
-                  alt={selectedUser.name}
+                  src={selectedProfile.avatar_url || defaultAvatar}
+                  alt={selectedProfile.name || 'profile avatar'}
                   className='w-8 h-8 rounded-full object-cover'
                   width={32}
                   height={32}
                 />
 
-                <span className='font-semibold'>
-                  {selectedUser.name ||
-                    selectedUser.email?.split('@')[0] ||
-                    'User'}
-                  {selectedUser.id === currentUser.id && ' (You)'}
-                </span>
+                <div>
+                  <p className='font-semibold'>
+                    {getDisplayName(selectedProfile)}
+                    {selectedProfile.user_id === currentUser.id && ' (You)'}
+                  </p>
+                  {selectedProfile.username && (
+                    <p className='text-xs text-muted-foreground truncate'>
+                      @{selectedProfile.username}
+                    </p>
+                  )}
+                </div>
               </div>
 
               <ButtonGroup>
@@ -1062,7 +1013,7 @@ export default function Page() {
                 type='text'
                 placeholder='Search contacts...'
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => setSearchQuery(e.target.value.toLowerCase())}
               />
               <InputGroupAddon>
                 <Search className='w-4 h-4' />
@@ -1104,21 +1055,21 @@ export default function Page() {
                     >
                       <Image
                         src={profile.avatar_url || defaultAvatar}
-                        alt={profile.name}
+                        alt={profile.name || 'profile avatar'}
                         className='w-10 h-10 rounded-full object-cover shrink-0'
                         width={40}
                         height={40}
                       />
                       <div className='flex flex-col text-left overflow-hidden min-w-0 flex-1'>
                         <span className='font-medium truncate'>
-                          {profile.name ||
-                            profile.email?.split('@')[0] ||
-                            'User'}
-                          {profile.id === currentUser.id && ' (You)'}
+                          {getDisplayName(profile)}
+                          {profile.user_id === currentUser.id && ' (You)'}
                         </span>
-                        <span className='text-xs text-muted-foreground truncate'>
-                          {profile.email}
-                        </span>
+                        {profile.username && (
+                          <span className='text-xs text-muted-foreground truncate'>
+                            @{profile.username}
+                          </span>
+                        )}
                       </div>
                     </Button>
                   ))}
