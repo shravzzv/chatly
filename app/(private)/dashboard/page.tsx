@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import Image from 'next/image'
 import {
   Search,
   Phone,
@@ -32,9 +31,11 @@ import { toast } from 'sonner'
 import { Message } from '@/types/message'
 import { Profile } from '@/types/profile'
 import { createClient } from '@/utils/supabase/client'
-import type { RealtimePostgresChangesPayload } from '@supabase/supabase-js'
+import type {
+  RealtimePostgresChangesPayload,
+  RealtimePostgresDeletePayload,
+} from '@supabase/supabase-js'
 import { Skeleton } from '@/components/ui/skeleton'
-import defaultAvatar from '@/public/default-avatar.jpg'
 import { v4 as uuidv4 } from 'uuid'
 import { Badge } from '@/components/ui/badge'
 import {
