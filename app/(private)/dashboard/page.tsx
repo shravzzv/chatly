@@ -89,6 +89,7 @@ export default function Page() {
   const selectedUserId = searchParams.get('selectedUserId')
   const plan = searchParams.get('plan')
   const billing = searchParams.get('billing')
+  const selectedProfileId = searchParams.get('selectedProfileId')
 
   const filteredProfiles = searchQuery
     ? profiles.filter((p) => {
@@ -397,15 +398,15 @@ export default function Page() {
     }
   }, [currentUser])
 
-  // Handle selectedUserId query parameter ✅
+  // Handle selectedProfileId query parameter ✅
   useEffect(() => {
-    if (selectedUserId && profiles.length > 0 && !selectedProfile) {
+    if (selectedProfileId && profiles.length > 0 && !selectedProfile) {
       const userFromParam = profiles.find(
-        (profile) => profile.user_id === selectedUserId
+        (profile) => profile.user_id === selectedProfileId
       )
       if (userFromParam) setSelectedProfile(userFromParam)
     }
-  }, [selectedUserId, profiles, selectedProfile])
+  }, [selectedProfileId, profiles, selectedProfile])
 
   // Navigate the user to the checkout page when they've signed up through the pricing page to ensure continuity ✅
   useEffect(() => {
