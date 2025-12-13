@@ -655,11 +655,13 @@ export default function Page() {
     setIsNewMessageDialogOpen(false)
   }
 
-  const filteredProfiles: Profile[] = profiles.filter(
-    (user) =>
-      user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchQuery.toLowerCase())
-  )
+  const filteredProfiles = searchQuery
+    ? profiles.filter((p) => {
+        const name = p.name?.toLowerCase() || ''
+        const username = p.username?.toLowerCase() || ''
+        return name.includes(searchQuery) || username.includes(searchQuery)
+      })
+    : profiles
 
   const isSelectedUserTyping =
     selectedUser && typingUsers[selectedUser.id]?.typing_to === currentUser?.id
@@ -825,7 +827,7 @@ export default function Page() {
               >
                 <Image
                   src={profile.avatar_url || defaultAvatar}
-                  alt={profile.name}
+                  alt={profile.name || 'profile avatar'}
                   className='w-10 h-10 rounded-full object-cover'
                   width={40}
                   height={40}
