@@ -54,19 +54,18 @@ import {
   getDisplayName,
   groupMessagesByDate,
 } from '@/lib/dashboard'
-
-type TypingState = {
-  user_id: string
-  typing_to: string
-  timestamp: number
-}
+import DashboardSkeleton from '@/components/dashboard-skeleton'
+import UserAvatar from '@/components/user-avatar'
+import ProfileSelectDialog from '@/components/profile-select-dialog'
+import ProfileAvatar from '@/components/profile-avatar'
 
 export default function Page() {
   const [profiles, setProfiles] = useState<Profile[]>([])
   const [profilesLoading, setProfilesLoading] = useState<boolean>(true)
   const [message, setMessage] = useState<string>('')
   const [messages, setMessages] = useState<Message[]>([])
-  const [searchQuery, setSearchQuery] = useState<string>('')
+  const [isProfileSelectDialogOpen, setIsProfileSelectDialogOpen] =
+    useState(false)
   const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null)
   const [messagesLoading, setMessagesLoading] = useState<boolean>(false)
   const [isNewMessageDialogOpen, setIsNewMessageDialogOpen] = useState(false)
@@ -586,110 +585,7 @@ export default function Page() {
     })
   }
 
-  const handleMessageChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const value = e.target.value
-    setMessage(value)
-
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current)
-    }
-
-    if (value.trim()) {
-      updateTypingStatus(true)
-      typingTimeoutRef.current = setTimeout(() => {
-        updateTypingStatus(false)
-      }, 3000)
-    } else {
-      updateTypingStatus(false)
-    }
-  }
-
-  const handleSelectProfile = (profile: Profile) => {
-    setSelectedProfile(profile)
-    setIsNewMessageDialogOpen(false)
-  }
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }
-
-  // show skeleton UI while loading
-  if (currentUserLoading || !currentUser) {
-    return (
-      <div className='flex h-full bg-background text-foreground rounded-2xl'>
-        {/* Sidebar skeleton */}
-        <div className='flex flex-col h-full p-2 w-full md:w-80 shrink-0 border-r'>
-          <div className='flex items-center justify-between p-4'>
-            <Skeleton className='h-6 w-32 rounded-md' />
-            <Skeleton className='h-8 w-8 rounded-md' />
-          </div>
-
-          <div className='px-3 pb-4 border-b'>
-            <Skeleton className='h-10 w-full rounded-md' />
-          </div>
-
-          <div className='p-4 space-y-4 overflow-y-hidden'>
-            {[...Array(6)].map((_, i) => (
-              <div key={i} className='flex items-center gap-3'>
-                <Skeleton className='w-10 h-10 rounded-full' />
-                <div className='flex flex-col gap-2 flex-1'>
-                  <Skeleton className='h-4 w-3/4 rounded-md' />
-                  <Skeleton className='h-3 w-1/2 rounded-md' />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Chat area skeleton */}
-        <div className='flex flex-col flex-1 h-full'>
-          {/* Header */}
-          <div className='flex items-center justify-between p-4 border-b'>
-            <div className='flex items-center gap-3'>
-              <Skeleton className='w-8 h-8 rounded-full' />
-              <Skeleton className='h-5 w-32 rounded-md' />
-            </div>
-            <div className='flex gap-2'>
-              {[...Array(3)].map((_, i) => (
-                <Skeleton key={i} className='h-8 w-8 rounded-md' />
-              ))}
-            </div>
-          </div>
-
-          {/* Message bubbles */}
-          <div className='flex-1 p-4 space-y-4 overflow-y-hidden'>
-            {[...Array(6)].map((_, i) => (
-              <div
-                key={i}
-                className={`flex ${
-                  i % 2 === 0 ? 'justify-start' : 'justify-end'
-                }`}
-              >
-                <Skeleton
-                  className={`h-16 w-1/2 rounded-2xl ${
-                    i % 2 === 0 ? 'bg-muted' : 'bg-primary/20'
-                  }`}
-                />
-              </div>
-            ))}
-          </div>
-
-          {/* Input area */}
-          <div className='p-2 border-t'>
-            <div className='flex items-end gap-2'>
-              <div className='flex gap-2'>
-                {[...Array(3)].map((_, i) => (
-                  <Skeleton key={i} className='h-8 w-8 rounded-md' />
-                ))}
-              </div>
-              <Skeleton className='flex-1 h-10 rounded-md' />
-              <Skeleton className='h-8 w-8 rounded-md' />
-            </div>
-          </div>
-        </div>
-      </div>
-    )
-  }
+  if (currentUserLoading || !currentUser) return <DashboardSkeleton />
 
   return (
     <div className='flex h-full bg-background text-foreground rounded-2xl max-h-[calc(100vh-1rem)]'>
@@ -707,7 +603,7 @@ export default function Page() {
             variant='outline'
             size='icon-sm'
             className='cursor-pointer'
-            onClick={() => setIsNewMessageDialogOpen(true)}
+            onClick={() => setIsProfileSelectDialogOpen(true)}
           >
             <FilePen className='w-5 h-5' />
           </Button>
@@ -770,13 +666,7 @@ export default function Page() {
                       selectedProfile?.id === profile.id ? 'bg-muted' : ''
                     }`}
               >
-                <Image
-                  src={profile.avatar_url || defaultAvatar}
-                  alt={profile.name || 'profile avatar'}
-                  className='w-10 h-10 rounded-full object-cover'
-                  width={40}
-                  height={40}
-                />
+                <ProfileAvatar profile={profile} />
 
                 <div className='flex flex-col text-left overflow-hidden'>
                   <span className='font-medium truncate'>
@@ -819,13 +709,7 @@ export default function Page() {
                   </button>
                 )}
 
-                <Image
-                  src={selectedProfile.avatar_url || defaultAvatar}
-                  alt={selectedProfile.name || 'profile avatar'}
-                  className='w-8 h-8 rounded-full object-cover'
-                  width={32}
-                  height={32}
-                />
+                <ProfileAvatar profile={selectedProfile} />
 
                 <div>
                   <p className='font-semibold'>
@@ -989,7 +873,7 @@ export default function Page() {
             <p>Select a chat to start messaging</p>
             <Button
               className='cursor-pointer'
-              onClick={() => setIsNewMessageDialogOpen(true)}
+              onClick={() => setIsProfileSelectDialogOpen(true)}
             >
               Send Message
             </Button>
@@ -997,90 +881,16 @@ export default function Page() {
         )}
       </div>
 
-      <Dialog
-        open={isNewMessageDialogOpen}
-        onOpenChange={setIsNewMessageDialogOpen}
-      >
-        <DialogContent className='sm:max-w-md'>
-          <DialogHeader>
-            <DialogTitle>New Message</DialogTitle>
-            <DialogDescription>
-              Select a contact to start a conversation
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className='mt-4'>
-            <InputGroup className='mb-4'>
-              <InputGroupInput
-                type='text'
-                placeholder='Search contacts...'
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value.toLowerCase())}
-              />
-              <InputGroupAddon>
-                <Search className='w-4 h-4' />
-              </InputGroupAddon>
-            </InputGroup>
-
-            <ScrollArea className='h-[400px] pr-4'>
-              {profilesLoading ? (
-                <div className='space-y-3'>
-                  {[...Array(5)].map((_, i) => (
-                    <div
-                      key={i}
-                      className='flex items-center gap-3 p-3 rounded-lg'
-                    >
-                      <Skeleton className='h-10 w-10 rounded-full shrink-0' />
-                      <div className='flex flex-col gap-2 flex-1'>
-                        <Skeleton className='h-4 w-3/4' />
-                        <Skeleton className='h-3 w-1/2' />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : filteredProfiles.length === 0 ? (
-                <div className='flex flex-col items-center justify-center h-full text-center p-8'>
-                  <p className='text-muted-foreground'>
-                    {searchQuery
-                      ? 'No contacts found'
-                      : 'No contacts available'}
-                  </p>
-                </div>
-              ) : (
-                <div className='space-y-1'>
-                  {filteredProfiles.map((profile) => (
-                    <Button
-                      key={profile.id}
-                      variant='ghost'
-                      className='w-full justify-start gap-3 h-auto py-3 px-3 rounded-lg hover:bg-muted cursor-pointer'
-                      onClick={() => handleSelectProfile(profile)}
-                    >
-                      <Image
-                        src={profile.avatar_url || defaultAvatar}
-                        alt={profile.name || 'profile avatar'}
-                        className='w-10 h-10 rounded-full object-cover shrink-0'
-                        width={40}
-                        height={40}
-                      />
-                      <div className='flex flex-col text-left overflow-hidden min-w-0 flex-1'>
-                        <span className='font-medium truncate'>
-                          {getDisplayName(profile)}
-                          {profile.user_id === currentUser.id && ' (You)'}
-                        </span>
-                        {profile.username && (
-                          <span className='text-xs text-muted-foreground truncate'>
-                            @{profile.username}
-                          </span>
-                        )}
-                      </div>
-                    </Button>
-                  ))}
-                </div>
-              )}
-            </ScrollArea>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <ProfileSelectDialog
+        currentUser={currentUser}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        profilesLoading={profilesLoading}
+        filteredProfiles={filteredProfiles}
+        setSelectedProfile={setSelectedProfile}
+        isProfileSelectDialogOpen={isProfileSelectDialogOpen}
+        setIsProfileSelectDialogOpen={setIsProfileSelectDialogOpen}
+      />
     </div>
   )
 }
