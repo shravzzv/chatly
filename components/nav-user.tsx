@@ -1,6 +1,6 @@
 'use client'
 
-import { IconDotsVertical, IconLogout } from '@tabler/icons-react'
+import { EllipsisVertical, LogOut } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   DropdownMenu,
@@ -68,7 +68,7 @@ export function NavUser({ user }: { user: User }) {
                 </span>
               </div>
 
-              <IconDotsVertical className='ml-auto size-4' />
+              <EllipsisVertical className='ml-auto size-4' />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
 
@@ -110,7 +110,7 @@ export function NavUser({ user }: { user: User }) {
               className='cursor-pointer'
               onClick={handleLogout}
             >
-              <IconLogout />
+              <LogOut />
               Log out
             </DropdownMenuItem>
           </DropdownMenuContent>
