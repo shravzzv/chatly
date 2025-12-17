@@ -5,11 +5,7 @@ import { Analytics } from '@vercel/analytics/next'
 import { ThemeProvider } from '@/components/theme-provider'
 import { Toaster } from '@/components/ui/sonner'
 
-const inter = Inter({
-  subsets: ['latin'],
-  variable: '--font-inter',
-  display: 'swap',
-})
+const inter = Inter({ subsets: ['latin'], variable: '--font-sans' })
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://chatly-brown.vercel.app'),
@@ -93,8 +89,8 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang='en' suppressHydrationWarning>
-      <body className={`${inter.variable} antialiased`}>
+    <html lang='en' suppressHydrationWarning className={inter.variable}>
+      <body className='antialiased'>
         <ThemeProvider
           attribute='class'
           defaultTheme='system'

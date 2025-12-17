@@ -25,9 +25,7 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar'
 import { NavUser } from './nav-user'
-import { createClient } from '@/utils/supabase/client'
-import type { User } from '@supabase/supabase-js'
-import { Spinner } from '@/components/ui/spinner'
+import { useUser } from '@/hooks/use-user'
 
 const navItems = [
   {
@@ -53,47 +51,19 @@ const navItems = [
 ]
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const [user, setUser] = React.useState<User | null>(null)
-  const [loading, setLoading] = React.useState(true)
+  const { user, loading, error } = useUser()
   const { setOpenMobile } = useSidebar()
   const pathname = usePathname()
   const router = useRouter()
 
+  // multitab logout redirect
   React.useEffect(() => {
-    const supabase = createClient()
-
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setUser(user)
-      setLoading(false)
-    })
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null)
-    })
-
-    return () => subscription.unsubscribe()
-  }, [])
-
-  React.useEffect(() => {
-    // this ensures multitab logout
-    if (!loading && user === null) {
-      if (pathname !== '/signin') {
-        router.push('/signin')
-      }
-    }
+    if (!loading && !user && pathname !== '/signin') router.replace('/signin')
   }, [user, loading, pathname, router])
 
-  const handleLinkClick = () => {
-    setOpenMobile(false)
-  }
+  const handleLinkClick = () => setOpenMobile(false)
 
-  const formattedUser = user && {
-    name: user.user_metadata?.full_name || user.email?.split('@')[0],
-    email: user.email || 'No email',
-    avatar: user.user_metadata?.avatar_url || '',
-  }
+  if (error) console.error(error)
 
   return (
     <Sidebar {...props} variant='inset' collapsible='icon'>
@@ -141,16 +111,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter>
-        {formattedUser ? (
-          <NavUser user={formattedUser} />
-        ) : (
-          <div className='flex justify-center p-4'>
-            <Spinner />
-          </div>
-        )}
-      </SidebarFooter>
-
+      <SidebarFooter>{user && <NavUser userId={user?.id} />}</SidebarFooter>
       <SidebarRail />
     </Sidebar>
   )

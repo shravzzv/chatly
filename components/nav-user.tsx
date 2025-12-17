@@ -1,6 +1,5 @@
 'use client'
 
-import { EllipsisVertical, LogOut } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   DropdownMenu,
@@ -18,15 +17,48 @@ import {
 } from '@/components/ui/sidebar'
 import { createClient } from '@/utils/supabase/client'
 import { toast } from 'sonner'
+import { Download, EllipsisVertical, LogOut } from 'lucide-react'
+import Link from 'next/link'
+import { useProfile } from '@/hooks/use-profile'
+import { Spinner } from './ui/spinner'
 
-interface User {
-  name: string
-  email: string
-  avatar: string
+const getUserIdentity = (
+  name: string | null,
+  username: string | null,
+  avatar_url: string | null
+) => {
+  const safeName = name || 'User'
+  const safeUsername = username || 'user'
+
+  const fallback = safeName
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2)
+
+  return (
+    <>
+      <Avatar className='h-8 w-8 rounded-lg'>
+        <AvatarImage src={avatar_url || undefined} alt={safeName} />
+        <AvatarFallback className='rounded-lg'>{fallback}</AvatarFallback>
+      </Avatar>
+
+      <div className='grid flex-1 text-left text-sm leading-tight'>
+        <span className='truncate font-medium'>{safeName}</span>
+        <span className='text-muted-foreground truncate text-xs'>
+          @{safeUsername}
+        </span>
+      </div>
+    </>
+  )
 }
 
-export function NavUser({ user }: { user: User }) {
+export function NavUser({ userId }: { userId: string }) {
   const { isMobile } = useSidebar()
+  const { profile, loading, error } = useProfile(userId)
+
+  if (error) console.error(error)
 
   const handleLogout = async () => {
     const supabase = createClient()
@@ -38,6 +70,20 @@ export function NavUser({ user }: { user: User }) {
     // no redirect because app-sidebar's useEffect handles it on signout
   }
 
+  if (loading || !profile) {
+    return (
+      <SidebarMenu>
+        <SidebarMenuItem>
+          <SidebarMenuButton size='lg' disabled>
+            <Spinner className='mx-auto' />
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      </SidebarMenu>
+    )
+  }
+
+  const { name, username, avatar_url } = profile
+
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -47,27 +93,7 @@ export function NavUser({ user }: { user: User }) {
               size='lg'
               className='data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground cursor-pointer'
             >
-              <Avatar className='h-8 w-8 rounded-lg'>
-                <AvatarImage src={user.avatar} alt={user.name} />
-                <AvatarFallback className='rounded-lg'>
-                  {user.name
-                    ? user.name
-                        .split(' ')
-                        .map((n) => n[0])
-                        .join('')
-                        .toUpperCase()
-                        .slice(0, 2)
-                    : user.email?.[0]?.toUpperCase() || '?'}
-                </AvatarFallback>
-              </Avatar>
-
-              <div className='grid flex-1 text-left text-sm leading-tight'>
-                <span className='truncate font-medium'>{user.name}</span>
-                <span className='text-muted-foreground truncate text-xs'>
-                  {user.email}
-                </span>
-              </div>
-
+              {getUserIdentity(name, username, avatar_url)}
               <EllipsisVertical className='ml-auto size-4' />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
@@ -80,31 +106,17 @@ export function NavUser({ user }: { user: User }) {
           >
             <DropdownMenuLabel className='p-0 font-normal'>
               <div className='flex items-center gap-2 px-1 py-1.5 text-left text-sm'>
-                <Avatar className='h-8 w-8 rounded-lg'>
-                  <AvatarImage src={user.avatar} alt={user.name} />
-                  <AvatarFallback className='rounded-lg'>
-                    {user.name
-                      ? user.name
-                          .split(' ')
-                          .map((n) => n[0])
-                          .join('')
-                          .toUpperCase()
-                          .slice(0, 2)
-                      : user.email?.[0]?.toUpperCase() || '?'}
-                  </AvatarFallback>
-                </Avatar>
-
-                <div className='grid flex-1 text-left text-sm leading-tight'>
-                  <span className='truncate font-medium'>{user.name}</span>
-                  <span className='text-muted-foreground truncate text-xs'>
-                    {user.email}
-                  </span>
-                </div>
+                {getUserIdentity(name, username, avatar_url)}
               </div>
             </DropdownMenuLabel>
-
             <DropdownMenuSeparator />
-
+            <DropdownMenuItem className='cursor-pointer' asChild>
+              <Link href='/download' rel='noopener noreferrer' target='_blank'>
+                <Download />
+                Download apps
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
             <DropdownMenuItem
               variant='destructive'
               className='cursor-pointer'
