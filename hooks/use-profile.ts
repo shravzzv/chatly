@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/utils/supabase/client'
-import { Subscription } from '@/types/subscription'
+import { Profile } from '@/types/profile'
 import { PostgrestError } from '@supabase/supabase-js'
 
-export function useSubscription(userId: string | undefined) {
-  const [subscription, setSubscription] = useState<Subscription | null>(null)
+export function useProfile(userId: string | undefined) {
+  const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<PostgrestError | null>(null)
 
@@ -14,13 +14,13 @@ export function useSubscription(userId: string | undefined) {
 
     async function load() {
       const { data, error } = await supabase
-        .from('subscriptions')
+        .from('profiles')
         .select('*')
         .eq('user_id', userId)
         .maybeSingle()
 
       if (error) setError(error)
-      else setSubscription(data)
+      else setProfile(data)
 
       setLoading(false)
     }
@@ -28,5 +28,5 @@ export function useSubscription(userId: string | undefined) {
     load()
   }, [userId])
 
-  return { subscription, loading, error }
+  return { profile, loading, error }
 }

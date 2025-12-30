@@ -1,7 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
-import Image from 'next/image'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   Search,
   Phone,
@@ -34,395 +33,109 @@ import { Profile } from '@/types/profile'
 import { createClient } from '@/utils/supabase/client'
 import type {
   RealtimePostgresChangesPayload,
-  User as SupabaseUser,
+  RealtimePostgresDeletePayload,
 } from '@supabase/supabase-js'
 import { Skeleton } from '@/components/ui/skeleton'
-import defaultAvatar from '@/public/default-avatar.jpg'
 import { v4 as uuidv4 } from 'uuid'
 import { Badge } from '@/components/ui/badge'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { getCheckoutUrl } from '@/lib/get-checkout-url'
 import { Billing, Plan } from '@/types/subscription'
-
-type TypingState = {
-  user_id: string
-  typing_to: string
-  timestamp: number
-}
+import { useUser } from '@/hooks/use-user'
+import {
+  formatDateHeader,
+  getDisplayName,
+  getPartnerId,
+  groupMessagesByDate,
+} from '@/lib/dashboard'
+import DashboardSkeleton from '@/components/dashboard-skeleton'
+import ProfileSelectDialog from '@/components/profile-select-dialog'
+import ProfileAvatar from '@/components/profile-avatar'
+import TypingIndicator from '@/components/typing-indicator'
+import { useTypingIndicator } from '@/hooks/use-typing-indicator'
 
 export default function Page() {
+  const searchParams = useSearchParams()
+
+  // state variables
+  const [message, setMessage] = useState('')
+  const [searchQuery, setSearchQuery] = useState('')
   const [profiles, setProfiles] = useState<Profile[]>([])
-  const [message, setMessage] = useState<string>('')
   const [messages, setMessages] = useState<Message[]>([])
-  const [searchQuery, setSearchQuery] = useState<string>('')
-  const [profilesLoading, setProfilesLoading] = useState<boolean>(true)
-  const [selectedUser, setSelectedUser] = useState<Profile | null>(null)
-  const [messagesLoading, setMessagesLoading] = useState<boolean>(false)
-  const [currentUser, setCurrentUser] = useState<SupabaseUser | null>(null)
-  const [currentUserLoading, setCurrentUserLoading] = useState<boolean>(true)
-  const [isNewMessageDialogOpen, setIsNewMessageDialogOpen] = useState(false)
-  const [lastMessagesLoading, setLastMessagesLoading] = useState<boolean>(true)
-  const [typingUsers, setTypingUsers] = useState<Record<string, TypingState>>(
-    {}
+  const [profilesLoading, setProfilesLoading] = useState(true)
+  const [messagesLoading, setMessagesLoading] = useState(false)
+  const [lastMessagesLoading, setLastMessagesLoading] = useState(true)
+  const [selectedProfileId, setSelectedProfileId] = useState<string | null>(
+    () => searchParams.get('senderId')
   )
+
+  const [isProfileSelectDialogOpen, setIsProfileSelectDialogOpen] =
+    useState(false)
   const [lastMessages, setLastMessages] = useState<
     Record<string, Message | null>
   >({})
 
-  const router = useRouter()
+  // memoized variables
+  const selectedProfile = useMemo(
+    () => profiles.find((p) => p.user_id === selectedProfileId) ?? null,
+    [profiles, selectedProfileId]
+  )
+  const scrollToBottom = useCallback(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [])
+  // Memoized so it can be safely used in effect dependencies without causing re-runs
+
+  // state variables from custom hooks
   const isMobileView = useIsMobile()
-  const searchParams = useSearchParams()
+  const {
+    user: currentUser,
+    loading: currentUserLoading,
+    error: currentUserError,
+  } = useUser()
+  const { isTyping, updateTypingStatus } = useTypingIndicator(selectedProfileId)
+
+  // refs
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const searchInputRef = useRef<HTMLInputElement>(null)
-  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-  const selectedUserId = searchParams.get('selectedUserId')
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // derived variables
+  const router = useRouter()
   const plan = searchParams.get('plan')
   const billing = searchParams.get('billing')
-
-  // Fetch current authenticated user
-  useEffect(() => {
-    const supabase = createClient()
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setCurrentUser(user)
-      setCurrentUserLoading(false)
-    })
-  }, [])
-
-  // Fetch all profiles
-  useEffect(() => {
-    const supabase = createClient()
-
-    const fetchUsers = async () => {
-      setProfilesLoading(true)
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .order('name', { ascending: true })
-
-      if (error) {
-        console.error('Error fetching profiles:', error)
-        toast.error('Failed to load profiles')
-        return
-      }
-
-      setProfiles(data)
-      setProfilesLoading(false)
-    }
-
-    fetchUsers()
-  }, [])
-
-  // Fetch messages when selectedUser changes
-  useEffect(() => {
-    if (!selectedUser || !currentUser) return
-    const supabase = createClient()
-
-    const fetchMessages = async () => {
-      setMessagesLoading(true)
-
-      // Fetch messages where the logged-in user and the selected user are participants — meaning one is the sender and the other is the receiver.
-      const condition = [
-        `and(sender_id.eq.${currentUser.id},receiver_id.eq.${selectedUser.id})`,
-        `and(sender_id.eq.${selectedUser.id},receiver_id.eq.${currentUser.id})`,
-      ].join(',')
-
-      const { data, error } = await supabase
-        .from('messages')
-        .select('*')
-        .or(condition)
-        .order('created_at', { ascending: true })
-
-      if (error) {
-        console.error('Error fetching messages:', error)
-        toast.error('Failed to load messages')
-        return
-      }
-
-      setMessages(data)
-      setTimeout(scrollToBottom, 100)
-      setMessagesLoading(false)
-    }
-
-    fetchMessages()
-  }, [selectedUser, currentUser])
-
-  // Allow profiles to focus on the search input using "ctrl + f"
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f') {
-        e.preventDefault()
-        searchInputRef.current?.focus()
-      }
-    }
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [])
-
-  // Fetch last messages for all users
-  useEffect(() => {
-    if (!currentUser) return
-    const supabase = createClient()
-    const lastMap: Record<string, Message> = {}
-
-    const fetchLastMessages = async () => {
-      const { data, error } = await supabase
-        .from('messages')
-        .select('*')
-        .or(`sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`)
-        .order('created_at', { ascending: false })
-
-      if (error) {
-        console.error('Error fetching last messages:', error)
-        setLastMessagesLoading(false)
-        return
-      }
-
-      for (const msg of data) {
-        // Determine who the other participant is in this message.
-        // Since messages are sorted newest → oldest, the first message we find
-        // for each user is already their latest one.
-        // So we only store it once as that user's "last message".
-        const otherId =
-          msg.sender_id === currentUser.id ? msg.receiver_id : msg.sender_id
-        if (!lastMap[otherId]) lastMap[otherId] = msg
-      }
-
-      setLastMessages(lastMap)
-      setLastMessagesLoading(false)
-    }
-
-    fetchLastMessages()
-  }, [currentUser])
-
-  // Enable real-time subscription for messages
-  useEffect(() => {
-    if (!selectedUser || !currentUser) return
-    const supabase = createClient()
-
-    function handlePayload(payload: RealtimePostgresChangesPayload<Message>) {
-      if (!selectedUser || !currentUser) return
-      const msg = (payload.new as Message) || (payload.old as Message)
-
-      // Determine the ID of the other participant for lastMessages update
-      const otherId =
-        msg.sender_id === currentUser.id ? msg.receiver_id : msg.sender_id
-
-      // Guard: Only process if the event involves the currently selected chat OR
-      // if it's an INSERT/UPDATE that affects the sidebar preview.
-      // Since we are filtering on receiver_id, this check is mostly about
-      // whether the message belongs to the currently open chat.
-      const isCurrentChat = selectedUser.id === otherId
-
-      switch (payload.eventType) {
-        case 'INSERT': {
-          const newMsg = payload.new as Message
-
-          if (isCurrentChat) {
-            // 1. Update main messages array (only if chat is open)
-            setMessages((prev) => [...prev, newMsg])
-            setTimeout(scrollToBottom, 100)
-          }
-
-          // 2. Update lastMessages state for the sidebar
-          setLastMessages((prev) => ({
-            ...prev,
-            [otherId]: newMsg, // The new message is now the last message
-          }))
-          break
-        }
-
-        case 'UPDATE': {
-          const updatedMsg = payload.new as Message
-
-          if (isCurrentChat) {
-            // 1. Update main messages array
-            setMessages((prev) =>
-              prev.map((m) => (m.id === updatedMsg.id ? updatedMsg : m))
-            )
-          }
-
-          // 2. Update lastMessages state for the sidebar
-          setLastMessages((prevLast) => {
-            // Only update the lastMessages preview if the updated message
-            // is the one currently displayed in the sidebar preview.
-            if (prevLast[otherId]?.id === updatedMsg.id) {
-              return {
-                ...prevLast,
-                [otherId]: updatedMsg,
-              }
-            }
-            return prevLast // Otherwise, keep the old last message
-          })
-          break
-        }
-
-        default: {
-          break
-        }
-      }
-    }
-
-    const channel = supabase
-      .channel('messages-channel')
-      .on(
-        'postgres_changes',
-        {
-          event: 'DELETE',
-          schema: 'public',
-          table: 'messages',
-        },
-        (payload) => {
-          const deletedId = payload.old.id as string
-
-          // Find the deleted message object in the current state *before* filtering it out.
-          const deletedMessage = messages.find((msg) => msg.id === deletedId)
-
-          if (deletedMessage) {
-            const otherId =
-              deletedMessage.sender_id === currentUser.id
-                ? deletedMessage.receiver_id
-                : deletedMessage.sender_id
-
-            // 1. Update messages state (removes it from the open chat view)
-            setMessages((prev) => prev.filter((msg) => msg.id !== deletedId))
-
-            // 2. Update the lastMessages state for the sidebar
-            setLastMessages((prevLast) => {
-              const updated = { ...prevLast }
-
-              // Re-calculate the remaining messages in this *conversation*
-              const remainingMessages = messages
-                .filter(
-                  (msg) =>
-                    msg.id !== deletedId && // Exclude the deleted message
-                    ((msg.sender_id === currentUser.id &&
-                      msg.receiver_id === otherId) ||
-                      (msg.sender_id === otherId &&
-                        msg.receiver_id === currentUser.id))
-                )
-                .sort(
-                  (a, b) =>
-                    new Date(b.created_at).getTime() -
-                    new Date(a.created_at).getTime()
-                )
-
-              const newLastMessage = remainingMessages[0] || null
-
-              if (newLastMessage) {
-                updated[otherId] = newLastMessage
-              } else {
-                delete updated[otherId]
-              }
-              return updated
-            })
-          }
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'messages',
-          // Listen to all INSERT/UPDATE events where I am the receiver
-          filter: `receiver_id=eq.${currentUser.id}`,
-        },
-        (payload) => {
-          handlePayload(payload as RealtimePostgresChangesPayload<Message>)
-        }
-      )
-      .subscribe()
-
-    return () => {
-      supabase.removeChannel(channel)
-    }
-  }, [selectedUser, currentUser, messages])
-
-  // Show typing status
-  useEffect(() => {
-    if (!currentUser) return
-    const supabase = createClient()
-
-    const channel = supabase.channel('typing-presence', {
-      config: {
-        presence: {
-          key: currentUser.id,
-        },
-      },
-    })
-
-    channel
-      .on('presence', { event: 'sync' }, () => {
-        const state = channel.presenceState<TypingState>()
-        const typingMap: Record<string, TypingState> = {}
-
-        Object.values(state).forEach((presences) => {
-          presences.forEach((presence) => {
-            if (presence.typing_to === currentUser.id) {
-              typingMap[presence.user_id] = presence
-            }
-          })
-        })
-
-        setTypingUsers(typingMap)
-        setTimeout(scrollToBottom, 100)
+  const filteredProfiles = searchQuery
+    ? profiles.filter((p) => {
+        const name = p.name?.toLowerCase() || ''
+        const username = p.username?.toLowerCase() || ''
+        return name.includes(searchQuery) || username.includes(searchQuery)
       })
-      .subscribe(async (status) => {
-        if (status === 'SUBSCRIBED') {
-          await channel.track({
-            user_id: currentUser.id,
-            typing_to: '',
-            timestamp: Date.now(),
-          })
-        }
-      })
+    : profiles
 
-    return () => {
-      supabase.removeChannel(channel)
-    }
-  }, [currentUser])
+  // derived functions
+  const handleMessageChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const value = e.target.value
+    setMessage(value)
 
-  // Handle selectedUserId query parameter
-  useEffect(() => {
-    if (selectedUserId && profiles.length > 0 && !selectedUser) {
-      const userFromParam = profiles.find((p) => p.id === selectedUserId)
-      if (userFromParam) {
-        setSelectedUser(userFromParam)
-      }
-    }
-  }, [selectedUserId, profiles, selectedUser])
-
-  // Navigate the user to the checkout page when they've signed up through the pricing page to ensure continuity
-  useEffect(() => {
-    if (!currentUser || !plan || !billing) return
-
-    const checkoutUrl = getCheckoutUrl(
-      plan as Plan,
-      billing as Billing,
-      currentUser
-    )
-
-    if (checkoutUrl) router.replace(checkoutUrl)
-  }, [currentUser, plan, billing, router])
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }
-
-  const handleSubmit = async () => {
-    if (!message.trim() || !selectedUser || !currentUser) return
-    updateTypingStatus(false)
     if (typingTimeoutRef.current) {
       clearTimeout(typingTimeoutRef.current)
     }
-    const supabase = createClient()
+
+    if (value.trim()) {
+      updateTypingStatus(true)
+      typingTimeoutRef.current = setTimeout(() => {
+        updateTypingStatus(false)
+      }, 3000)
+    } else {
+      updateTypingStatus(false)
+    }
+  }
+
+  const handleSubmitMessage = async () => {
+    if (!message.trim() || !selectedProfileId || !currentUser) return
+
+    updateTypingStatus(false)
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current)
+
     const tempId = uuidv4()
     const now = new Date().toISOString()
 
@@ -430,34 +143,33 @@ export default function Page() {
       id: tempId,
       text: message,
       sender_id: currentUser.id,
-      receiver_id: selectedUser.id,
+      receiver_id: selectedProfileId,
       created_at: now,
       updated_at: now,
     }
 
     // Optimistic UI update
     setMessages((prev) => [...prev, newMessage])
+    const oldLastMessage = lastMessages[selectedProfileId]
+    setLastMessages((prev) => ({
+      ...prev,
+      [selectedProfileId]: newMessage,
+    }))
     setMessage('')
     setTimeout(scrollToBottom, 100)
 
-    // Update last message preview
-    setLastMessages((prev) => ({
-      ...prev,
-      [selectedUser.id]: newMessage,
-    }))
-
-    // Send to Supabase
+    const supabase = createClient()
     const { data, error } = await supabase
       .from('messages')
-      .insert([
-        {
-          text: message,
-          sender_id: currentUser.id,
-          receiver_id: selectedUser.id,
-          created_at: now,
-          updated_at: now,
-        },
-      ])
+      .insert({
+        text: message,
+        sender_id: currentUser.id,
+        receiver_id: selectedProfileId,
+        created_at: now,
+        updated_at: now,
+        //? should this be an array or an object?
+        // ? what happens if we put an id: tempId here? That's the only difference between the newMessage and the message stored in the db.
+      })
       .select()
       .single()
 
@@ -465,10 +177,11 @@ export default function Page() {
       setMessages((prev) => prev.filter((msg) => msg.id !== tempId))
       setLastMessages((prev) => {
         const updated = { ...prev }
-        delete updated[selectedUser.id]
+        updated[selectedProfileId] = oldLastMessage
         return updated
       })
       toast.error('Failed to send message')
+      console.error('Error sending message:', error)
       return
     }
 
@@ -476,7 +189,7 @@ export default function Page() {
     setMessages((prev) => prev.map((msg) => (msg.id === tempId ? data : msg)))
     setLastMessages((prev) => ({
       ...prev,
-      [selectedUser.id]: data,
+      [selectedProfileId]: data,
     }))
   }
 
@@ -489,13 +202,14 @@ export default function Page() {
     const { error } = await supabase.from('messages').delete().eq('id', id)
 
     if (error) {
-      console.error('Error deleting message:', error)
-      toast.error('Failed to delete message')
       setMessages(prevMessages)
+      toast.error('Failed to delete message')
+      console.error('Error deleting message:', error)
       return
     }
 
     // Check if deleted message was the last one for this chat
+    // todo: since tihs part is being shared with the useEffect, modularize it
     const deletedMessage = prevMessages.find((msg) => msg.id === id)
     if (deletedMessage) {
       const otherId =
@@ -562,192 +276,327 @@ export default function Page() {
       .eq('id', id)
 
     if (error) {
-      console.error('Error updating message:', error)
-      toast.error('Failed to update message')
       setMessages(prevMessages)
+      toast.error('Failed to update message')
+      console.error('Error updating message:', error)
       return
     }
 
     toast.success('Message updated')
   }
 
-  function formatDateHeader(date: Date): string {
-    const today = new Date()
-    const yesterday = new Date(today)
-    yesterday.setDate(yesterday.getDate() - 1)
+  // effects
 
-    const messageDate = new Date(date)
-    messageDate.setHours(0, 0, 0, 0)
-    today.setHours(0, 0, 0, 0)
-    yesterday.setHours(0, 0, 0, 0)
-
-    if (messageDate.getTime() === today.getTime()) {
-      return 'Today'
-    } else if (messageDate.getTime() === yesterday.getTime()) {
-      return 'Yesterday'
-    } else {
-      return messageDate.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      })
+  // Show error toast if fetching the user returns an auth error
+  useEffect(() => {
+    if (currentUserError) {
+      toast.error('Could not authenticate. Please log in again.')
+      console.error('AuthError in the dashboard', currentUserError)
     }
-  }
+  }, [currentUserError])
 
-  function getDateKey(dateString: string): string {
-    const date = new Date(dateString)
-    return date.toISOString().split('T')[0]
-  }
+  // Navigate the user to the checkout page when they've signed up through the pricing page to ensure continuity
+  useEffect(() => {
+    if (!currentUser || !plan || !billing) return
 
-  function groupMessagesByDate(messages: Message[]) {
-    const groups: { date: string; messages: Message[] }[] = []
-    const groupMap = new Map<string, Message[]>()
-
-    messages.forEach((msg) => {
-      const dateKey = getDateKey(msg.created_at)
-      if (!groupMap.has(dateKey)) {
-        groupMap.set(dateKey, [])
-      }
-      groupMap.get(dateKey)!.push(msg)
-    })
-
-    Array.from(groupMap.entries())
-      .sort(([dateA], [dateB]) => dateA.localeCompare(dateB))
-      .forEach(([date, msgs]) => {
-        groups.push({ date, messages: msgs })
-      })
-
-    return groups
-  }
-
-  const updateTypingStatus = async (isTyping: boolean) => {
-    if (!currentUser || !selectedUser) return
-    const supabase = createClient()
-    const channel = supabase.channel('typing-presence')
-
-    await channel.track({
-      user_id: currentUser.id,
-      typing_to: isTyping ? selectedUser.id : '',
-      timestamp: Date.now(),
-    })
-  }
-
-  const handleMessageChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const value = e.target.value
-    setMessage(value)
-
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current)
-    }
-
-    if (value.trim()) {
-      updateTypingStatus(true)
-      typingTimeoutRef.current = setTimeout(() => {
-        updateTypingStatus(false)
-      }, 3000)
-    } else {
-      updateTypingStatus(false)
-    }
-  }
-
-  const handleSelectProfile = (profile: Profile) => {
-    setSelectedUser(profile)
-    setIsNewMessageDialogOpen(false)
-  }
-
-  const filteredProfiles = searchQuery
-    ? profiles.filter((p) => {
-        const name = p.name?.toLowerCase() || ''
-        const username = p.username?.toLowerCase() || ''
-        return name.includes(searchQuery) || username.includes(searchQuery)
-      })
-    : profiles
-
-  const isSelectedUserTyping =
-    selectedUser && typingUsers[selectedUser.id]?.typing_to === currentUser?.id
-
-  if (currentUserLoading || !currentUser) {
-    return (
-      <div className='flex h-full bg-background text-foreground rounded-2xl'>
-        {/* Sidebar skeleton */}
-        <div className='flex flex-col h-full p-2 w-full md:w-80 shrink-0 border-r'>
-          <div className='flex items-center justify-between p-4'>
-            <Skeleton className='h-6 w-32 rounded-md' />
-            <Skeleton className='h-8 w-8 rounded-md' />
-          </div>
-
-          <div className='px-3 pb-4 border-b'>
-            <Skeleton className='h-10 w-full rounded-md' />
-          </div>
-
-          <div className='p-4 space-y-4 overflow-y-hidden'>
-            {[...Array(6)].map((_, i) => (
-              <div key={i} className='flex items-center gap-3'>
-                <Skeleton className='w-10 h-10 rounded-full' />
-                <div className='flex flex-col gap-2 flex-1'>
-                  <Skeleton className='h-4 w-3/4 rounded-md' />
-                  <Skeleton className='h-3 w-1/2 rounded-md' />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Chat area skeleton */}
-        <div className='flex flex-col flex-1 h-full'>
-          {/* Header */}
-          <div className='flex items-center justify-between p-4 border-b'>
-            <div className='flex items-center gap-3'>
-              <Skeleton className='w-8 h-8 rounded-full' />
-              <Skeleton className='h-5 w-32 rounded-md' />
-            </div>
-            <div className='flex gap-2'>
-              {[...Array(3)].map((_, i) => (
-                <Skeleton key={i} className='h-8 w-8 rounded-md' />
-              ))}
-            </div>
-          </div>
-
-          {/* Message bubbles */}
-          <div className='flex-1 p-4 space-y-4 overflow-y-hidden'>
-            {[...Array(6)].map((_, i) => (
-              <div
-                key={i}
-                className={`flex ${
-                  i % 2 === 0 ? 'justify-start' : 'justify-end'
-                }`}
-              >
-                <Skeleton
-                  className={`h-16 w-1/2 rounded-2xl ${
-                    i % 2 === 0 ? 'bg-muted' : 'bg-primary/20'
-                  }`}
-                />
-              </div>
-            ))}
-          </div>
-
-          {/* Input area */}
-          <div className='p-2 border-t'>
-            <div className='flex items-end gap-2'>
-              <div className='flex gap-2'>
-                {[...Array(3)].map((_, i) => (
-                  <Skeleton key={i} className='h-8 w-8 rounded-md' />
-                ))}
-              </div>
-              <Skeleton className='flex-1 h-10 rounded-md' />
-              <Skeleton className='h-8 w-8 rounded-md' />
-            </div>
-          </div>
-        </div>
-      </div>
+    const checkoutUrl = getCheckoutUrl(
+      plan as Plan,
+      billing as Billing,
+      currentUser
     )
-  }
+
+    if (checkoutUrl) router.replace(checkoutUrl)
+  }, [currentUser, plan, billing, router])
+
+  // Allow profiles to focus on the search input using "ctrl + f"
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f') {
+        e.preventDefault()
+        searchInputRef.current?.focus()
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [])
+
+  // Fetch all profiles
+  useEffect(() => {
+    const supabase = createClient()
+
+    const fetchProfiles = async () => {
+      setProfilesLoading(true)
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .order('name', { ascending: true })
+
+      if (error) {
+        console.error('Error fetching profiles:', error)
+        toast.error('Failed to load profiles')
+        return
+      }
+
+      setProfiles(data)
+      setProfilesLoading(false)
+    }
+
+    fetchProfiles()
+  }, [])
+
+  // Fetch messages when selectedProfileId changes
+  useEffect(() => {
+    if (!selectedProfileId || !currentUser) return
+    const supabase = createClient()
+
+    const fetchMessages = async () => {
+      setMessagesLoading(true)
+
+      // Fetch messages where the currentUser and the selectedProfileId are the participants
+      const condition = [
+        `and(sender_id.eq.${currentUser.id},receiver_id.eq.${selectedProfileId})`,
+        `and(sender_id.eq.${selectedProfileId},receiver_id.eq.${currentUser.id})`,
+      ].join(',')
+
+      const { data, error } = await supabase
+        .from('messages')
+        .select('*')
+        .or(condition)
+        .order('created_at', { ascending: true })
+
+      if (error) {
+        console.error('Error fetching messages:', error)
+        toast.error('Failed to load messages')
+        return
+      }
+
+      setMessages(data)
+      setTimeout(scrollToBottom, 100)
+      setMessagesLoading(false)
+    }
+
+    fetchMessages()
+  }, [selectedProfileId, currentUser, scrollToBottom])
+
+  // Fetch last messages for all profiles
+  useEffect(() => {
+    if (!currentUser) return
+    const supabase = createClient()
+
+    const fetchLastMessages = async () => {
+      const { data: messages, error } = await supabase
+        .from('messages')
+        .select('*')
+        .or(`sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`)
+        .order('created_at', { ascending: false })
+      // ordering in the descending order of created_at is required to find the last messages
+
+      if (error) {
+        console.error('Error fetching last messages:', error)
+        setLastMessagesLoading(false)
+        return
+      }
+
+      const map: Record<string, Message> = {}
+
+      for (const msg of messages) {
+        const partnerId = getPartnerId(msg, currentUser.id)
+        if (!map[partnerId]) map[partnerId] = msg
+      }
+
+      setLastMessages(map)
+      setLastMessagesLoading(false)
+    }
+
+    fetchLastMessages()
+  }, [currentUser])
+
+  // Listen to incoming realtime INSERT & UPDATE events on the messages table and update the state accordingly
+  useEffect(() => {
+    if (!currentUser) return
+    const supabase = createClient()
+
+    const handlePayload = (
+      payload: RealtimePostgresChangesPayload<Message>
+    ) => {
+      const msg = (payload.new ?? payload.old) as Message
+      const partnerId = getPartnerId(msg, currentUser.id)
+
+      // update last messages
+      switch (payload.eventType) {
+        case 'INSERT': {
+          const newMsg = payload.new as Message
+
+          if (newMsg.sender_id === currentUser.id) return
+
+          setLastMessages((prev) => ({
+            ...prev,
+            [partnerId]: newMsg,
+          }))
+
+          break
+        }
+
+        case 'UPDATE': {
+          const updatedMsg = payload.new as Message
+
+          setLastMessages((prev) => {
+            if (updatedMsg.id === prev[partnerId]?.id) {
+              return {
+                ...prev,
+                [partnerId]: updatedMsg,
+              }
+            }
+
+            return prev
+          })
+
+          break
+        }
+
+        default: {
+          break
+        }
+      }
+
+      // update messages only if it's related to the selectedProfileId
+      if (!selectedProfileId) return
+      const isMsgInCurrentChat = selectedProfileId === partnerId
+
+      switch (payload.eventType) {
+        case 'INSERT': {
+          const newMsg = payload.new as Message
+
+          // Ignore messages sent by me to reconcile with handleSubmitMessage
+          if (newMsg.sender_id === currentUser.id) return
+
+          if (isMsgInCurrentChat) {
+            setMessages((prev) => [...prev, newMsg])
+            setTimeout(scrollToBottom, 100)
+          }
+
+          break
+        }
+
+        case 'UPDATE': {
+          const updatedMsg = payload.new as Message
+
+          if (isMsgInCurrentChat) {
+            setMessages((prev) =>
+              prev.map((m) => (m.id === updatedMsg.id ? updatedMsg : m))
+            )
+          }
+
+          break
+        }
+
+        default: {
+          break
+        }
+      }
+    }
+
+    const channel = supabase
+      .channel('messages-inserts-and-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'messages',
+          filter: `receiver_id=eq.${currentUser.id}`,
+        },
+        handlePayload
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [currentUser, selectedProfileId, scrollToBottom])
+
+  // Listen to realtime DELETE events on the messages table and update the state accordingly
+  useEffect(() => {
+    if (!currentUser) return
+    const supabase = createClient()
+
+    const handleDelete = async (
+      payload: RealtimePostgresDeletePayload<Message>
+    ) => {
+      const deletedId = payload.old.id as string
+
+      setMessages((prev) => prev.filter((msg) => msg.id !== deletedId))
+
+      // if the lastMessages contains a message matching the deltedId, remove it
+      setLastMessages((prev) => {
+        const newState = { ...prev }
+        Object.values(newState).forEach((msg) => {
+          if (msg?.id === deletedId) {
+            delete newState[msg.sender_id]
+          }
+        })
+
+        return newState
+      })
+
+      // find the next lastMessage from that user and add it to lastMessages
+      // NOTE: This query is intentionally broad. DELETE payloads do not include sender/receiver info due to RLS. Rebuild from authoritative snapshot
+      const { data: messages } = await supabase
+        .from('messages')
+        .select('*')
+        .or(`sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`)
+        .order('created_at', { ascending: false })
+
+      if (!messages) return
+
+      const map: Record<string, Message> = {}
+      for (const msg of messages) {
+        const partnerId = getPartnerId(msg, currentUser.id)
+        if (!map[partnerId]) map[partnerId] = msg
+      }
+
+      setLastMessages(map)
+    }
+
+    const channel = supabase
+      .channel('messages-deletes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'DELETE',
+          schema: 'public',
+          table: 'messages',
+        },
+        handleDelete
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [currentUser])
+
+  useEffect(() => {
+    if (isTyping) scrollToBottom()
+  }, [isTyping, scrollToBottom])
+
+  if (currentUserLoading || !currentUser) return <DashboardSkeleton />
+
+  // you could add further checks, and render the components of the dashboard conditionally here instead of using ?: within one big block. This needs you to modularize the components first though.
+
+  // if(!selectedProfile) return (
+  // <>
+  //   <ProfilesSidebar/>
+  //   <EmptyMessageTab/>
+  // </>
+  // )
+  // something like this
 
   return (
     <div className='flex h-full bg-background text-foreground rounded-2xl max-h-[calc(100vh-1rem)]'>
       <div
         className={`flex flex-col h-full p-2 w-full md:w-80 shrink-0 border-r ${
-          selectedUser && isMobileView ? 'hidden' : 'flex'
+          selectedProfile && isMobileView ? 'hidden' : 'flex'
         }`}
       >
         <div className='flex items-center justify-between p-4'>
@@ -759,7 +608,7 @@ export default function Page() {
             variant='outline'
             size='icon-sm'
             className='cursor-pointer'
-            onClick={() => setIsNewMessageDialogOpen(true)}
+            onClick={() => setIsProfileSelectDialogOpen(true)}
           >
             <FilePen className='w-5 h-5' />
           </Button>
@@ -769,10 +618,10 @@ export default function Page() {
           <InputGroup>
             <InputGroupInput
               type='text'
-              placeholder='Type to search...'
+              placeholder='name or username...'
               ref={searchInputRef}
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => setSearchQuery(e.target.value.toLowerCase())}
             />
             <InputGroupAddon>
               <Search className='w-4 h-4' />
@@ -795,10 +644,7 @@ export default function Page() {
                   key={i}
                   className='flex items-center gap-4 rounded-xl px-4 py-3 hover:bg-muted/40 transition'
                 >
-                  {/* Avatar */}
                   <Skeleton className='h-10 w-10 rounded-full shrink-0' />
-
-                  {/* Name + last message */}
                   <div className='flex flex-col gap-2 flex-1'>
                     <Skeleton className='h-4 w-3/4' />
                     <Skeleton className='h-3 w-1/2' />
@@ -807,7 +653,6 @@ export default function Page() {
               ))}
             </div>
           ) : filteredProfiles.length === 0 ? (
-            // Empty state when no profiles match search
             <div className='flex flex-col items-center justify-center h-full text-center p-4'>
               <p className='text-muted-foreground'>
                 {searchQuery ? 'No profiles found' : 'No profiles available'}
@@ -817,36 +662,31 @@ export default function Page() {
             filteredProfiles.map((profile) => (
               <Button
                 key={profile.id}
-                onClick={() => setSelectedUser(profile)}
+                onClick={() => setSelectedProfileId(profile.user_id)}
                 variant='ghost'
                 size='lg'
                 className={`
                     w-full justify-start gap-3 px-4 py-8 rounded-xl hover:bg-muted transition text-left cursor-pointer ${
-                      selectedUser?.id === profile.id ? 'bg-muted' : ''
+                      selectedProfile?.id === profile.id ? 'bg-muted' : ''
                     }`}
               >
-                <Image
-                  src={profile.avatar_url || defaultAvatar}
-                  alt={profile.name || 'profile avatar'}
-                  className='w-10 h-10 rounded-full object-cover'
-                  width={40}
-                  height={40}
-                />
+                <ProfileAvatar profile={profile} />
 
                 <div className='flex flex-col text-left overflow-hidden'>
                   <span className='font-medium truncate'>
-                    {profile.name || profile.email?.split('@')[0] || 'User'}
-                    {profile.id === currentUser.id && ' (You)'}
+                    {getDisplayName(profile)}
+                    {profile.user_id === currentUser.id && ' (You)'}
                   </span>
                   <span className='text-xs text-muted-foreground truncate'>
                     {lastMessagesLoading ? (
                       <Skeleton className='h-4 w-24 rounded-md' />
-                    ) : lastMessages[profile.id] ? (
+                    ) : lastMessages[profile.user_id] ? (
                       `${
-                        lastMessages[profile.id]?.sender_id === currentUser.id
+                        lastMessages[profile.user_id]?.sender_id ===
+                        currentUser.id
                           ? 'You: '
                           : ''
-                      }${lastMessages[profile.id]?.text}`
+                      }${lastMessages[profile.user_id]?.text}`
                     ) : (
                       'No messages yet'
                     )}
@@ -860,33 +700,32 @@ export default function Page() {
 
       <div
         className={`flex flex-col flex-1 h-full min-w-0 ${
-          !selectedUser && isMobileView ? 'hidden' : 'flex'
+          !selectedProfile && isMobileView ? 'hidden' : 'flex'
         }`}
       >
-        {selectedUser ? (
+        {selectedProfile ? (
           <>
             <div className='flex items-center justify-between p-4 border-b'>
               <div className='flex items-center gap-3'>
                 {isMobileView && (
-                  <button onClick={() => setSelectedUser(null)}>
+                  <button onClick={() => setSelectedProfileId(null)}>
                     <ArrowLeft className='w-5 h-5' />
                   </button>
                 )}
 
-                <Image
-                  src={selectedUser.avatar_url || defaultAvatar}
-                  alt={selectedUser.name}
-                  className='w-8 h-8 rounded-full object-cover'
-                  width={32}
-                  height={32}
-                />
+                <ProfileAvatar profile={selectedProfile} />
 
-                <span className='font-semibold'>
-                  {selectedUser.name ||
-                    selectedUser.email?.split('@')[0] ||
-                    'User'}
-                  {selectedUser.id === currentUser.id && ' (You)'}
-                </span>
+                <div>
+                  <p className='font-semibold truncate'>
+                    {getDisplayName(selectedProfile)}
+                    {selectedProfile.user_id === currentUser.id && ' (You)'}
+                  </p>
+                  {selectedProfile.username && (
+                    <p className='text-xs text-muted-foreground truncate'>
+                      @{selectedProfile.username}
+                    </p>
+                  )}
+                </div>
               </div>
 
               <ButtonGroup>
@@ -918,6 +757,7 @@ export default function Page() {
 
             <div className='flex-1 overflow-y-auto p-4 space-y-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden'>
               {messagesLoading ? (
+                // show messages tab skeleton
                 <div className='space-y-4'>
                   {[...Array(6)].map((_, i) => (
                     <div
@@ -927,7 +767,7 @@ export default function Page() {
                       }`}
                     >
                       <div className='space-y-2'>
-                        <Skeleton className='h-16 w-[250px] rounded-2xl' />
+                        <Skeleton className='h-16 w-62.5 rounded-2xl' />
                       </div>
                     </div>
                   ))}
@@ -963,20 +803,8 @@ export default function Page() {
                   ))}
                 </>
               )}
-              {isSelectedUserTyping && (
-                <div className='flex justify-start'>
-                  <div className='bg-muted rounded-2xl px-4 py-3 flex items-center gap-2'>
-                    <div className='flex gap-1'>
-                      <div className='w-2 h-2 bg-muted-foreground/60 rounded-full animate-bounce [animation-delay:-0.3s]' />
-                      <div className='w-2 h-2 bg-muted-foreground/60 rounded-full animate-bounce [animation-delay:-0.15s]' />
-                      <div className='w-2 h-2 bg-muted-foreground/60 rounded-full animate-bounce' />
-                    </div>
-                    <span className='text-xs text-muted-foreground'>
-                      typing...
-                    </span>
-                  </div>
-                </div>
-              )}
+
+              {isTyping && <TypingIndicator />}
               <div ref={messagesEndRef} />
             </div>
 
@@ -1009,19 +837,20 @@ export default function Page() {
                 <InputGroupTextarea
                   placeholder='Type a message...'
                   value={message}
-                  className='min-h-10 max-h-[200px] resize-none overflow-y-auto bg-transparent text-sm placeholder:text-muted-foreground focus-visible:ring-0 outline-none border-0 pt-2.5'
+                  className='min-h-10 max-h-50 resize-none overflow-y-auto bg-transparent text-sm placeholder:text-muted-foreground focus-visible:ring-0 outline-none border-0 pt-2.5'
                   onChange={handleMessageChange}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && !e.shiftKey && !isMobileView) {
                       e.preventDefault()
-                      handleSubmit()
+                      handleSubmitMessage()
                     }
                   }}
+                  // ? why not use onSubmit?
                 />
 
                 <InputGroupAddon align='inline-end'>
                   <InputGroupButton
-                    onClick={handleSubmit}
+                    onClick={handleSubmitMessage}
                     variant='default'
                     size='icon-sm'
                     className='cursor-pointer'
@@ -1038,7 +867,7 @@ export default function Page() {
             <p>Select a chat to start messaging</p>
             <Button
               className='cursor-pointer'
-              onClick={() => setIsNewMessageDialogOpen(true)}
+              onClick={() => setIsProfileSelectDialogOpen(true)}
             >
               Send Message
             </Button>
@@ -1046,90 +875,16 @@ export default function Page() {
         )}
       </div>
 
-      <Dialog
-        open={isNewMessageDialogOpen}
-        onOpenChange={setIsNewMessageDialogOpen}
-      >
-        <DialogContent className='sm:max-w-md'>
-          <DialogHeader>
-            <DialogTitle>New Message</DialogTitle>
-            <DialogDescription>
-              Select a contact to start a conversation
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className='mt-4'>
-            <InputGroup className='mb-4'>
-              <InputGroupInput
-                type='text'
-                placeholder='Search contacts...'
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-              <InputGroupAddon>
-                <Search className='w-4 h-4' />
-              </InputGroupAddon>
-            </InputGroup>
-
-            <ScrollArea className='h-[400px] pr-4'>
-              {profilesLoading ? (
-                <div className='space-y-3'>
-                  {[...Array(5)].map((_, i) => (
-                    <div
-                      key={i}
-                      className='flex items-center gap-3 p-3 rounded-lg'
-                    >
-                      <Skeleton className='h-10 w-10 rounded-full shrink-0' />
-                      <div className='flex flex-col gap-2 flex-1'>
-                        <Skeleton className='h-4 w-3/4' />
-                        <Skeleton className='h-3 w-1/2' />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : filteredProfiles.length === 0 ? (
-                <div className='flex flex-col items-center justify-center h-full text-center p-8'>
-                  <p className='text-muted-foreground'>
-                    {searchQuery
-                      ? 'No contacts found'
-                      : 'No contacts available'}
-                  </p>
-                </div>
-              ) : (
-                <div className='space-y-1'>
-                  {filteredProfiles.map((profile) => (
-                    <Button
-                      key={profile.id}
-                      variant='ghost'
-                      className='w-full justify-start gap-3 h-auto py-3 px-3 rounded-lg hover:bg-muted cursor-pointer'
-                      onClick={() => handleSelectProfile(profile)}
-                    >
-                      <Image
-                        src={profile.avatar_url || defaultAvatar}
-                        alt={profile.name}
-                        className='w-10 h-10 rounded-full object-cover shrink-0'
-                        width={40}
-                        height={40}
-                      />
-                      <div className='flex flex-col text-left overflow-hidden min-w-0 flex-1'>
-                        <span className='font-medium truncate'>
-                          {profile.name ||
-                            profile.email?.split('@')[0] ||
-                            'User'}
-                          {profile.id === currentUser.id && ' (You)'}
-                        </span>
-                        <span className='text-xs text-muted-foreground truncate'>
-                          {profile.email}
-                        </span>
-                      </div>
-                    </Button>
-                  ))}
-                </div>
-              )}
-            </ScrollArea>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <ProfileSelectDialog
+        currentUser={currentUser}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        profilesLoading={profilesLoading}
+        filteredProfiles={filteredProfiles}
+        setSelectedProfileId={setSelectedProfileId}
+        isProfileSelectDialogOpen={isProfileSelectDialogOpen}
+        setIsProfileSelectDialogOpen={setIsProfileSelectDialogOpen}
+      />
     </div>
   )
 }
