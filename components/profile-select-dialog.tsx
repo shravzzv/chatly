@@ -22,7 +22,7 @@ interface ProfileSelectDialogProps {
   filteredProfiles: Profile[]
   isProfileSelectDialogOpen: boolean
   setSearchQuery: (query: string) => void
-  setSelectedProfile: (profile: Profile) => void
+  setSelectedProfileId: (id: string) => void
   setIsProfileSelectDialogOpen: (value: boolean) => void
 }
 
@@ -32,7 +32,7 @@ export default function ProfileSelectDialog({
   setSearchQuery,
   profilesLoading,
   filteredProfiles,
-  setSelectedProfile,
+  setSelectedProfileId,
   isProfileSelectDialogOpen,
   setIsProfileSelectDialogOpen,
 }: ProfileSelectDialogProps) {
@@ -92,7 +92,7 @@ export default function ProfileSelectDialog({
                     variant='ghost'
                     className='w-full justify-start gap-3 h-auto py-3 px-3 rounded-lg hover:bg-muted cursor-pointer'
                     onClick={() => {
-                      setSelectedProfile(profile)
+                      setSelectedProfileId(profile.user_id)
                       setIsProfileSelectDialogOpen(false)
                     }}
                   >

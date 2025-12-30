@@ -24,7 +24,7 @@ export default async function Layout({
       <AppSidebar />
       <SidebarInset>
         <div className='flex flex-col h-full rounded-2xl'>
-          <SiteHeader />
+          {/* <SiteHeader /> */}
           <div className='flex-1 min-h-0'>{children}</div>
         </div>
       </SidebarInset>

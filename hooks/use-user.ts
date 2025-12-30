@@ -27,11 +27,16 @@ export function useUser() {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null)
+      setUser((prev) => {
+        if (prev?.id === session?.user?.id) return prev
+        return session?.user ?? null
+      })
     })
 
     loadUser()
-    return () => subscription.unsubscribe()
+    return () => {
+      subscription.unsubscribe()
+    }
   }, [])
 
   return { user, loading, error }

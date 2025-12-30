@@ -19,9 +19,7 @@ self.addEventListener('notificationclick', (event) => {
   event.notification.close()
 
   const senderId = event.notification.data?.senderId
-  const url = senderId
-    ? `/dashboard?selectedProfileId=${senderId}`
-    : '/dashboard'
+  const url = senderId ? `/dashboard?senderId=${senderId}` : '/dashboard'
 
   event.waitUntil(
     clients
