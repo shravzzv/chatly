@@ -755,7 +755,10 @@ export default function Page() {
               </ButtonGroup>
             </div>
 
-            <div className='flex-1 overflow-y-auto p-4 space-y-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden'>
+            <div
+              className='flex-1 overflow-y-auto p-4 space-y-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden'
+              data-testid='message-list'
+            >
               {messagesLoading ? (
                 // show messages tab skeleton
                 <div className='space-y-4'>
@@ -850,6 +853,7 @@ export default function Page() {
 
                 <InputGroupAddon align='inline-end'>
                   <InputGroupButton
+                    aria-label='Send message'
                     onClick={handleSubmitMessage}
                     variant='default'
                     size='icon-sm'
