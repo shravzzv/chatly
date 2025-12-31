@@ -16,6 +16,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton'
 import { useSubscription } from '@/hooks/use-subscription'
 import { LS_CUSTOMER_PORTAL_URL } from '@/data/constants'
+import { SidebarTrigger } from '@/components/sidebar-trigger'
 
 export default function Page() {
   const [user, setUser] = useState<User | null>(null)
@@ -93,6 +94,8 @@ export default function Page() {
 
   return (
     <section className='flex flex-col items-center w-full p-4'>
+      <SidebarTrigger />
+
       <Card className='mb-8 w-full max-w-sm'>
         <CardHeader>
           <CardTitle>Your Current Plan</CardTitle>

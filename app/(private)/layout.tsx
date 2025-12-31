@@ -1,5 +1,4 @@
 import { AppSidebar } from '@/components/app-sidebar'
-import { SiteHeader } from '@/components/site-header'
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
 import { cookies } from 'next/headers'
 
@@ -22,12 +21,7 @@ export default async function Layout({
       }
     >
       <AppSidebar />
-      <SidebarInset>
-        <div className='flex flex-col h-full rounded-2xl'>
-          {/* <SiteHeader /> */}
-          <div className='flex-1 min-h-0'>{children}</div>
-        </div>
-      </SidebarInset>
+      <SidebarInset>{children}</SidebarInset>
     </SidebarProvider>
   )
 }

@@ -53,6 +53,7 @@ import ProfileSelectDialog from '@/components/profile-select-dialog'
 import ProfileAvatar from '@/components/profile-avatar'
 import TypingIndicator from '@/components/typing-indicator'
 import { useTypingIndicator } from '@/hooks/use-typing-indicator'
+import { SidebarTrigger } from '@/components/sidebar-trigger'
 
 export default function Page() {
   const searchParams = useSearchParams()
@@ -600,8 +601,11 @@ export default function Page() {
         }`}
       >
         <div className='flex items-center justify-between p-4'>
+          <SidebarTrigger />
+
           <h2 className='text-xl font-semibold flex items-center gap-4'>
-            Inbox <MessagesSquare />
+            Inbox
+            <MessagesSquare />
           </h2>
 
           <Button
