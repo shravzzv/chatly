@@ -54,6 +54,10 @@ jest.mock('@/utils/supabase/client', () => ({
   }),
 }))
 
+jest.mock('@/components/sidebar-trigger', () => ({
+  SidebarTrigger: () => null,
+}))
+
 it('renders the heading "Inbox"', async () => {
   render(<Page />)
 
