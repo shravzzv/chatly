@@ -6,6 +6,8 @@ import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { ModeToggle } from '@/components/mode-toggle'
+import { SidebarTrigger } from '@/components/sidebar-trigger'
 
 function urlBase64ToUint8Array(base64String: string) {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4)
@@ -122,6 +124,9 @@ export default function Page() {
 
   return (
     <div className='max-w-md mx-auto mt-10'>
+      <SidebarTrigger />
+      <ModeToggle />
+
       <Card className='p-6'>
         <CardHeader>
           <CardTitle>Push Notifications</CardTitle>

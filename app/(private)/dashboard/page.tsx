@@ -53,6 +53,7 @@ import ProfileSelectDialog from '@/components/profile-select-dialog'
 import ProfileAvatar from '@/components/profile-avatar'
 import TypingIndicator from '@/components/typing-indicator'
 import { useTypingIndicator } from '@/hooks/use-typing-indicator'
+import { SidebarTrigger } from '@/components/sidebar-trigger'
 
 export default function Page() {
   const searchParams = useSearchParams()
@@ -103,6 +104,7 @@ export default function Page() {
   const router = useRouter()
   const plan = searchParams.get('plan')
   const billing = searchParams.get('billing')
+
   const filteredProfiles = searchQuery
     ? profiles.filter((p) => {
         const name = p.name?.toLowerCase() || ''
@@ -593,15 +595,20 @@ export default function Page() {
   // something like this
 
   return (
-    <div className='flex h-full bg-background text-foreground rounded-2xl max-h-[calc(100vh-1rem)]'>
+    <div className='h-[calc(100vh-1rem)] rounded-xl flex bg-background text-foreground'>
+      {/* profiles sidebar tab */}
       <div
-        className={`flex flex-col h-full p-2 w-full md:w-80 shrink-0 border-r ${
-          selectedProfile && isMobileView ? 'hidden' : 'flex'
+        className={`flex flex-col h-full p-2 w-full md:w-80 shrink-0 border-r rounded-xl ${
+          selectedProfile ? 'hidden md:flex' : 'flex'
         }`}
       >
+        {/* heading */}
         <div className='flex items-center justify-between p-4'>
+          <SidebarTrigger />
+
           <h2 className='text-xl font-semibold flex items-center gap-4'>
-            Inbox <MessagesSquare />
+            Inbox
+            <MessagesSquare />
           </h2>
 
           <Button
@@ -614,6 +621,7 @@ export default function Page() {
           </Button>
         </div>
 
+        {/* search input box */}
         <div className='px-3 pb-4 border-b'>
           <InputGroup>
             <InputGroupInput
@@ -635,7 +643,8 @@ export default function Page() {
           </InputGroup>
         </div>
 
-        <ScrollArea className='h-full rounded-md px-2 flex-1 overflow-y-scroll [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden'>
+        {/* profiles scroll area */}
+        <ScrollArea className='flex-1 overflow-y-auto rounded-xl px-2 flex flex-col'>
           {profilesLoading ? (
             // Skeleton UI
             <div className='space-y-3 px-2 py-4'>
@@ -672,11 +681,12 @@ export default function Page() {
               >
                 <ProfileAvatar profile={profile} />
 
-                <div className='flex flex-col text-left overflow-hidden'>
+                <div className='flex flex-col text-left overflow-hidden min-w-0'>
                   <span className='font-medium truncate'>
                     {getDisplayName(profile)}
                     {profile.user_id === currentUser.id && ' (You)'}
                   </span>
+
                   <span className='text-xs text-muted-foreground truncate'>
                     {lastMessagesLoading ? (
                       <Skeleton className='h-4 w-24 rounded-md' />
@@ -698,9 +708,10 @@ export default function Page() {
         </ScrollArea>
       </div>
 
+      {/* chat box tab */}
       <div
-        className={`flex flex-col flex-1 h-full min-w-0 ${
-          !selectedProfile && isMobileView ? 'hidden' : 'flex'
+        className={`flex-1 flex flex-col h-full min-w-0 rounded-xl ${
+          selectedProfile ? 'flex' : 'hidden md:flex'
         }`}
       >
         {selectedProfile ? (
@@ -755,8 +766,9 @@ export default function Page() {
               </ButtonGroup>
             </div>
 
-            <div
-              className='flex-1 overflow-y-auto p-4 space-y-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden'
+            {/* chat window */}
+            <ScrollArea
+              className='flex-1 overflow-y-auto p-4'
               data-testid='message-list'
             >
               {messagesLoading ? (
@@ -809,8 +821,9 @@ export default function Page() {
 
               {isTyping && <TypingIndicator />}
               <div ref={messagesEndRef} />
-            </div>
+            </ScrollArea>
 
+            {/* chat input */}
             <div className='p-2'>
               <InputGroup className='flex items-end'>
                 <InputGroupAddon>

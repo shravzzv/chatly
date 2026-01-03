@@ -54,12 +54,23 @@ jest.mock('@/utils/supabase/client', () => ({
   }),
 }))
 
-it('renders the heading "Inbox"', async () => {
-  render(<Page />)
+jest.mock('@/components/sidebar-trigger', () => ({
+  SidebarTrigger: () => <button data-testid='sidebar-trigger'>Sidebar</button>,
+}))
 
-  const heading = await screen.findByRole('heading', {
-    name: /inbox/i,
+describe('Dashboard', () => {
+  it('renders the heading "Inbox"', async () => {
+    render(<Page />)
+
+    const heading = await screen.findByRole('heading', {
+      name: /inbox/i,
+    })
+
+    expect(heading).toBeInTheDocument()
   })
 
-  expect(heading).toBeInTheDocument()
+  it('renders the sidebar trigger', () => {
+    render(<Page />)
+    expect(screen.getByTestId('sidebar-trigger')).toBeInTheDocument()
+  })
 })
