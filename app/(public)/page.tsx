@@ -13,7 +13,7 @@ export const faqs = [
   {
     question: 'Is Chatly free to use?',
     answer:
-      'Yes! Chatly is free to start, so you can explore all the essential features without paying a cent. Our goal is to make communication effortless for everyone. In the future, we’ll introduce paid plans for teams who need advanced analytics, integrations, and storage — but the free tier will always stay generous.',
+      'Yes. Chatly offers a generous free plan with unlimited 1:1 text messaging, message history, typing indicators, and notifications. Paid plans add higher limits for media sharing and AI-assisted message improvements.',
   },
   {
     question: 'Do I need to install anything?',
@@ -23,12 +23,12 @@ export const faqs = [
   {
     question: 'Can I use Chatly for my business?',
     answer:
-      'Absolutely. Chatly is built for teams, startups, and creators of all sizes. You can host meetings, manage team channels, and even integrate with your favorite tools. Whether you’re a solo creator or a 50-person company, Chatly adapts to your workflow.',
+      'Yes. Chatly is designed for individuals, startups, and small teams who want simple, reliable 1:1 communication. It focuses on clarity and speed rather than complex enterprise workflows.',
   },
   {
     question: 'Is my data secure?',
     answer:
-      'Yes. Your messages are encrypted end-to-end, and we use industry-standard security to protect your data. We’ll never sell your information or show ads — privacy is at the core of Chatly’s design philosophy.',
+      'Chatly uses modern authentication, database security rules, and HTTPS encryption to protect your data. Messages are securely stored to support features like message history, syncing across devices, and notifications.',
   },
 ]
 
@@ -41,8 +41,9 @@ export default function HomePage() {
         </h1>
 
         <p className='mt-8 text-lg text-muted-foreground max-w-xl mx-auto'>
-          Chatly helps teams and creators connect through real-time chat, audio,
-          and video — all in one platform.
+          Chatly helps people connect through fast, real-time 1:1 chat with
+          media sharing, typing indicators, and a clean, focused interface —
+          built for the modern web.
         </p>
 
         <div className='mt-8 flex justify-center gap-4'>
