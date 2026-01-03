@@ -598,7 +598,7 @@ export default function Page() {
     <div className='h-[calc(100vh-1rem)] rounded-xl flex bg-background text-foreground'>
       {/* profiles sidebar tab */}
       <div
-        className={`flex flex-col h-full p-2 w-full md:w-80 shrink-0 border-r rounded-xl bg-blue-200 ${
+        className={`flex flex-col h-full p-2 w-full md:w-80 shrink-0 border-r rounded-xl ${
           selectedProfile ? 'hidden md:flex' : 'flex'
         }`}
       >
@@ -644,7 +644,7 @@ export default function Page() {
         </div>
 
         {/* profiles scroll area */}
-        <ScrollArea className='flex-1 overflow-y-auto rounded-xl px-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden bg-amber-200 flex flex-col'>
+        <ScrollArea className='flex-1 overflow-y-auto rounded-xl px-2 flex flex-col'>
           {profilesLoading ? (
             // Skeleton UI
             <div className='space-y-3 px-2 py-4'>
@@ -710,7 +710,7 @@ export default function Page() {
 
       {/* chat box tab */}
       <div
-        className={`flex-1 flex flex-col h-full min-w-0 rounded-xl bg-violet-200 ${
+        className={`flex-1 flex flex-col h-full min-w-0 rounded-xl ${
           selectedProfile ? 'flex' : 'hidden md:flex'
         }`}
       >
@@ -768,7 +768,7 @@ export default function Page() {
 
             {/* chat window */}
             <ScrollArea
-              className='flex-1 overflow-y-auto p-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden'
+              className='flex-1 overflow-y-auto p-4'
               data-testid='message-list'
             >
               {messagesLoading ? (
