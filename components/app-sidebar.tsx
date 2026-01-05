@@ -39,11 +39,6 @@ const navItems = [
     icon: UserIcon,
   },
   {
-    title: 'Settings',
-    href: '/settings',
-    icon: UserIcon,
-  },
-  {
     title: 'Plan',
     href: '/plan',
     icon: CreditCard,

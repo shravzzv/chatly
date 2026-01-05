@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/input-group'
 import { Label } from '@/components/ui/label'
 import AccountAvatarSection from './account-avatar-section'
+import { Separator } from './ui/separator'
 
 export default function AccountProfileSection() {
   const [draft, setDraft] = useState({
@@ -25,36 +26,39 @@ export default function AccountProfileSection() {
     <section className='space-y-4'>
       <h2 className='text-lg font-semibold'>Profile</h2>
       <AccountAvatarSection />
+      <Separator />
 
-      <InputGroup>
-        <InputGroupInput
-          id='name'
-          placeholder='John Doe'
-          value={draft.name}
-          onChange={(v) => setDraft((d) => ({ ...d, name: v.target.value }))}
-        />
-        <InputGroupAddon align='block-start'>
-          <Label htmlFor='name' className='text-foreground'>
-            Name
-          </Label>
-        </InputGroupAddon>
-      </InputGroup>
+      <div className='space-y-4 md:flex md:gap-2 md:space-y-0'>
+        <InputGroup>
+          <InputGroupInput
+            id='name'
+            placeholder='John Doe'
+            value={draft.name}
+            onChange={(v) => setDraft((d) => ({ ...d, name: v.target.value }))}
+          />
+          <InputGroupAddon align='block-start'>
+            <Label htmlFor='name' className='text-foreground'>
+              Name
+            </Label>
+          </InputGroupAddon>
+        </InputGroup>
 
-      <InputGroup>
-        <InputGroupInput
-          id='username'
-          placeholder='johndoe'
-          value={draft.username}
-          onChange={(v) =>
-            setDraft((d) => ({ ...d, username: v.target.value }))
-          }
-        />
-        <InputGroupAddon align='block-start'>
-          <Label htmlFor='name' className='text-foreground'>
-            Username
-          </Label>
-        </InputGroupAddon>
-      </InputGroup>
+        <InputGroup>
+          <InputGroupInput
+            id='username'
+            placeholder='johndoe'
+            value={draft.username}
+            onChange={(v) =>
+              setDraft((d) => ({ ...d, username: v.target.value }))
+            }
+          />
+          <InputGroupAddon align='block-start'>
+            <Label htmlFor='name' className='text-foreground'>
+              Username
+            </Label>
+          </InputGroupAddon>
+        </InputGroup>
+      </div>
 
       <InputGroup>
         <InputGroupTextarea
@@ -71,7 +75,9 @@ export default function AccountProfileSection() {
         </InputGroupAddon>
       </InputGroup>
 
-      <Button disabled={!isDirty}>Save</Button>
+      <Button disabled={!isDirty} className='cursor-pointer'>
+        Save
+      </Button>
     </section>
   )
 }

@@ -1,5 +1,4 @@
 import { Label } from '@/components/ui/label'
-import { Input } from '@/components/ui/input'
 import { Pen } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 
@@ -14,7 +13,7 @@ export default function AccountAvatarSection() {
 
   return (
     <div className='flex items-center gap-4'>
-      <Input
+      <input
         id='avatar'
         type='file'
         accept='image/*'
