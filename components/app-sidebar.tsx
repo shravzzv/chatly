@@ -34,13 +34,13 @@ const navItems = [
     icon: LayoutDashboard,
   },
   {
-    title: 'Settings',
-    href: '/settings',
-    icon: Settings,
+    title: 'Account',
+    href: '/account',
+    icon: UserIcon,
   },
   {
-    title: 'Profile',
-    href: '/profile',
+    title: 'Settings',
+    href: '/settings',
     icon: UserIcon,
   },
   {
