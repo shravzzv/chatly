@@ -4,7 +4,6 @@ import * as React from 'react'
 import {
   CreditCard,
   LayoutDashboard,
-  Settings,
   Star,
   User as UserIcon,
 } from 'lucide-react'

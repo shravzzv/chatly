@@ -1,11 +1,29 @@
 import { Profile } from '@/types/profile'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
 
+type TailwindRounded =
+  | 'none'
+  | 'sm'
+  | 'md'
+  | 'lg'
+  | 'xl'
+  | '2xl'
+  | '3xl'
+  | 'full'
+
+interface ProfileAvatarProps {
+  profile: Profile
+  height?: number
+  width?: number
+  rounded?: TailwindRounded
+}
+
 export default function ProfileAvatar({
   profile: { name, username, avatar_url },
-}: {
-  profile: Profile
-}) {
+  height = 8,
+  width = 8,
+  rounded = 'full',
+}: ProfileAvatarProps) {
   const fallback =
     name
       ?.split(' ')
@@ -17,10 +35,11 @@ export default function ProfileAvatar({
     '??'
 
   return (
-    <Avatar className='h-8 w-8'>
+    <Avatar className={`h-${height} w-${width} rounded-${rounded}`}>
       <AvatarImage
-        src={avatar_url || undefined}
+        src={`${avatar_url}?t=${new Date().getTime()}` || undefined}
         alt={name || username || 'user'}
+        className='object-cover'
       />
       <AvatarFallback>{fallback}</AvatarFallback>
     </Avatar>

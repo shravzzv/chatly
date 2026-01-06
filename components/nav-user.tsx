@@ -1,6 +1,5 @@
 'use client'
 
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,29 +20,14 @@ import { Download, EllipsisVertical, LogOut } from 'lucide-react'
 import Link from 'next/link'
 import { useProfile } from '@/hooks/use-profile'
 import { Spinner } from './ui/spinner'
+import ProfileAvatar from './profile-avatar'
 
-const getUserIdentity = (
-  name: string | null,
-  username: string | null,
-  avatar_url: string | null
-) => {
+const getUserIdentity = (name: string | null, username: string | null) => {
   const safeName = name || 'User'
   const safeUsername = username || 'user'
 
-  const fallback = safeName
-    .split(' ')
-    .map((n) => n[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2)
-
   return (
     <>
-      <Avatar className='h-8 w-8 rounded-lg'>
-        <AvatarImage src={avatar_url || undefined} alt={safeName} />
-        <AvatarFallback className='rounded-lg'>{fallback}</AvatarFallback>
-      </Avatar>
-
       <div className='grid flex-1 text-left text-sm leading-tight'>
         <span className='truncate font-medium'>{safeName}</span>
         <span className='text-muted-foreground truncate text-xs'>
@@ -82,7 +66,7 @@ export function NavUser({ userId }: { userId: string }) {
     )
   }
 
-  const { name, username, avatar_url } = profile
+  const { name, username } = profile
 
   return (
     <SidebarMenu>
@@ -93,7 +77,8 @@ export function NavUser({ userId }: { userId: string }) {
               size='lg'
               className='data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground cursor-pointer'
             >
-              {getUserIdentity(name, username, avatar_url)}
+              <ProfileAvatar profile={profile} rounded='lg' />
+              {getUserIdentity(name, username)}
               <EllipsisVertical className='ml-auto size-4' />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
@@ -106,7 +91,8 @@ export function NavUser({ userId }: { userId: string }) {
           >
             <DropdownMenuLabel className='p-0 font-normal'>
               <div className='flex items-center gap-2 px-1 py-1.5 text-left text-sm'>
-                {getUserIdentity(name, username, avatar_url)}
+                <ProfileAvatar profile={profile} rounded='lg' />
+                {getUserIdentity(name, username)}
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
