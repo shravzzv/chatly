@@ -14,13 +14,11 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar'
-import { createClient } from '@/utils/supabase/client'
-import { toast } from 'sonner'
 import { Download, EllipsisVertical, LogOut } from 'lucide-react'
 import Link from 'next/link'
-import { useProfile } from '@/hooks/use-profile'
-import { Spinner } from './ui/spinner'
 import ProfileAvatar from './profile-avatar'
+import { useChatlyStore } from '@/providers/chatly-store-provider'
+import NavUserSkeleton from './skeletons/nav-user-skeleton'
 
 const getUserIdentity = (name: string | null, username: string | null) => {
   const safeName = name || 'User'
@@ -38,34 +36,12 @@ const getUserIdentity = (name: string | null, username: string | null) => {
   )
 }
 
-export function NavUser({ userId }: { userId: string }) {
+export function NavUser() {
   const { isMobile } = useSidebar()
-  const { profile, loading, error } = useProfile(userId)
+  const profile = useChatlyStore((state) => state.profile)
+  const logout = useChatlyStore((state) => state.logout)
 
-  if (error) console.error(error)
-
-  const handleLogout = async () => {
-    const supabase = createClient()
-    const { error } = await supabase.auth.signOut({ scope: 'local' })
-    if (error) {
-      console.error('Error signing out:', error)
-      toast.info('Logout failed. Please check your connection and try again.')
-    }
-    // no redirect because app-sidebar's useEffect handles it on signout
-  }
-
-  if (loading || !profile) {
-    return (
-      <SidebarMenu>
-        <SidebarMenuItem>
-          <SidebarMenuButton size='lg' disabled>
-            <Spinner className='mx-auto' />
-          </SidebarMenuButton>
-        </SidebarMenuItem>
-      </SidebarMenu>
-    )
-  }
-
+  if (!profile) return <NavUserSkeleton />
   const { name, username } = profile
 
   return (
@@ -106,7 +82,7 @@ export function NavUser({ userId }: { userId: string }) {
             <DropdownMenuItem
               variant='destructive'
               className='cursor-pointer'
-              onClick={handleLogout}
+              onClick={() => logout('local')}
             >
               <LogOut />
               Log out

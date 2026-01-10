@@ -1,10 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { createClient } from '@/utils/supabase/client'
-import type { User } from '@supabase/supabase-js'
 import {
   Card,
   CardHeader,
@@ -17,25 +14,15 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useSubscription } from '@/hooks/use-subscription'
 import { LS_CUSTOMER_PORTAL_URL } from '@/data/constants'
 import { SidebarTrigger } from '@/components/sidebar-trigger'
+import { useChatlyStore } from '@/providers/chatly-store-provider'
 
 export default function Page() {
-  const [user, setUser] = useState<User | null>(null)
+  const user = useChatlyStore((state) => state.user)
 
   const { subscription, loading: subscriptionLoading } = useSubscription(
     user?.id
   )
   const isLoading = subscriptionLoading || user === null
-
-  useEffect(() => {
-    const supabase = createClient()
-    async function load() {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-      setUser(user)
-    }
-    load()
-  }, [])
 
   if (isLoading) {
     return (

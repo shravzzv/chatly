@@ -4,6 +4,9 @@ import './globals.css'
 import { Analytics } from '@vercel/analytics/next'
 import { ThemeProvider } from '@/components/theme-provider'
 import { Toaster } from '@/components/ui/sonner'
+import { createClient } from '@/utils/supabase/server'
+import { ChatlyStoreProvider } from '@/providers/chatly-store-provider'
+import { type Profile } from '@/types/profile'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' })
 
@@ -83,23 +86,42 @@ export const metadata: Metadata = {
   },
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const supabase = await createClient()
+  let profile: Profile | null = null
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (user) {
+    const { data } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('user_id', user.id)
+      .single()
+
+    profile = data
+  }
+
   return (
     <html lang='en' suppressHydrationWarning className={inter.variable}>
       <body className='antialiased'>
-        <ThemeProvider
-          attribute='class'
-          defaultTheme='system'
-          enableSystem
-          disableTransitionOnChange
-        >
-          {children}
-          <Toaster richColors />
-        </ThemeProvider>
+        <ChatlyStoreProvider hydrationData={{ user, profile }}>
+          <ThemeProvider
+            attribute='class'
+            defaultTheme={profile?.theme || 'system'}
+            enableSystem
+            disableTransitionOnChange
+          >
+            {children}
+            <Toaster richColors />
+          </ThemeProvider>
+        </ChatlyStoreProvider>
         <Analytics />
       </body>
     </html>
