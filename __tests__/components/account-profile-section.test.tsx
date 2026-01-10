@@ -7,6 +7,10 @@ import { Profile } from '@/types/profile'
 
 jest.mock('next/navigation')
 
+jest.mock('uuid', () => ({
+  v4: () => 'mocked-uuid',
+}))
+
 jest.mock('@/utils/supabase/client', () => ({
   createClient: () => ({
     auth: {
@@ -59,6 +63,18 @@ const renderWithProvider = (children: React.ReactNode) => {
 }
 
 describe('AccountProfileSection', () => {
+  it('should show a skeleton when profile is missing', () => {
+    render(
+      <ChatlyStoreProvider hydrationData={{ user: null, profile: null }}>
+        <AccountProfileSection />
+      </ChatlyStoreProvider>
+    )
+
+    expect(screen.getByTestId('skeleton')).toBeInTheDocument()
+    const heading = screen.queryByRole('heading', { name: /profile/i })
+    expect(heading).not.toBeInTheDocument()
+  })
+
   it('should show the correct heading and load profile data into inputs', async () => {
     renderWithProvider(<AccountProfileSection />)
 
@@ -78,18 +94,6 @@ describe('AccountProfileSection', () => {
     expect(nameInput).toHaveValue('Test User')
     expect(usernameInput).toHaveValue('testuser')
     expect(bioTextarea).toHaveValue('Hello world')
-  })
-
-  it('should show a skeleton when profile is missing', () => {
-    render(
-      <ChatlyStoreProvider hydrationData={{ user: null, profile: null }}>
-        <AccountProfileSection />
-      </ChatlyStoreProvider>
-    )
-
-    expect(screen.getByTestId('skeleton')).toBeInTheDocument()
-    const heading = screen.queryByRole('heading', { name: /profile/i })
-    expect(heading).not.toBeInTheDocument()
   })
 
   it('disables the save button when the form is not dirty', () => {

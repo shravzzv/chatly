@@ -35,9 +35,9 @@ export default function ProfileAvatar({
     '??'
 
   return (
-    <Avatar className={`h-${height} w-${width} rounded-${rounded}`}>
+    <Avatar className={`h-${height} w-${width} rounded-${rounded} shadow`}>
       <AvatarImage
-        src={`${avatar_url}?t=${new Date().getTime()}` || undefined}
+        src={avatar_url || undefined}
         alt={name || username || 'user'}
         className='object-cover'
       />
