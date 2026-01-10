@@ -3,6 +3,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/utils/supabase/server'
 import type { PushSubscription } from 'web-push'
+import { Profile } from '@/types/profile'
 
 export async function signup(formData: FormData) {
   const supabase = await createClient()
@@ -176,5 +177,51 @@ export async function unsubscribeUser() {
   } catch (error) {
     console.error('unsubscribeUser error:', error)
     return { success: false, error: error }
+  }
+}
+
+export async function updateProfile(updates: Partial<Profile>) {
+  const supabase = await createClient()
+
+  try {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
+    if (!user) throw new Error('Not authenticated')
+
+    const { data: updatedProfile, error } = await supabase
+      .from('profiles')
+      .update(updates)
+      .eq('user_id', user.id)
+      .select('*')
+      .single()
+
+    if (error) throw error
+
+    return { success: true, updatedProfile }
+  } catch (error) {
+    console.error('update profile error:', error)
+
+    if (
+      error &&
+      typeof error === 'object' &&
+      'code' in error &&
+      error.code === '23505'
+    ) {
+      return {
+        success: false,
+        field: 'username',
+        message: 'This username is already taken',
+      }
+    }
+
+    return {
+      success: false,
+      message:
+        error instanceof Error
+          ? error.message
+          : 'An Unknown server error occured',
+    }
   }
 }

@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { createClient } from '@/utils/supabase/client'
-import type { User } from '@supabase/supabase-js'
 import {
   Accordion,
   AccordionContent,
@@ -20,11 +19,11 @@ import {
   CardFooter,
 } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Spinner } from '@/components/ui/spinner'
 import { getCheckoutUrl } from '@/lib/get-checkout-url'
 import { Billing, Plan } from '@/types/subscription'
 import { plans } from '@/data/plans'
 import { LS_CUSTOMER_PORTAL_URL } from '@/data/constants'
+import { useChatlyStore } from '@/providers/chatly-store-provider'
 
 const faqs = [
   {
@@ -55,19 +54,13 @@ const faqs = [
 
 export default function Page() {
   const [billingCycle, setBillingCycle] = useState<Billing>('monthly')
-  const [user, setUser] = useState<User | null>(null)
   const [hasSubscription, setHasSubscription] = useState(false)
-  const [loading, setLoading] = useState(true)
+  const user = useChatlyStore((state) => state.user)
 
   useEffect(() => {
     const supabase = createClient()
 
     async function load() {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-      setUser(user)
-
       if (user) {
         const { data: sub } = await supabase
           .from('subscriptions')
@@ -77,12 +70,10 @@ export default function Page() {
 
         setHasSubscription(!!sub)
       }
-
-      setLoading(false)
     }
 
     load()
-  }, [])
+  }, [user])
 
   const getButtonUrl = (plan: string) => {
     const lower = plan.toLowerCase()
@@ -93,14 +84,6 @@ export default function Page() {
   }
 
   const getButtonText = (plan: string) => {
-    if (loading) {
-      return (
-        <>
-          <Spinner /> Loading
-        </>
-      )
-    }
-
     if (!user) return 'Get Started'
 
     if (plan.toLowerCase() === 'free')

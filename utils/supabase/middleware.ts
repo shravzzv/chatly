@@ -31,7 +31,7 @@ export async function updateSession(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname
 
-  const privateRoutes = ['/dashboard', '/settings'] // Routes that require authentication to be accessed
+  const privateRoutes = ['/dashboard', '/account', '/plan'] // Routes that require authentication to be accessed
   const publicOnlyRoutes = ['/signin', '/signup'] // Routes that are hidden from authenticated users
 
   // Protect private routes

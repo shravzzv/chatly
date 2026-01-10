@@ -1,6 +1,5 @@
 'use client'
 
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,35 +14,18 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar'
-import { createClient } from '@/utils/supabase/client'
-import { toast } from 'sonner'
 import { Download, EllipsisVertical, LogOut } from 'lucide-react'
 import Link from 'next/link'
-import { useProfile } from '@/hooks/use-profile'
-import { Spinner } from './ui/spinner'
+import ProfileAvatar from './profile-avatar'
+import { useChatlyStore } from '@/providers/chatly-store-provider'
+import NavUserSkeleton from './skeletons/nav-user-skeleton'
 
-const getUserIdentity = (
-  name: string | null,
-  username: string | null,
-  avatar_url: string | null
-) => {
+const getUserIdentity = (name: string | null, username: string | null) => {
   const safeName = name || 'User'
   const safeUsername = username || 'user'
 
-  const fallback = safeName
-    .split(' ')
-    .map((n) => n[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2)
-
   return (
     <>
-      <Avatar className='h-8 w-8 rounded-lg'>
-        <AvatarImage src={avatar_url || undefined} alt={safeName} />
-        <AvatarFallback className='rounded-lg'>{fallback}</AvatarFallback>
-      </Avatar>
-
       <div className='grid flex-1 text-left text-sm leading-tight'>
         <span className='truncate font-medium'>{safeName}</span>
         <span className='text-muted-foreground truncate text-xs'>
@@ -54,35 +36,13 @@ const getUserIdentity = (
   )
 }
 
-export function NavUser({ userId }: { userId: string }) {
+export function NavUser() {
   const { isMobile } = useSidebar()
-  const { profile, loading, error } = useProfile(userId)
+  const profile = useChatlyStore((state) => state.profile)
+  const logout = useChatlyStore((state) => state.logout)
 
-  if (error) console.error(error)
-
-  const handleLogout = async () => {
-    const supabase = createClient()
-    const { error } = await supabase.auth.signOut({ scope: 'local' })
-    if (error) {
-      console.error('Error signing out:', error)
-      toast.info('Logout failed. Please check your connection and try again.')
-    }
-    // no redirect because app-sidebar's useEffect handles it on signout
-  }
-
-  if (loading || !profile) {
-    return (
-      <SidebarMenu>
-        <SidebarMenuItem>
-          <SidebarMenuButton size='lg' disabled>
-            <Spinner className='mx-auto' />
-          </SidebarMenuButton>
-        </SidebarMenuItem>
-      </SidebarMenu>
-    )
-  }
-
-  const { name, username, avatar_url } = profile
+  if (!profile) return <NavUserSkeleton />
+  const { name, username } = profile
 
   return (
     <SidebarMenu>
@@ -93,7 +53,8 @@ export function NavUser({ userId }: { userId: string }) {
               size='lg'
               className='data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground cursor-pointer'
             >
-              {getUserIdentity(name, username, avatar_url)}
+              <ProfileAvatar profile={profile} rounded='lg' />
+              {getUserIdentity(name, username)}
               <EllipsisVertical className='ml-auto size-4' />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
@@ -106,7 +67,8 @@ export function NavUser({ userId }: { userId: string }) {
           >
             <DropdownMenuLabel className='p-0 font-normal'>
               <div className='flex items-center gap-2 px-1 py-1.5 text-left text-sm'>
-                {getUserIdentity(name, username, avatar_url)}
+                <ProfileAvatar profile={profile} rounded='lg' />
+                {getUserIdentity(name, username)}
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
@@ -120,7 +82,7 @@ export function NavUser({ userId }: { userId: string }) {
             <DropdownMenuItem
               variant='destructive'
               className='cursor-pointer'
-              onClick={handleLogout}
+              onClick={() => logout('local')}
             >
               <LogOut />
               Log out
