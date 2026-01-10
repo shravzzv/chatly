@@ -3,6 +3,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/utils/supabase/server'
 import type { PushSubscription } from 'web-push'
+import { Profile } from '@/types/profile'
 
 export async function signup(formData: FormData) {
   const supabase = await createClient()
@@ -179,11 +180,7 @@ export async function unsubscribeUser() {
   }
 }
 
-export async function updateProfile(data: {
-  name: string
-  username: string
-  bio?: string
-}) {
+export async function updateProfile(updates: Partial<Profile>) {
   const supabase = await createClient()
 
   try {
@@ -195,9 +192,9 @@ export async function updateProfile(data: {
 
     const { data: updatedProfile, error } = await supabase
       .from('profiles')
-      .update(data)
+      .update(updates)
       .eq('user_id', user.id)
-      .select('name, username, bio')
+      .select('*')
       .single()
 
     if (error) throw error

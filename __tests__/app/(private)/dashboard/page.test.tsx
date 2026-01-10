@@ -6,15 +6,7 @@ jest.mock('uuid', () => ({
   v4: () => 'mock-uuid',
 }))
 
-jest.mock('next/navigation', () => ({
-  useSearchParams: () => ({
-    get: jest.fn().mockReturnValue(null),
-  }),
-  useRouter: () => ({
-    replace: jest.fn(),
-    push: jest.fn(),
-  }),
-}))
+jest.mock('next/navigation')
 
 jest.mock('@/hooks/use-user', () => ({
   useUser: () => ({

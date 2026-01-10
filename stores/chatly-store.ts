@@ -11,6 +11,7 @@ export interface ChatlyState {
 
 export interface ChatlyActions {
   logout: (scope: 'global' | 'local' | 'others') => void
+  setProfile: (profile: Profile) => void
 }
 
 export type ChatlyStore = ChatlyState & ChatlyActions
@@ -38,5 +39,7 @@ export const createChatlyStore = () => {
       set(DEFAULT_STATE)
       toast.success('Logout succeeded.')
     },
+
+    setProfile: (profile) => set({ profile }),
   }))
 }

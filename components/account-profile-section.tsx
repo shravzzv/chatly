@@ -14,10 +14,9 @@ import AccountAvatarSection from './account-avatar-section'
 import { updateProfile } from '@/app/actions'
 import { Alert, AlertDescription, AlertTitle } from './ui/alert'
 import { AlertCircleIcon } from 'lucide-react'
-import { useUser } from '@/hooks/use-user'
-import { useProfile } from '@/hooks/use-profile'
 import { useEffect } from 'react'
-import AccountProfileSectionSkeleton from './account-profile-section-skeleton'
+import AccountProfileSectionSkeleton from './skeletons/account-profile-section-skeleton'
+import { useChatlyStore } from '@/providers/chatly-store-provider'
 
 const formSchema = z.object({
   name: z
@@ -37,8 +36,8 @@ const formSchema = z.object({
 })
 
 export default function AccountProfileSection() {
-  const { user } = useUser()
-  const { profile, loading } = useProfile(user?.id)
+  const profile = useChatlyStore((state) => state.profile)
+  const setProfile = useChatlyStore((state) => state.setProfile)
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -74,6 +73,7 @@ export default function AccountProfileSection() {
       return
     }
 
+    setProfile(result.updatedProfile)
     toast.success('Profile updated successfully')
     form.reset(result.updatedProfile)
   }
@@ -88,14 +88,14 @@ export default function AccountProfileSection() {
     })
   }, [profile, form])
 
-  if (loading || !profile) {
+  if (!profile) {
     return <AccountProfileSectionSkeleton />
   }
 
   return (
     <section className='space-y-4'>
       <h2 className='text-lg font-semibold'>Profile</h2>
-      <AccountAvatarSection />
+      <AccountAvatarSection profile={profile} />
       <Separator />
 
       <form onSubmit={form.handleSubmit(onSubmit)}>
