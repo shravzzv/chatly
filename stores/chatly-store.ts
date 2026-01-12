@@ -12,6 +12,7 @@ export interface ChatlyState {
 export interface ChatlyActions {
   logout: (scope: 'global' | 'local' | 'others') => void
   setProfile: (profile: Profile) => void
+  setUser: (profile: User) => void
 }
 
 export type ChatlyStore = ChatlyState & ChatlyActions
@@ -41,5 +42,6 @@ export const createChatlyStore = () => {
     },
 
     setProfile: (profile) => set({ profile }),
+    setUser: (user) => set({ user }),
   }))
 }

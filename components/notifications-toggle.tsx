@@ -6,6 +6,7 @@ import { Switch } from '@/components/ui/switch'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { toast } from 'sonner'
 import { Spinner } from './ui/spinner'
+import { AlertCircle } from 'lucide-react'
 
 function urlBase64ToUint8Array(base64String: string) {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4)
@@ -124,8 +125,9 @@ export function NotificationsToggle() {
 
   if (!isSupported) {
     return (
-      <Alert className='mb-4' variant='destructive'>
-        <AlertTitle>Heads up!</AlertTitle>
+      <Alert className='mb-4'>
+        <AlertCircle />
+        <AlertTitle>Unusupported web push notifications</AlertTitle>
         <AlertDescription>
           Your browser doesn&apos;t fully support web push notifications. On
           mobile devices, you can install this website as a PWA (via “Add to
