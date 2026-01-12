@@ -59,6 +59,8 @@ beforeEach(() => {
     configurable: true,
   })
 
+  process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY = 'test'
+
   jest.clearAllMocks()
 })
 
