@@ -1,5 +1,5 @@
 type Status = 'online' | 'offline' | 'idle'
-type Theme = 'light' | 'dark' | 'system'
+export type Theme = 'light' | 'dark' | 'system'
 
 export interface Profile {
   id: string

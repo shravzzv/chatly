@@ -38,10 +38,8 @@ export const ChatlyStoreProvider = ({
   const pathname = usePathname()
 
   useEffect(() => {
-    if (!store.getState().user || !store.getState().profile) {
-      store.setState(hydrationData)
-    }
-  })
+    store.setState(hydrationData)
+  }, [store, hydrationData])
 
   useEffect(() => {
     const supabase = createClient()
