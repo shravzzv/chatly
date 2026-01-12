@@ -1,4 +1,7 @@
 name: Jest Tests
+permissions:
+  contents: read
+  pull-requests: write
 on:
   push:
     branches:
@@ -6,6 +9,13 @@ on:
   pull_request:
     branches:
       - main
+env:
+  NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+  SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+  NEXT_PUBLIC_APP_URL_ROOT: ${{ secrets.NEXT_PUBLIC_APP_URL_ROOT }}
+  NEXT_PUBLIC_VAPID_PUBLIC_KEY: ${{ secrets.NEXT_PUBLIC_VAPID_PUBLIC_KEY }}
+  VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
 jobs:
   test:
     runs-on: ubuntu-latest
