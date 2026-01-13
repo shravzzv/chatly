@@ -28,17 +28,31 @@ export const createChatlyStore = () => {
   return createStore<ChatlyStore>()((set) => ({
     ...DEFAULT_STATE,
 
-    logout: async (scope) => {
+    logout: async (scope): Promise<void> => {
       const { error } = await supabase.auth.signOut({ scope })
       if (error) {
         console.error('Error signing out:', error)
         toast.error(
           'Logout failed. Please check your connection and try again.'
         )
+        return
       }
 
-      set(DEFAULT_STATE)
-      toast.success('Logout succeeded.')
+      switch (scope) {
+        case 'local':
+          toast.success('Logged out')
+          set(DEFAULT_STATE)
+          break
+        case 'global':
+          toast.success('Logged out of all sessions')
+          set(DEFAULT_STATE)
+          break
+        case 'others':
+          toast.success('Logged out of all other sessions')
+          break
+        default:
+          break
+      }
     },
 
     setProfile: (profile) => set({ profile }),
