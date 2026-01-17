@@ -225,3 +225,21 @@ export async function updateProfile(updates: Partial<Profile>) {
     }
   }
 }
+export async function getSubscriptions() {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    throw new Error('Not authenticated')
+  }
+
+  const { data, error } = await supabase
+    .from('subscriptions')
+    .select('*')
+    .eq('user_id', user.id)
+
+  if (error) throw error
+  return data
+}

@@ -13,6 +13,7 @@ export interface Subscription {
   id: string
   user_id: string
   ls_subscription_id: string
+  ls_customer_id: string | null
   plan: Plan
   billing: Billing
   status: SubscriptionStatus
