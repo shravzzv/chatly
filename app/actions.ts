@@ -6,6 +6,22 @@ import type { PushSubscription } from 'web-push'
 import { Profile } from '@/types/profile'
 import { createAdminClient } from '@/utils/supabase/admin'
 
+type OAuthProvider = 'google' | 'github' | 'apple'
+
+const getSiteURL = () => {
+  let url =
+    process?.env?.NEXT_PUBLIC_SITE_URL ??
+    process?.env?.NEXT_PUBLIC_VERCEL_URL ?? // Automatically set by Vercel.
+    'http://localhost:3000/'
+
+  // Make sure to include `https://` when not localhost.
+  url = url.startsWith('http') ? url : `https://${url}`
+  // Make sure to include a trailing `/`.
+  url = url.endsWith('/') ? url : `${url}/`
+
+  return url
+}
+
 export async function signup(formData: FormData) {
   const supabase = await createClient()
 
@@ -14,19 +30,20 @@ export async function signup(formData: FormData) {
   const plan = formData.get('plan') as string
   const billing = formData.get('billing') as string
 
-  const redirectUrl = `${process.env.NEXT_PUBLIC_APP_URL_ROOT}/dashboard${
+  const emailRedirectTo = `${getSiteURL()}dashboard${
     plan && billing ? `?plan=${plan}&billing=${billing}` : ''
   }`
 
   const { error } = await supabase.auth.signUp({
     email,
     password,
-    options: {
-      emailRedirectTo: redirectUrl,
-    },
+    options: { emailRedirectTo },
   })
 
-  if (error) return redirect('/error')
+  if (error) {
+    console.error(error)
+    redirect('/error')
+  }
 }
 
 export async function signin(formData: FormData) {
@@ -40,83 +57,48 @@ export async function signin(formData: FormData) {
   const { error } = await supabase.auth.signInWithPassword(data)
 
   if (error) {
+    console.error(error)
     return { error: error.message }
   }
 
   redirect('/dashboard')
 }
 
-export async function signInWithGoogle(plan?: string, billing?: string) {
+export async function signInWithProvider(
+  provider: OAuthProvider,
+  plan?: string,
+  billing?: string,
+) {
   const supabase = await createClient()
+  const redirectTo = new URL('auth/callback', getSiteURL())
+  redirectTo.searchParams.set('next', '/dashboard')
 
-  const redirectUrl = `${
-    process.env.NEXT_PUBLIC_APP_URL_ROOT
-  }/auth/callback?next=/dashboard${
-    plan && billing ? `&plan=${plan}&billing=${billing}` : ''
-  }`
-
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: 'google',
-    options: { redirectTo: redirectUrl },
-  })
-
-  if (error) redirect('/error')
-  redirect(data.url)
-}
-
-export async function signInWithGithub(plan?: string, billing?: string) {
-  const supabase = await createClient()
-
-  const redirectUrl = `${
-    process.env.NEXT_PUBLIC_APP_URL_ROOT
-  }/auth/callback?next=/dashboard${
-    plan && billing ? `&plan=${plan}&billing=${billing}` : ''
-  }`
-
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: 'github',
-    options: { redirectTo: redirectUrl },
-  })
-
-  if (error) redirect('/error')
-  redirect(data.url)
-}
-
-export async function signInWithApple(plan?: string, billing?: string) {
-  const supabase = await createClient()
-
-  const redirectUrl = `${
-    process.env.NEXT_PUBLIC_APP_URL_ROOT
-  }/auth/callback?next=/dashboard${
-    plan && billing ? `&plan=${plan}&billing=${billing}` : ''
-  }`
-
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: 'apple',
-    options: { redirectTo: redirectUrl },
-  })
-
-  if (error) redirect('/error')
-  redirect(data.url)
-}
-
-export async function signout() {
-  const supabase = await createClient()
-  const { error } = await supabase.auth.signOut({ scope: 'local' })
-
-  if (error) {
-    console.error('Sign out failed on server:', error)
+  if (plan && billing) {
+    redirectTo.searchParams.set('plan', plan)
+    redirectTo.searchParams.set('billing', billing)
   }
 
-  redirect('/signin')
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider,
+    options: { redirectTo: redirectTo.toString() },
+  })
+
+  if (error) {
+    console.error(error)
+    return redirect('/error')
+  }
+
+  redirect(data.url)
 }
 
 export async function sendPasswordResetEmail(formData: FormData) {
   const supabase = await createClient()
   const email = formData.get('email') as string
 
+  const redirectTo = `${getSiteURL()}update-password`
+
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${process.env.NEXT_PUBLIC_APP_URL_ROOT}/update-password`,
+    redirectTo,
   })
 
   if (error) {

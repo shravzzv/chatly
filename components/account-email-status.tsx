@@ -14,7 +14,7 @@ export default function AccountEmailStatus() {
   const handleSendConfirmation = async () => {
     if (!newEmail) return
     const supabase = createClient()
-    const emailRedirectTo = `${process.env.NEXT_PUBLIC_APP_URL_ROOT}/account`
+    const emailRedirectTo = `${process.env.NEXT_PUBLIC_SITE_URL}/account`
 
     const { error } = await supabase.auth.resend({
       type: 'email_change',

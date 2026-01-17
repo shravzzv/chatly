@@ -56,7 +56,7 @@ const isCancelledButActive = (sub: Subscription): boolean => {
  * This is a derived predicate and should not contain independent
  * business logic beyond delegating to cancellation rules.
  */
-const isInactive = (sub: Subscription): boolean =>
+export const isInactive = (sub: Subscription): boolean =>
   sub.status === 'expired' || !isCancelledButActive(sub)
 
 /**
@@ -139,7 +139,7 @@ export function compareSubscriptions(a: Subscription, b: Subscription): number {
  * If no effective subscription exists, returns null.
  */
 export function getEffectiveSubscription(
-  subs: Subscription[]
+  subs: Subscription[],
 ): Subscription | null {
   const effectiveSubs = subs.filter(isEffectiveSubscription)
   if (effectiveSubs.length === 0) return null
@@ -153,7 +153,7 @@ export function getEffectiveSubscription(
  * to be on the free plan.
  */
 export function getCurrentPlan(
-  subs: Subscription[]
+  subs: Subscription[],
 ): 'free' | 'pro' | 'enterprise' {
   const effectiveSub = getEffectiveSubscription(subs)
   if (!effectiveSub) return 'free'
@@ -173,14 +173,14 @@ export function getCurrentPlan(
  * Returns null if no eligible subscription exists.
  */
 export function getLastEndedPaidSubscription(
-  subs: Subscription[]
+  subs: Subscription[],
 ): Subscription | null {
   return (
     subs
       .filter(isInactive)
       .sort(
         (a, b) =>
-          new Date(b.ends_at!).getTime() - new Date(a.ends_at!).getTime()
+          new Date(b.ends_at!).getTime() - new Date(a.ends_at!).getTime(),
       )[0] ?? null
   )
 }
@@ -198,7 +198,7 @@ export function getLastEndedPaidSubscription(
  * - null if no user-visible timeline is relevant
  */
 export function getSubscriptionTimeline(
-  sub: Subscription
+  sub: Subscription,
 ): { label: string; date: string } | null {
   // Access continues, but something will happen in the future
   if (sub.renews_at && (sub.status === 'active' || sub.status === 'on_trial')) {

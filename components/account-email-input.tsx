@@ -52,11 +52,11 @@ export default function AccountEmailInput() {
 
   const onSubmit = async (data: z.infer<typeof emailSchema>) => {
     const supabase = createClient()
-    const emailRedirectTo = `${process.env.NEXT_PUBLIC_APP_URL_ROOT}/account`
+    const emailRedirectTo = `${process.env.NEXT_PUBLIC_SITE_URL}/account`
 
     const { error } = await supabase.auth.updateUser(
       { email: data.email },
-      { emailRedirectTo }
+      { emailRedirectTo },
     )
 
     if (error) {
