@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/utils/supabase/server'
 import type { PushSubscription } from 'web-push'
 import { Profile } from '@/types/profile'
+import { createAdminClient } from '@/utils/supabase/admin'
 
 export async function signup(formData: FormData) {
   const supabase = await createClient()
@@ -225,6 +226,28 @@ export async function updateProfile(updates: Partial<Profile>) {
     }
   }
 }
+
+export async function deleteUser(id: string) {
+  const supabase = createAdminClient()
+
+  const { error } = await supabase.auth.admin.deleteUser(id)
+
+  if (error) {
+    console.error('Failed to delete auth user', error)
+    throw new Error('Failed to delete account')
+  }
+
+  const { error: avatarDeleteError } = await supabase.storage
+    .from('avatars')
+    .remove([`${id}/avatar`])
+
+  if (avatarDeleteError) {
+    console.warn('Failed to delete avatar', avatarDeleteError)
+  }
+
+  redirect('/signup')
+}
+
 export async function getSubscriptions() {
   const supabase = await createClient()
   const {

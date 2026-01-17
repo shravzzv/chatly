@@ -10,3 +10,5 @@ export const usePathname = jest.fn().mockReturnValue('')
 export const useSearchParams = jest.fn().mockReturnValue({
   get: jest.fn().mockReturnValue(null),
 })
+
+export const redirect = jest.fn()

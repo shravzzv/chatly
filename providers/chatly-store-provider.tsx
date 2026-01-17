@@ -49,7 +49,7 @@ export const ChatlyStoreProvider = ({
     } = supabase.auth.onAuthStateChange(async (event) => {
       if (event === 'SIGNED_OUT') {
         store.setState({ user: null, profile: null })
-        router.replace('/signin')
+        if (pathname !== '/signup') router.replace('/signin')
       }
 
       if (event === 'SIGNED_IN' && ['/signin', '/signup'].includes(pathname)) {
