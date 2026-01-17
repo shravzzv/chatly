@@ -1,12 +1,14 @@
-interface Plan {
-  name: 'Free' | 'Pro' | 'Enterprise'
+export type PricingPlanName = 'Free' | 'Pro' | 'Enterprise'
+
+export interface PricingPlan {
+  name: PricingPlanName
   priceMonthly: number
   priceYearly: number
   description: string
   features: string[]
 }
 
-export const plans: Plan[] = [
+export const PLANS: PricingPlan[] = [
   {
     name: 'Free',
     priceMonthly: 0,

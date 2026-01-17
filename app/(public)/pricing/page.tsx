@@ -3,94 +3,37 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { createClient } from '@/utils/supabase/client'
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion'
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-  CardFooter,
-} from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { getCheckoutUrl } from '@/lib/get-checkout-url'
-import { Billing, Plan } from '@/types/subscription'
-import { plans } from '@/data/plans'
-import { LS_CUSTOMER_PORTAL_URL } from '@/data/constants'
+import type { Billing, Subscription } from '@/types/subscription'
 import { useChatlyStore } from '@/providers/chatly-store-provider'
-
-const faqs = [
-  {
-    question: 'Can I cancel my subscription anytime?',
-    answer:
-      'Yes, you can cancel your subscription anytime from your billing dashboard. You’ll still have full access until the end of your current billing cycle.',
-  },
-  {
-    question: 'Do you offer refunds?',
-    answer:
-      'Refunds are handled on a case-by-case basis. If you believe there’s been a mistake or issue with billing, reach out to our support team within 14 days for assistance.',
-  },
-  {
-    question: 'Is there a discount for yearly billing?',
-    answer: `Yes! If you choose annual billing, you'll save 20% compared to the monthly plan. We love rewarding long-term commitment.`,
-  },
-  {
-    question: 'Do you offer team or enterprise billing?',
-    answer:
-      'Yes, our Enterprise plan includes centralized billing, dedicated account management, and tailored pricing for larger teams or organizations.',
-  },
-  {
-    question: 'What payment methods do you accept?',
-    answer:
-      'We accept all major credit and debit cards, as well as PayPal for annual subscriptions. For Enterprise customers, we also support invoicing and wire transfers.',
-  },
-]
+import { getSubscriptions } from '@/app/actions'
+import { getEffectiveSubscription } from '@/lib/billing'
+import PricingCard from '@/components/pricing-card'
+import { pricingFAQs } from '@/data/pricing-faqs'
+import { PLANS } from '@/data/plans'
+import { getCTAState } from '@/lib/pricing'
 
 export default function Page() {
   const [billingCycle, setBillingCycle] = useState<Billing>('monthly')
-  const [hasSubscription, setHasSubscription] = useState(false)
+  const [sub, setSub] = useState<Subscription | null>(null)
   const user = useChatlyStore((state) => state.user)
 
   useEffect(() => {
-    const supabase = createClient()
+    if (!user) return
 
-    async function load() {
-      if (user) {
-        const { data: sub } = await supabase
-          .from('subscriptions')
-          .select('*')
-          .eq('user_id', user.id)
-          .maybeSingle()
-
-        setHasSubscription(!!sub)
-      }
+    async function loadSub() {
+      const subs = await getSubscriptions()
+      const effectiveSub = getEffectiveSubscription(subs)
+      if (effectiveSub) setSub(effectiveSub)
     }
 
-    load()
+    loadSub()
   }, [user])
-
-  const getButtonUrl = (plan: string) => {
-    const lower = plan.toLowerCase()
-    if (lower === 'free') return user ? '/dashboard' : '/signup'
-    if (!user) return `/signup?plan=${lower}&billing=${billingCycle}`
-    if (hasSubscription) return LS_CUSTOMER_PORTAL_URL
-    return getCheckoutUrl(lower as Plan, billingCycle, user)!
-  }
-
-  const getButtonText = (plan: string) => {
-    if (!user) return 'Get Started'
-
-    if (plan.toLowerCase() === 'free')
-      return user ? 'Go to Dashboard' : 'Get Started'
-    if (hasSubscription) return 'Manage Billing'
-    return 'Upgrade'
-  }
 
   return (
     <main className='flex flex-col items-center justify-center w-full'>
@@ -131,52 +74,13 @@ export default function Page() {
       </section>
 
       <section className='w-full max-w-6xl px-6 grid gap-8 sm:grid-cols-2 lg:grid-cols-3 mb-20'>
-        {plans.map((plan) => (
-          <Card
+        {PLANS.map((plan) => (
+          <PricingCard
             key={plan.name}
-            className={`transition hover:shadow-lg ${
-              plan.name === 'Pro' && 'border-2 border-black dark:border-white'
-            }`}
-          >
-            <CardHeader>
-              <CardTitle className='flex gap-4 items-center text-2xl font-bold'>
-                {plan.name}
-                {plan.name === 'Pro' && <Badge>Most Popular</Badge>}
-              </CardTitle>
-              <CardDescription className='mt-2 text-muted-foreground'>
-                {plan.description}
-              </CardDescription>
-            </CardHeader>
-
-            <CardContent>
-              <p className='text-4xl font-extrabold'>
-                $
-                {billingCycle === 'monthly'
-                  ? plan.priceMonthly
-                  : plan.priceYearly}
-              </p>
-
-              <Button
-                asChild
-                className='w-full mt-6'
-                variant={plan.name === 'Pro' ? 'default' : 'outline'}
-              >
-                <Link href={getButtonUrl(plan.name)}>
-                  {getButtonText(plan.name)}
-                </Link>
-              </Button>
-            </CardContent>
-
-            <CardFooter>
-              <ul className='space-y-2'>
-                {plan.features.map((feature) => (
-                  <li key={feature} className='text-muted-foreground text-sm'>
-                    • {feature}
-                  </li>
-                ))}
-              </ul>
-            </CardFooter>
-          </Card>
+            plan={plan}
+            cta={getCTAState({ user, sub, billingCycle, planName: plan.name })}
+            billingCycle={billingCycle}
+          />
         ))}
       </section>
 
@@ -191,7 +95,7 @@ export default function Page() {
             collapsible
             className='w-full text-left space-y-2 md:space-y-4'
           >
-            {faqs.map((item, i) => (
+            {pricingFAQs.map((item, i) => (
               <AccordionItem key={i} value={`item-${i}`}>
                 <AccordionTrigger className='text-base font-medium hover:no-underline cursor-pointer'>
                   {item.question}
