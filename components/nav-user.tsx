@@ -14,7 +14,13 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar'
-import { Download, EllipsisVertical, LogOut } from 'lucide-react'
+import {
+  Download,
+  EllipsisVertical,
+  ExternalLink,
+  LifeBuoy,
+  LogOut,
+} from 'lucide-react'
 import Link from 'next/link'
 import ProfileAvatar from './profile-avatar'
 import { useChatlyStore } from '@/providers/chatly-store-provider'
@@ -71,14 +77,26 @@ export function NavUser() {
                 {getUserIdentity(name, username)}
               </div>
             </DropdownMenuLabel>
+
             <DropdownMenuSeparator />
+
             <DropdownMenuItem className='cursor-pointer' asChild>
+              <Link href='/support'>
+                <LifeBuoy />
+                Support
+              </Link>
+            </DropdownMenuItem>
+
+            <DropdownMenuItem className='cursor-pointer group' asChild>
               <Link href='/download' rel='noopener noreferrer' target='_blank'>
                 <Download />
                 Download apps
+                <ExternalLink className='text-muted-foreground sm:opacity-0 group-hover:opacity-100 transition-opacity ml-auto' />
               </Link>
             </DropdownMenuItem>
+
             <DropdownMenuSeparator />
+
             <DropdownMenuItem
               variant='destructive'
               className='cursor-pointer'

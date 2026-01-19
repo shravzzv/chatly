@@ -10,6 +10,7 @@ const navLinks = [
   { name: 'Features', href: '/features' },
   { name: 'Pricing', href: '/pricing' },
   { name: 'Download', href: '/download' },
+  { name: 'Support', href: '/support' },
 ]
 
 export default function Navbar() {
@@ -29,17 +30,15 @@ export default function Navbar() {
 
   return (
     <nav
-      className={`sticky top-0 z-50 transition-all duration-300 bg-white dark:bg-black ${
-        isScrolled
-          ? 'border-b border-gray-200 dark:border-gray-800 shadow-sm '
-          : 'border-b-0 shadow-none'
+      className={`sticky top-0 z-50 transition-all duration-300 bg-background ${
+        isScrolled ? 'border-b shadow-sm ' : 'border-b-0 shadow-none'
       }`}
     >
       <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
         <div className='flex justify-between items-center h-16'>
           <Link href='/' className='shrink-0'>
             <span
-              className='font-bold text-lg text-gray-900 dark:text-gray-100 cursor-pointer'
+              className='font-bold text-lg cursor-pointer'
               onClick={() => isOpen && toggleMenu()}
             >
               Chatly
