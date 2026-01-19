@@ -42,7 +42,7 @@ describe('Footer', () => {
 
     expect(
       screen.getByRole('link', { name: /terms of service/i }),
-    ).toHaveAttribute('href', '/tos')
+    ).toHaveAttribute('href', '/terms')
   })
 
   it('external links open in a new tab securely', () => {

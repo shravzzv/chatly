@@ -78,7 +78,7 @@ export function SignupForm({
 
     setLoading(false)
     setMessage(
-      `Almost there! If this email isn't already registered, you'll receive a confirmation link shortly. Please check your inbox (and spam folder) to confirm your account.`
+      `Almost there! If this email isn't already registered, you'll receive a confirmation link shortly. Please check your inbox (and spam folder) to confirm your account.`,
     )
     form.reset()
   }
@@ -226,7 +226,7 @@ export function SignupForm({
 
       <FieldDescription className='px-6 text-center'>
         By clicking continue, you agree to our{' '}
-        <Link href='/tos'>Terms of Service</Link> and{' '}
+        <Link href='/terms'>Terms of Service</Link> and{' '}
         <Link href='/privacy'>Privacy Policy</Link>.
       </FieldDescription>
     </div>

@@ -342,12 +342,12 @@ export default function Page() {
             <li>
               By visiting this page on our website:{' '}
               <Link
-                href='https://chatly-brown.vercel.app/tos'
+                href='https://chatly-brown.vercel.app/terms'
                 rel='external nofollow noopener'
                 target='_blank'
                 className='text-primary underline'
               >
-                https://chatly-brown.vercel.app/tos
+                https://chatly-brown.vercel.app/terms
               </Link>
             </li>
           </ul>
