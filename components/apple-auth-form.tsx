@@ -43,7 +43,7 @@ export default function AppleAuthForm() {
 
   return (
     <form
-      action={() => signInWithProvider('apple', plan, billing)}
+      action={() => signInWithProvider('apple', { plan, billing })}
       className='flex flex-1'
     >
       <SubmitButton />

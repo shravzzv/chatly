@@ -41,7 +41,7 @@ export default function GitHubAuthForm() {
 
   return (
     <form
-      action={() => signInWithProvider('github', plan, billing)}
+      action={() => signInWithProvider('github', { plan, billing })}
       className='flex flex-1'
     >
       <SubmitButton />

@@ -41,7 +41,7 @@ export default function GoogleAuthForm() {
 
   return (
     <form
-      action={() => signInWithProvider('google', plan, billing)}
+      action={() => signInWithProvider('google', { plan, billing })}
       className='flex flex-1'
     >
       <SubmitButton />

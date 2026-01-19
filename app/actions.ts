@@ -5,23 +5,42 @@ import { createClient } from '@/utils/supabase/server'
 import type { PushSubscription } from 'web-push'
 import { Profile } from '@/types/profile'
 import { createAdminClient } from '@/utils/supabase/admin'
+import { getSiteURL } from '@/lib/url'
 
+/**
+ * OAuth providers supported by the application.
+ *
+ * Used to constrain sign-in flows to explicitly enabled
+ * identity providers supported by Supabase.
+ */
 type OAuthProvider = 'google' | 'github' | 'apple'
 
-const getSiteURL = () => {
-  let url =
-    process?.env?.NEXT_PUBLIC_SITE_URL ??
-    process?.env?.NEXT_PUBLIC_VERCEL_URL ?? // Automatically set by Vercel.
-    'http://localhost:3000/'
-
-  // Make sure to include `https://` when not localhost.
-  url = url.startsWith('http') ? url : `https://${url}`
-  // Make sure to include a trailing `/`.
-  url = url.endsWith('/') ? url : `${url}/`
-
-  return url
+/**
+ * Optional parameters passed through the OAuth flow.
+ *
+ * These values are preserved across redirects so the
+ * application can continue a pricing or upgrade flow
+ * after authentication completes.
+ */
+interface SignInWithProviderOptions {
+  plan: string
+  billing: string
 }
 
+/**
+ * Creates a new user account using email + password.
+ *
+ * After signup, Supabase sends a confirmation email.
+ * The confirmation link redirects the user back to the app,
+ * landing on `/dashboard` once the email is verified.
+ *
+ * If a plan and billing cycle are present (pricing page signup),
+ * they are preserved in the redirect URL so the dashboard
+ * can continue the upgrade flow post-verification.
+ *
+ * This function does NOT create a session immediately —
+ * the user must confirm their email first.
+ */
 export async function signup(formData: FormData) {
   const supabase = await createClient()
 
@@ -30,14 +49,16 @@ export async function signup(formData: FormData) {
   const plan = formData.get('plan') as string
   const billing = formData.get('billing') as string
 
-  const emailRedirectTo = `${getSiteURL()}dashboard${
-    plan && billing ? `?plan=${plan}&billing=${billing}` : ''
-  }`
+  const emailRedirectTo = new URL('dashboard', getSiteURL())
+  if (plan && billing) {
+    emailRedirectTo.searchParams.set('plan', plan)
+    emailRedirectTo.searchParams.set('billing', billing)
+  }
 
   const { error } = await supabase.auth.signUp({
     email,
     password,
-    options: { emailRedirectTo },
+    options: { emailRedirectTo: emailRedirectTo.toString() },
   })
 
   if (error) {
@@ -46,6 +67,16 @@ export async function signup(formData: FormData) {
   }
 }
 
+/**
+ * Signs in a user using email + password credentials.
+ *
+ * On success, Supabase sets the session cookie and the user
+ * is redirected directly to the dashboard.
+ *
+ * Authentication failures (invalid credentials, etc.)
+ * are returned as user-facing errors instead of redirecting,
+ * allowing the UI to display inline feedback.
+ */
 export async function signin(formData: FormData) {
   const supabase = await createClient()
 
@@ -64,18 +95,30 @@ export async function signin(formData: FormData) {
   redirect('/dashboard')
 }
 
+/**
+ * Initiates OAuth sign-in with a third-party provider
+ * (Google, GitHub, Apple).
+ *
+ * The user is redirected to the provider, and upon success,
+ * the provider sends them back to `/auth/callback`.
+ *
+ * The callback route is responsible for exchanging the OAuth
+ * code for a Supabase session and finalizing login.
+ *
+ * Optional plan and billing parameters are forwarded through
+ * the OAuth round-trip so pricing intent is preserved.
+ */
 export async function signInWithProvider(
   provider: OAuthProvider,
-  plan?: string,
-  billing?: string,
+  options?: SignInWithProviderOptions,
 ) {
   const supabase = await createClient()
+
   const redirectTo = new URL('auth/callback', getSiteURL())
   redirectTo.searchParams.set('next', '/dashboard')
-
-  if (plan && billing) {
-    redirectTo.searchParams.set('plan', plan)
-    redirectTo.searchParams.set('billing', billing)
+  if (options) {
+    redirectTo.searchParams.set('plan', options.plan)
+    redirectTo.searchParams.set('billing', options.billing)
   }
 
   const { data, error } = await supabase.auth.signInWithOAuth({
@@ -91,14 +134,25 @@ export async function signInWithProvider(
   redirect(data.url)
 }
 
+/**
+ * Sends a password reset email to the user.
+ *
+ * The email contains a secure link that redirects the user
+ * back to the app’s `/update-password` page.
+ *
+ * The actual password change happens only after the user
+ * follows the link and submits a new password.
+ *
+ * Errors are returned to the caller to allow inline UI handling.
+ */
 export async function sendPasswordResetEmail(formData: FormData) {
   const supabase = await createClient()
   const email = formData.get('email') as string
 
-  const redirectTo = `${getSiteURL()}update-password`
+  const redirectTo = new URL('update-password', getSiteURL())
 
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo,
+    redirectTo: redirectTo.toString(),
   })
 
   if (error) {
@@ -106,6 +160,15 @@ export async function sendPasswordResetEmail(formData: FormData) {
   }
 }
 
+/**
+ * Updates the authenticated user’s password.
+ *
+ * This action is typically reached via a password reset
+ * or recovery flow, where Supabase has already verified
+ * the user via a secure token.
+ *
+ * On success, the user is redirected to the dashboard.
+ */
 export async function updatePassword(formData: FormData) {
   const supabase = await createClient()
   const password = formData.get('password') as string
@@ -115,12 +178,22 @@ export async function updatePassword(formData: FormData) {
   })
 
   if (error) {
+    console.error(error)
     return { error: error.message }
   }
 
   redirect('/dashboard')
 }
 
+/**
+ * Registers a Web Push subscription for the authenticated user.
+ *
+ * Each user has at most one active push subscription record.
+ * Repeated subscriptions overwrite the previous entry.
+ *
+ * This function enforces authentication at runtime and
+ * gracefully reports failures for observability.
+ */
 export async function subscribeUser(sub: PushSubscription) {
   try {
     const supabase = await createClient()
@@ -142,6 +215,14 @@ export async function subscribeUser(sub: PushSubscription) {
   }
 }
 
+/**
+ * Removes the authenticated user’s Web Push subscription.
+ *
+ * This effectively disables push notifications for the user.
+ *
+ * The operation is idempotent — calling it when no subscription
+ * exists is treated as a successful no-op.
+ */
 export async function unsubscribeUser() {
   try {
     const supabase = await createClient()
@@ -163,6 +244,17 @@ export async function unsubscribeUser() {
   }
 }
 
+/**
+ * Updates mutable fields on the user’s profile record.
+ *
+ * The authenticated user is resolved server-side to prevent
+ * unauthorized updates.
+ *
+ * Handles known constraint errors (e.g. duplicate usernames)
+ * and converts them into structured, user-friendly responses.
+ *
+ * All other errors are logged and surfaced as generic failures.
+ */
 export async function updateProfile(updates: Partial<Profile>) {
   const supabase = await createClient()
 
@@ -209,6 +301,21 @@ export async function updateProfile(updates: Partial<Profile>) {
   }
 }
 
+/**
+ * Permanently deletes a user account.
+ *
+ * This operation uses the Supabase Admin API and therefore
+ * bypasses normal RLS protections.
+ *
+ * Side effects:
+ * - Deletes the user from Supabase Auth
+ * - Attempts to clean up associated avatar storage
+ *
+ * Subscription records are intentionally NOT cleaned up here;
+ * webhook sync may still attempt updates, which are safely ignored.
+ *
+ * On success, the user is redirected to the signup page.
+ */
 export async function deleteUser(id: string) {
   const supabase = createAdminClient()
 
@@ -230,6 +337,17 @@ export async function deleteUser(id: string) {
   redirect('/signup')
 }
 
+/**
+ * Fetches all subscription records for the authenticated user.
+ *
+ * This function performs no business logic — it simply returns
+ * raw subscription rows.
+ *
+ * Higher-level helpers (e.g. `getEffectiveSubscription`) are
+ * responsible for interpreting access, plan state, and status.
+ *
+ * Throws if called without an authenticated user.
+ */
 export async function getSubscriptions() {
   const supabase = await createClient()
   const {
