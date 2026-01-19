@@ -4,12 +4,11 @@ import * as React from 'react'
 import {
   CreditCard,
   LayoutDashboard,
-  Settings,
   Star,
   User as UserIcon,
 } from 'lucide-react'
 import Link from 'next/link'
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import {
   Sidebar,
   SidebarContent,
@@ -25,7 +24,6 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar'
 import { NavUser } from './nav-user'
-import { useUser } from '@/hooks/use-user'
 
 const navItems = [
   {
@@ -34,13 +32,8 @@ const navItems = [
     icon: LayoutDashboard,
   },
   {
-    title: 'Settings',
-    href: '/settings',
-    icon: Settings,
-  },
-  {
-    title: 'Profile',
-    href: '/profile',
+    title: 'Account',
+    href: '/account',
     icon: UserIcon,
   },
   {
@@ -51,19 +44,10 @@ const navItems = [
 ]
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { user, loading, error } = useUser()
   const { setOpenMobile } = useSidebar()
   const pathname = usePathname()
-  const router = useRouter()
-
-  // multitab logout redirect
-  React.useEffect(() => {
-    if (!loading && !user && pathname !== '/signin') router.replace('/signin')
-  }, [user, loading, pathname, router])
 
   const handleLinkClick = () => setOpenMobile(false)
-
-  if (error) console.error(error)
 
   return (
     <Sidebar {...props} variant='inset' collapsible='icon'>
@@ -111,7 +95,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter>{user && <NavUser userId={user?.id} />}</SidebarFooter>
+      <SidebarFooter>
+        <NavUser />
+      </SidebarFooter>
       <SidebarRail />
     </Sidebar>
   )

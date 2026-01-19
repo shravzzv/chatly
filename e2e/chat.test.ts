@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { seedUser } from './utils/seed'
+import { seedUser } from './utils/seed-user'
 import { loginAsUser } from './utils/auth'
 import { cleanupUsers } from './utils/cleanup'
 import { randomUUID } from 'crypto'
@@ -45,7 +45,7 @@ test.describe('Chat realtime messaging', () => {
     // User B receives the message in the chat window
     await openChat(pageB, userA.username)
     await expect(
-      pageB.locator('[data-testid="message-list"]').getByText(messageAToB)
+      pageB.locator('[data-testid="message-list"]').getByText(messageAToB),
     ).toBeVisible()
 
     // User B replies to User A
@@ -58,7 +58,7 @@ test.describe('Chat realtime messaging', () => {
 
     // User A receives the reply in the message pane
     await expect(
-      pageA.locator('[data-testid="message-list"]').getByText(messageBToA)
+      pageA.locator('[data-testid="message-list"]').getByText(messageBToA),
     ).toBeVisible()
   })
 })

@@ -4,9 +4,7 @@ import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { Menu, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { createClient } from '@/utils/supabase/client'
-import type { User } from '@supabase/supabase-js'
-import { Spinner } from './ui/spinner'
+import { useChatlyStore } from '@/providers/chatly-store-provider'
 
 const navLinks = [
   { name: 'Features', href: '/features' },
@@ -16,26 +14,8 @@ const navLinks = [
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
-  const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(true)
   const [isScrolled, setIsScrolled] = useState(false)
-
-  useEffect(() => {
-    const supabase = createClient()
-
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setUser(user)
-      setLoading(false)
-    })
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null)
-    })
-
-    return () => subscription.unsubscribe()
-  }, [])
+  const user = useChatlyStore((state) => state.user)
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 0)
@@ -79,9 +59,7 @@ export default function Navbar() {
           </div>
 
           <div className='hidden md:flex items-center space-x-2 lg:space-x-4'>
-            {loading ? (
-              <Spinner />
-            ) : (
+            {
               <>
                 {user ? (
                   <Button
@@ -108,13 +86,11 @@ export default function Navbar() {
                   </>
                 )}
               </>
-            )}
+            }
           </div>
 
           <div className='flex md:hidden items-center space-x-4'>
-            {loading ? (
-              <Spinner />
-            ) : user ? (
+            {user ? (
               <Button
                 className='text-sm font-medium px-3 py-1.5 rounded-lg shadow-md'
                 asChild
@@ -160,42 +136,36 @@ export default function Navbar() {
               ))}
             </div>
 
-            {loading ? (
-              <div className='p-4 flex justify-center border-t border-gray-200 dark:border-gray-800 sticky bottom-0 bg-white dark:bg-gray-900'>
-                <Spinner />
-              </div>
-            ) : (
-              <div className='p-4 space-y-3 border-t border-gray-200 dark:border-gray-800 sticky bottom-0 bg-white dark:bg-black'>
-                {user ? (
+            <div className='p-4 space-y-3 border-t border-gray-200 dark:border-gray-800 sticky bottom-0 bg-white dark:bg-black'>
+              {user ? (
+                <Button
+                  className='w-full font-semibold px-4 py-3 rounded-lg shadow-md cursor-pointer'
+                  onClick={toggleMenu}
+                  asChild
+                >
+                  <Link href='/dashboard'>Dashboard</Link>
+                </Button>
+              ) : (
+                <>
                   <Button
                     className='w-full font-semibold px-4 py-3 rounded-lg shadow-md cursor-pointer'
                     onClick={toggleMenu}
                     asChild
                   >
-                    <Link href='/dashboard'>Dashboard</Link>
+                    <Link href='/signup'>Sign up</Link>
                   </Button>
-                ) : (
-                  <>
-                    <Button
-                      className='w-full font-semibold px-4 py-3 rounded-lg shadow-md cursor-pointer'
-                      onClick={toggleMenu}
-                      asChild
-                    >
-                      <Link href='/signup'>Sign up</Link>
-                    </Button>
 
-                    <Button
-                      variant='outline'
-                      className='w-full font-semibold px-4 py-3 rounded-lg cursor-pointer'
-                      onClick={toggleMenu}
-                      asChild
-                    >
-                      <Link href='/signin'>Sign in</Link>
-                    </Button>
-                  </>
-                )}
-              </div>
-            )}
+                  <Button
+                    variant='outline'
+                    className='w-full font-semibold px-4 py-3 rounded-lg cursor-pointer'
+                    onClick={toggleMenu}
+                    asChild
+                  >
+                    <Link href='/signin'>Sign in</Link>
+                  </Button>
+                </>
+              )}
+            </div>
           </div>
         </div>
       )}

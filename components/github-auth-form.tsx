@@ -3,7 +3,7 @@
 import { useFormStatus } from 'react-dom'
 import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
-import { signInWithGithub } from '@/app/actions'
+import { signInWithProvider } from '@/app/actions'
 import { useSearchParams } from 'next/navigation'
 
 function SubmitButton() {
@@ -41,7 +41,7 @@ export default function GitHubAuthForm() {
 
   return (
     <form
-      action={() => signInWithGithub(plan, billing)}
+      action={() => signInWithProvider('github', { plan, billing })}
       className='flex flex-1'
     >
       <SubmitButton />
