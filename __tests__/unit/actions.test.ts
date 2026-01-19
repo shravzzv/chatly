@@ -165,7 +165,7 @@ describe('subscribeUser', () => {
     getUserMock.mockResolvedValue({ data: { user: { id: 'u1' } } })
     upsertMock.mockResolvedValue({ error: null })
 
-    const result = await subscribeUser({} as any)
+    const result = await subscribeUser({} as never)
 
     expect(result.success).toBe(true)
   })
