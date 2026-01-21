@@ -1,3 +1,5 @@
+'use client'
+
 import { Pencil, Trash } from 'lucide-react'
 import { Button } from './ui/button'
 import {
@@ -13,6 +15,7 @@ import {
 } from '@/components/ui/alert-dialog'
 import EditMessageForm from './edit-message-form'
 import { useState } from 'react'
+import { useChatlyStore } from '@/providers/chatly-store-provider'
 
 type MessageBubbleProps = {
   id: string
@@ -20,7 +23,6 @@ type MessageBubbleProps = {
   sender_id: string
   created_at: string
   updated_at: string
-  currentUserId: string
   onDelete: (id: string) => void
   onEdit: (updatedText: string) => void
 }
@@ -31,11 +33,11 @@ export function MessageBubble({
   sender_id,
   created_at,
   updated_at,
-  currentUserId,
   onDelete,
   onEdit,
 }: MessageBubbleProps) {
-  const isOwn = sender_id === currentUserId
+  const currentUser = useChatlyStore((state) => state.user)
+  const isOwn = sender_id === currentUser?.id
   const [open, setOpen] = useState(false)
   const createdTime = new Date(created_at).toLocaleTimeString('en-US', {
     hour: '2-digit',

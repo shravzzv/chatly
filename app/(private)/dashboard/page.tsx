@@ -1,32 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import {
-  Search,
-  Phone,
-  Video,
-  MoreVertical,
-  ArrowLeft,
-  Paperclip,
-  MessagesSquare,
-  FilePen,
-  AudioLines,
-  ImagePlus,
-  Send,
-} from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import { useIsMobile } from '@/hooks/use-mobile'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupButton,
-  InputGroupInput,
-  InputGroupTextarea,
-} from '@/components/ui/input-group'
-import { Kbd } from '@/components/ui/kbd'
-import { ButtonGroup } from '@/components/ui/button-group'
-import { MessageBubble } from '@/components/message-bubble'
 import { toast } from 'sonner'
 import { Message } from '@/types/message'
 import { Profile } from '@/types/profile'
@@ -35,27 +10,20 @@ import type {
   RealtimePostgresChangesPayload,
   RealtimePostgresDeletePayload,
 } from '@supabase/supabase-js'
-import { Skeleton } from '@/components/ui/skeleton'
 import { v4 as uuidv4 } from 'uuid'
-import { Badge } from '@/components/ui/badge'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { getCheckoutUrl } from '@/lib/get-checkout-url'
 import { Billing, Plan } from '@/types/subscription'
-import { useUser } from '@/hooks/use-user'
-import {
-  formatDateHeader,
-  getDisplayName,
-  getPartnerId,
-  groupMessagesByDate,
-} from '@/lib/dashboard'
+import { getPartnerId } from '@/lib/dashboard'
 import DashboardSkeleton from '@/components/dashboard-skeleton'
-import ProfileSelectDialog from '@/components/profile-select-dialog'
-import ProfileAvatar from '@/components/profile-avatar'
-import TypingIndicator from '@/components/typing-indicator'
 import { useTypingIndicator } from '@/hooks/use-typing-indicator'
-import { SidebarTrigger } from '@/components/sidebar-trigger'
+import { useChatlyStore } from '@/providers/chatly-store-provider'
+import ChatPanel from '@/components/chat-panel'
+import ConversationsPanel from '@/components/conversations-panel'
+import ConversationSelectDialog from '@/components/conversation-select-dialog'
 
 export default function Page() {
+  const router = useRouter()
   const searchParams = useSearchParams()
 
   // state variables
@@ -67,9 +35,8 @@ export default function Page() {
   const [messagesLoading, setMessagesLoading] = useState(false)
   const [lastMessagesLoading, setLastMessagesLoading] = useState(true)
   const [selectedProfileId, setSelectedProfileId] = useState<string | null>(
-    () => searchParams.get('senderId')
+    () => searchParams.get('senderId'),
   )
-
   const [isProfileSelectDialogOpen, setIsProfileSelectDialogOpen] =
     useState(false)
   const [lastMessages, setLastMessages] = useState<
@@ -79,7 +46,7 @@ export default function Page() {
   // memoized variables
   const selectedProfile = useMemo(
     () => profiles.find((p) => p.user_id === selectedProfileId) ?? null,
-    [profiles, selectedProfileId]
+    [profiles, selectedProfileId],
   )
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -88,20 +55,15 @@ export default function Page() {
 
   // state variables from custom hooks
   const isMobileView = useIsMobile()
-  const {
-    user: currentUser,
-    loading: currentUserLoading,
-    error: currentUserError,
-  } = useUser()
   const { isTyping, updateTypingStatus } = useTypingIndicator(selectedProfileId)
+
+  const currentUser = useChatlyStore((state) => state.user)
 
   // refs
   const messagesEndRef = useRef<HTMLDivElement>(null)
-  const searchInputRef = useRef<HTMLInputElement>(null)
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // derived variables
-  const router = useRouter()
   const plan = searchParams.get('plan')
   const billing = searchParams.get('billing')
 
@@ -226,11 +188,12 @@ export default function Page() {
             msg.id !== id &&
             ((msg.sender_id === currentUser.id &&
               msg.receiver_id === otherId) ||
-              (msg.sender_id === otherId && msg.receiver_id === currentUser.id))
+              (msg.sender_id === otherId &&
+                msg.receiver_id === currentUser.id)),
         )
         .sort(
           (a, b) =>
-            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
         )
 
       const newLastMessage = remainingMessages[0] || null
@@ -256,8 +219,8 @@ export default function Page() {
       prev.map((msg) =>
         msg.id === id
           ? { ...msg, text: updatedText, updated_at: new Date().toISOString() }
-          : msg
-      )
+          : msg,
+      ),
     )
 
     // If this message is the last message for the relevant user, update lastMessages too
@@ -289,14 +252,6 @@ export default function Page() {
 
   // effects
 
-  // Show error toast if fetching the user returns an auth error
-  useEffect(() => {
-    if (currentUserError) {
-      toast.error('Could not authenticate. Please log in again.')
-      console.error('AuthError in the dashboard', currentUserError)
-    }
-  }, [currentUserError])
-
   // Navigate the user to the checkout page when they've signed up through the pricing page to ensure continuity
   useEffect(() => {
     if (!currentUser || !plan || !billing) return
@@ -304,23 +259,11 @@ export default function Page() {
     const checkoutUrl = getCheckoutUrl(
       plan as Plan,
       billing as Billing,
-      currentUser
+      currentUser,
     )
 
     if (checkoutUrl) router.replace(checkoutUrl)
   }, [currentUser, plan, billing, router])
-
-  // Allow profiles to focus on the search input using "ctrl + f"
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f') {
-        e.preventDefault()
-        searchInputRef.current?.focus()
-      }
-    }
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [])
 
   // Fetch all profiles
   useEffect(() => {
@@ -419,7 +362,7 @@ export default function Page() {
     const supabase = createClient()
 
     const handlePayload = (
-      payload: RealtimePostgresChangesPayload<Message>
+      payload: RealtimePostgresChangesPayload<Message>,
     ) => {
       const msg = (payload.new ?? payload.old) as Message
       const partnerId = getPartnerId(msg, currentUser.id)
@@ -485,7 +428,7 @@ export default function Page() {
 
           if (isMsgInCurrentChat) {
             setMessages((prev) =>
-              prev.map((m) => (m.id === updatedMsg.id ? updatedMsg : m))
+              prev.map((m) => (m.id === updatedMsg.id ? updatedMsg : m)),
             )
           }
 
@@ -508,7 +451,7 @@ export default function Page() {
           table: 'messages',
           filter: `receiver_id=eq.${currentUser.id}`,
         },
-        handlePayload
+        handlePayload,
       )
       .subscribe()
 
@@ -523,7 +466,7 @@ export default function Page() {
     const supabase = createClient()
 
     const handleDelete = async (
-      payload: RealtimePostgresDeletePayload<Message>
+      payload: RealtimePostgresDeletePayload<Message>,
     ) => {
       const deletedId = payload.old.id as string
 
@@ -569,7 +512,7 @@ export default function Page() {
           schema: 'public',
           table: 'messages',
         },
-        handleDelete
+        handleDelete,
       )
       .subscribe()
 
@@ -582,318 +525,41 @@ export default function Page() {
     if (isTyping) scrollToBottom()
   }, [isTyping, scrollToBottom])
 
-  if (currentUserLoading || !currentUser) return <DashboardSkeleton />
-
-  // you could add further checks, and render the components of the dashboard conditionally here instead of using ?: within one big block. This needs you to modularize the components first though.
-
-  // if(!selectedProfile) return (
-  // <>
-  //   <ProfilesSidebar/>
-  //   <EmptyMessageTab/>
-  // </>
-  // )
-  // something like this
+  if (!currentUser) return <DashboardSkeleton />
 
   return (
-    <div className='h-[calc(100vh-1rem)] rounded-xl flex bg-background text-foreground'>
-      {/* profiles sidebar tab */}
-      <div
-        className={`flex flex-col h-full p-2 w-full md:w-80 shrink-0 border-r rounded-xl ${
-          selectedProfile ? 'hidden md:flex' : 'flex'
-        }`}
-      >
-        {/* heading */}
-        <div className='flex items-center justify-between p-4'>
-          <SidebarTrigger />
+    <div className='h-[calc(100vh-1rem)] rounded-xl flex'>
+      <ConversationsPanel
+        filteredProfiles={filteredProfiles}
+        profilesLoading={profilesLoading}
+        lastMessages={lastMessages}
+        lastMessagesLoading={lastMessagesLoading}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        selectedProfile={selectedProfile}
+        setSelectedProfileId={setSelectedProfileId}
+        onNewMessage={() => setIsProfileSelectDialogOpen(true)}
+        selectedProfileId={selectedProfileId}
+        setIsProfileSelectDialogOpen={setIsProfileSelectDialogOpen}
+      />
 
-          <h2 className='text-xl font-semibold flex items-center gap-4'>
-            Inbox
-            <MessagesSquare />
-          </h2>
+      <ChatPanel
+        selectedProfile={selectedProfile}
+        messages={messages}
+        messagesLoading={messagesLoading}
+        message={message}
+        isMobileView={isMobileView}
+        messagesEndRef={messagesEndRef}
+        handleDeleteMessage={handleDeleteMessage}
+        handleEditMessage={handleEditMessage}
+        handleMessageChange={handleMessageChange}
+        handleSubmitMessage={handleSubmitMessage}
+        isTyping={isTyping}
+        setIsProfileSelectDialogOpen={setIsProfileSelectDialogOpen}
+        setSelectedProfileId={setSelectedProfileId}
+      />
 
-          <Button
-            variant='outline'
-            size='icon-sm'
-            className='cursor-pointer'
-            onClick={() => setIsProfileSelectDialogOpen(true)}
-          >
-            <FilePen className='w-5 h-5' />
-          </Button>
-        </div>
-
-        {/* search input box */}
-        <div className='px-3 pb-4 border-b'>
-          <InputGroup>
-            <InputGroupInput
-              type='text'
-              placeholder='name or username...'
-              ref={searchInputRef}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value.toLowerCase())}
-            />
-            <InputGroupAddon>
-              <Search className='w-4 h-4' />
-            </InputGroupAddon>
-            {!isMobileView && (
-              <InputGroupAddon align='inline-end'>
-                <Kbd>⌘</Kbd>
-                <Kbd>F</Kbd>
-              </InputGroupAddon>
-            )}
-          </InputGroup>
-        </div>
-
-        {/* profiles scroll area */}
-        <ScrollArea className='flex-1 overflow-y-auto rounded-xl px-2 flex flex-col'>
-          {profilesLoading ? (
-            // Skeleton UI
-            <div className='space-y-3 px-2 py-4'>
-              {[...Array(8)].map((_, i) => (
-                <div
-                  key={i}
-                  className='flex items-center gap-4 rounded-xl px-4 py-3 hover:bg-muted/40 transition'
-                >
-                  <Skeleton className='h-10 w-10 rounded-full shrink-0' />
-                  <div className='flex flex-col gap-2 flex-1'>
-                    <Skeleton className='h-4 w-3/4' />
-                    <Skeleton className='h-3 w-1/2' />
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : filteredProfiles.length === 0 ? (
-            <div className='flex flex-col items-center justify-center h-full text-center p-4'>
-              <p className='text-muted-foreground'>
-                {searchQuery ? 'No profiles found' : 'No profiles available'}
-              </p>
-            </div>
-          ) : (
-            filteredProfiles.map((profile) => (
-              <Button
-                key={profile.id}
-                onClick={() => setSelectedProfileId(profile.user_id)}
-                variant='ghost'
-                size='lg'
-                className={`
-                    w-full justify-start gap-3 px-4 py-8 rounded-xl hover:bg-muted transition text-left cursor-pointer ${
-                      selectedProfile?.id === profile.id ? 'bg-muted' : ''
-                    }`}
-              >
-                <ProfileAvatar profile={profile} />
-
-                <div className='flex flex-col text-left overflow-hidden min-w-0'>
-                  <span className='font-medium truncate'>
-                    {getDisplayName(profile)}
-                    {profile.user_id === currentUser.id && ' (You)'}
-                  </span>
-
-                  <span className='text-xs text-muted-foreground truncate'>
-                    {lastMessagesLoading ? (
-                      <Skeleton className='h-4 w-24 rounded-md' />
-                    ) : lastMessages[profile.user_id] ? (
-                      `${
-                        lastMessages[profile.user_id]?.sender_id ===
-                        currentUser.id
-                          ? 'You: '
-                          : ''
-                      }${lastMessages[profile.user_id]?.text}`
-                    ) : (
-                      'No messages yet'
-                    )}
-                  </span>
-                </div>
-              </Button>
-            ))
-          )}
-        </ScrollArea>
-      </div>
-
-      {/* chat box tab */}
-      <div
-        className={`flex-1 flex flex-col h-full min-w-0 rounded-xl ${
-          selectedProfile ? 'flex' : 'hidden md:flex'
-        }`}
-      >
-        {selectedProfile ? (
-          <>
-            <div className='flex items-center justify-between p-4 border-b'>
-              <div className='flex items-center gap-3'>
-                {isMobileView && (
-                  <button onClick={() => setSelectedProfileId(null)}>
-                    <ArrowLeft className='w-5 h-5' />
-                  </button>
-                )}
-
-                <ProfileAvatar profile={selectedProfile} />
-
-                <div>
-                  <p className='font-semibold truncate'>
-                    {getDisplayName(selectedProfile)}
-                    {selectedProfile.user_id === currentUser.id && ' (You)'}
-                  </p>
-                  {selectedProfile.username && (
-                    <p className='text-xs text-muted-foreground truncate'>
-                      @{selectedProfile.username}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <ButtonGroup>
-                <Button
-                  variant='outline'
-                  size='icon-lg'
-                  className='cursor-pointer'
-                >
-                  <Phone className='w-5 h-5 cursor-pointer' />
-                </Button>
-
-                <Button
-                  variant='outline'
-                  size='icon-lg'
-                  className='cursor-pointer'
-                >
-                  <Video className='w-5 h-5 cursor-pointer' />
-                </Button>
-
-                <Button
-                  variant='outline'
-                  size='icon-lg'
-                  className='cursor-pointer'
-                >
-                  <MoreVertical className='w-5 h-5 cursor-pointer' />
-                </Button>
-              </ButtonGroup>
-            </div>
-
-            {/* chat window */}
-            <ScrollArea
-              className='flex-1 overflow-y-auto p-4'
-              data-testid='message-list'
-            >
-              {messagesLoading ? (
-                // show messages tab skeleton
-                <div className='space-y-4'>
-                  {[...Array(6)].map((_, i) => (
-                    <div
-                      key={i}
-                      className={`flex ${
-                        i % 3 === 0 ? 'justify-end' : 'justify-start'
-                      }`}
-                    >
-                      <div className='space-y-2'>
-                        <Skeleton className='h-16 w-62.5 rounded-2xl' />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : messages.length === 0 ? (
-                <div className='flex items-center justify-center h-full'>
-                  <p className='text-muted-foreground'>
-                    No messages yet. Start the conversation!
-                  </p>
-                </div>
-              ) : (
-                <>
-                  {groupMessagesByDate(messages).map((group) => (
-                    <div key={group.date}>
-                      <div className='flex items-center justify-center my-4'>
-                        <Badge>{formatDateHeader(new Date(group.date))}</Badge>
-                      </div>
-
-                      <div className='space-y-4'>
-                        {group.messages.map((msg) => (
-                          <MessageBubble
-                            key={msg.id}
-                            {...msg}
-                            currentUserId={currentUser.id}
-                            onDelete={() => handleDeleteMessage(msg.id)}
-                            onEdit={(updatedText) =>
-                              handleEditMessage(msg.id, updatedText)
-                            }
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </>
-              )}
-
-              {isTyping && <TypingIndicator />}
-              <div ref={messagesEndRef} />
-            </ScrollArea>
-
-            {/* chat input */}
-            <div className='p-2'>
-              <InputGroup className='flex items-end'>
-                <InputGroupAddon>
-                  <InputGroupButton
-                    variant='ghost'
-                    size='icon-sm'
-                    className='cursor-pointer'
-                  >
-                    <ImagePlus className='w-5 h-5 text-muted-foreground' />
-                  </InputGroupButton>
-                  <InputGroupButton
-                    variant='ghost'
-                    size='icon-sm'
-                    className='cursor-pointer'
-                  >
-                    <Paperclip className='w-5 h-5 text-muted-foreground' />
-                  </InputGroupButton>
-                  <InputGroupButton
-                    variant='ghost'
-                    size='icon-sm'
-                    className='cursor-pointer'
-                  >
-                    <AudioLines className='w-5 h-5 text-muted-foreground' />
-                  </InputGroupButton>
-                </InputGroupAddon>
-
-                <InputGroupTextarea
-                  placeholder='Type a message...'
-                  value={message}
-                  className='min-h-10 max-h-50 resize-none overflow-y-auto bg-transparent text-sm placeholder:text-muted-foreground focus-visible:ring-0 outline-none border-0 pt-2.5'
-                  onChange={handleMessageChange}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey && !isMobileView) {
-                      e.preventDefault()
-                      handleSubmitMessage()
-                    }
-                  }}
-                  // ? why not use onSubmit?
-                />
-
-                <InputGroupAddon align='inline-end'>
-                  <InputGroupButton
-                    aria-label='Send message'
-                    onClick={handleSubmitMessage}
-                    variant='default'
-                    size='icon-sm'
-                    className='cursor-pointer'
-                  >
-                    <Send className='w-4 h-4' />
-                  </InputGroupButton>
-                </InputGroupAddon>
-              </InputGroup>
-            </div>
-          </>
-        ) : (
-          <div className='flex flex-col items-center justify-center gap-4 text-muted-foreground h-full'>
-            <FilePen />
-            <p>Select a chat to start messaging</p>
-            <Button
-              className='cursor-pointer'
-              onClick={() => setIsProfileSelectDialogOpen(true)}
-            >
-              Send Message
-            </Button>
-          </div>
-        )}
-      </div>
-
-      <ProfileSelectDialog
-        currentUser={currentUser}
+      <ConversationSelectDialog
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
         profilesLoading={profilesLoading}
@@ -901,6 +567,9 @@ export default function Page() {
         setSelectedProfileId={setSelectedProfileId}
         isProfileSelectDialogOpen={isProfileSelectDialogOpen}
         setIsProfileSelectDialogOpen={setIsProfileSelectDialogOpen}
+        lastMessages={lastMessages}
+        lastMessagesLoading={lastMessagesLoading}
+        selectedProfile={selectedProfile}
       />
     </div>
   )
