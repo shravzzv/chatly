@@ -16,15 +16,16 @@ import {
 import EditMessageForm from './edit-message-form'
 import { useState } from 'react'
 import { useChatlyStore } from '@/providers/chatly-store-provider'
+import { formatEditedTimestamp } from '@/lib/date'
 
-type MessageBubbleProps = {
+interface MessageBubbleProps {
   id: string
   text: string
   sender_id: string
   created_at: string
   updated_at: string
-  onDelete: (id: string) => void
-  onEdit: (updatedText: string) => void
+  deleteMessage: (id: string) => Promise<void>
+  editMessage: (id: string, text: string) => Promise<void>
 }
 
 export function MessageBubble({
@@ -33,23 +34,23 @@ export function MessageBubble({
   sender_id,
   created_at,
   updated_at,
-  onDelete,
-  onEdit,
+  deleteMessage,
+  editMessage,
 }: MessageBubbleProps) {
   const currentUser = useChatlyStore((state) => state.user)
   const isOwn = sender_id === currentUser?.id
   const [open, setOpen] = useState(false)
+
   const createdTime = new Date(created_at).toLocaleTimeString('en-US', {
     hour: '2-digit',
     minute: '2-digit',
   })
 
-  const updatedTime = new Date(updated_at).toLocaleTimeString('en-US', {
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-
   const isEdited = updated_at !== created_at
+
+  const updatedTime = isEdited
+    ? formatEditedTimestamp(created_at, updated_at)
+    : null
 
   return (
     <div
@@ -95,7 +96,7 @@ export function MessageBubble({
 
               <EditMessageForm
                 defaultText={text}
-                onSubmit={(newText) => onEdit(newText)}
+                onSubmit={async (newText) => await editMessage(id, newText)}
                 onClose={() => setOpen(false)}
               />
             </AlertDialogContent>
@@ -126,7 +127,7 @@ export function MessageBubble({
                 </AlertDialogCancel>
                 <AlertDialogAction
                   className='cursor-pointer'
-                  onClick={() => onDelete(id)}
+                  onClick={async () => await deleteMessage(id)}
                 >
                   Continue
                 </AlertDialogAction>

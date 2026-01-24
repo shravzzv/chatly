@@ -9,20 +9,56 @@ import {
 } from '@/components/ui/input-group'
 import { useIsMobile } from '@/hooks/use-mobile'
 import ChatInputDropdown from './chat-input-dropdown'
+import { useRef, useState } from 'react'
 
 interface ChatInputProps {
-  message: string
-  handleMessageChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void
-  handleSubmitMessage: () => void
+  updateTypingStatus: (isTyping: boolean) => Promise<void>
+  sendMessage: (text: string) => Promise<void>
 }
 
 export default function ChatInput({
-  message,
-  handleMessageChange,
-  handleSubmitMessage,
+  updateTypingStatus,
+  sendMessage,
 }: ChatInputProps) {
   const isMobileView = useIsMobile()
+  const [message, setMessage] = useState('')
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
+  /**
+   *
+   * @param e
+   */
+  const handleMessageChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const value = e.target.value
+    setMessage(value)
+
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current)
+
+    if (value.trim()) {
+      updateTypingStatus(true)
+      typingTimeoutRef.current = setTimeout(updateTypingStatus, 3000, false)
+    } else {
+      updateTypingStatus(false)
+    }
+  }
+
+  /**
+   *
+   * @returns
+   */
+  const handleSubmitMessage = async () => {
+    if (!message.trim()) return
+    updateTypingStatus(false)
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current)
+
+    await sendMessage(message)
+    setMessage('')
+  }
+
+  /**
+   *
+   * @param e
+   */
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey && !isMobileView) {
       e.preventDefault()

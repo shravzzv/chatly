@@ -6,17 +6,16 @@ import ConversationsPanelHeader from './conversations-panel-header'
 import ConversationsList from './conversations-list'
 
 interface ConversationsPanelProps {
-  filteredProfiles: Profile[]
   selectedProfile: Profile | null
+  filteredProfiles: Profile[]
   profilesLoading: boolean
   lastMessages: Record<string, Message | null>
   lastMessagesLoading: boolean
   searchQuery: string
-  selectedProfileId: string | null
-  onNewMessage: () => void
   setSearchQuery: (value: string) => void
   setSelectedProfileId: (profileId: string) => void
-  setIsProfileSelectDialogOpen: (value: boolean) => void
+  openProfileSelectDialog: () => void
+  closeProfileSelectDialog: () => void
 }
 
 export default function ConversationsPanel({
@@ -28,7 +27,8 @@ export default function ConversationsPanel({
   searchQuery,
   setSearchQuery,
   setSelectedProfileId,
-  setIsProfileSelectDialogOpen,
+  openProfileSelectDialog,
+  closeProfileSelectDialog,
 }: ConversationsPanelProps) {
   return (
     <aside
@@ -38,8 +38,8 @@ export default function ConversationsPanel({
     >
       <ConversationsPanelHeader
         searchQuery={searchQuery}
-        setIsProfileSelectDialogOpen={setIsProfileSelectDialogOpen}
         setSearchQuery={setSearchQuery}
+        openProfileSelectDialog={openProfileSelectDialog}
       />
 
       <ConversationsList
@@ -50,6 +50,7 @@ export default function ConversationsPanel({
         searchQuery={searchQuery}
         selectedProfile={selectedProfile}
         setSelectedProfileId={setSelectedProfileId}
+        closeProfileSelectDialog={closeProfileSelectDialog}
       />
     </aside>
   )

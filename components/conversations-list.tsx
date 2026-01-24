@@ -5,14 +5,14 @@ import ConversationPreview from './conversation-preview'
 import ConversationPreviewSkeleton from './skeletons/conversation-preview-skeleton'
 
 interface ConversationsListProps {
-  filteredProfiles: Profile[]
   selectedProfile: Profile | null
+  filteredProfiles: Profile[]
   profilesLoading: boolean
   lastMessages: Record<string, Message | null>
   lastMessagesLoading: boolean
   searchQuery: string
   setSelectedProfileId: (profileId: string) => void
-  setIsProfileSelectDialogOpen?: (value: boolean) => void
+  closeProfileSelectDialog: () => void
 }
 
 export default function ConversationsList({
@@ -23,14 +23,14 @@ export default function ConversationsList({
   lastMessagesLoading,
   searchQuery,
   setSelectedProfileId,
-  setIsProfileSelectDialogOpen,
+  closeProfileSelectDialog,
 }: ConversationsListProps) {
   const isLoading = profilesLoading
   const isEmpty = filteredProfiles.length === 0
 
   if (isLoading) {
     return (
-      <div className='space-y-3 px-2 py-4'>
+      <div className='space-y-2 p-4 overflow-y-hidden'>
         {Array.from({ length: 12 }).map((_, i) => (
           <ConversationPreviewSkeleton key={i} />
         ))}
@@ -41,7 +41,6 @@ export default function ConversationsList({
   if (isEmpty) {
     return (
       <div className='flex flex-col items-center justify-center h-full text-center p-4'>
-        {/* ? why a wrapper? */}
         <p className='text-muted-foreground'>
           {searchQuery ? 'No profiles found' : 'No profiles available'}
         </p>
@@ -59,7 +58,7 @@ export default function ConversationsList({
           setSelectedProfileId={setSelectedProfileId}
           lastMessages={lastMessages}
           lastMessagesLoading={lastMessagesLoading}
-          setIsProfileSelectDialogOpen={setIsProfileSelectDialogOpen}
+          closeProfileSelectDialog={closeProfileSelectDialog}
         />
       ))}
     </ScrollArea>

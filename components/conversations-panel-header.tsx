@@ -15,18 +15,20 @@ import { useIsMobile } from '@/hooks/use-mobile'
 interface ConversationsPanelHeaderProps {
   searchQuery: string
   setSearchQuery: (value: string) => void
-  setIsProfileSelectDialogOpen: (value: boolean) => void
+  openProfileSelectDialog: () => void
 }
 
 export default function ConversationsPanelHeader({
   searchQuery,
   setSearchQuery,
-  setIsProfileSelectDialogOpen,
+  openProfileSelectDialog,
 }: ConversationsPanelHeaderProps) {
   const isMobileView = useIsMobile()
   const searchInputRef = useRef<HTMLInputElement | null>(null)
 
-  // Enable keyboard shortcut (Ctrl/Cmd + F) to focus the search input
+  /**
+   * Enable keyboard shortcut (Ctrl/Cmd + F) to focus the search input.
+   */
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f') {
@@ -53,7 +55,7 @@ export default function ConversationsPanelHeader({
           variant='outline'
           size='icon-sm'
           className='cursor-pointer'
-          onClick={() => setIsProfileSelectDialogOpen(true)}
+          onClick={openProfileSelectDialog}
         >
           <FilePen className='w-5 h-5' />
         </Button>
@@ -65,7 +67,7 @@ export default function ConversationsPanelHeader({
           placeholder='name or username...'
           ref={searchInputRef}
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value.toLowerCase())}
+          onChange={(e) => setSearchQuery(e.target.value)}
         />
         <InputGroupAddon>
           <Search className='w-4 h-4' />

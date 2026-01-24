@@ -10,12 +10,12 @@ import { Button } from './ui/button'
 
 interface ChatHeaderProps {
   selectedProfile: Profile
-  setSelectedProfileId: (value: string | null) => void
+  closeChatPanel: () => void
 }
 
 export default function ChatHeader({
   selectedProfile,
-  setSelectedProfileId,
+  closeChatPanel,
 }: ChatHeaderProps) {
   const isMobileView = useIsMobile()
   const currentUser = useChatlyStore((state) => state.user)
@@ -27,7 +27,7 @@ export default function ChatHeader({
           size='icon'
           variant='ghost'
           className='cursor-pointer'
-          onClick={() => setSelectedProfileId(null)}
+          onClick={closeChatPanel}
         >
           <ArrowLeft className='w-5 h-5' />
         </Button>

@@ -16,30 +16,34 @@ interface ConversationSelectDialogProps {
   profilesLoading: boolean
   filteredProfiles: Profile[]
   isProfileSelectDialogOpen: boolean
-  setSearchQuery: (query: string) => void
-  setSelectedProfileId: (id: string) => void
-  setIsProfileSelectDialogOpen: (value: boolean) => void
   selectedProfile: Profile | null
   lastMessages: Record<string, Message | null>
   lastMessagesLoading: boolean
+  setSelectedProfileId: (id: string) => void
+  setSearchQuery: (query: string) => void
+  openProfileSelectDialog: () => void
+  closeProfileSelectDialog: () => void
 }
 
 export default function ConversationSelectDialog({
   searchQuery,
-  setSearchQuery,
   profilesLoading,
   filteredProfiles,
-  setSelectedProfileId,
   isProfileSelectDialogOpen,
-  setIsProfileSelectDialogOpen,
   selectedProfile,
   lastMessages,
   lastMessagesLoading,
+  setSelectedProfileId,
+  setSearchQuery,
+  openProfileSelectDialog,
+  closeProfileSelectDialog,
 }: ConversationSelectDialogProps) {
   return (
     <Dialog
       open={isProfileSelectDialogOpen}
-      onOpenChange={setIsProfileSelectDialogOpen}
+      onOpenChange={(open) =>
+        open ? openProfileSelectDialog() : closeProfileSelectDialog()
+      }
     >
       <DialogContent className='max-h-[60vh] flex flex-col'>
         <DialogHeader>
@@ -54,7 +58,7 @@ export default function ConversationSelectDialog({
             type='search'
             placeholder='name or username...'
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value.toLowerCase())}
+            onChange={(e) => setSearchQuery(e.target.value)}
           />
           <InputGroupAddon>
             <Search className='w-4 h-4' />
@@ -69,7 +73,7 @@ export default function ConversationSelectDialog({
           searchQuery={searchQuery}
           selectedProfile={selectedProfile}
           setSelectedProfileId={setSelectedProfileId}
-          setIsProfileSelectDialogOpen={setIsProfileSelectDialogOpen}
+          closeProfileSelectDialog={closeProfileSelectDialog}
         />
       </DialogContent>
     </Dialog>

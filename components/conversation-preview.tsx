@@ -14,7 +14,7 @@ interface ConversationPreviewProps {
   lastMessages: Record<string, Message | null>
   lastMessagesLoading: boolean
   setSelectedProfileId: (profileId: string) => void
-  setIsProfileSelectDialogOpen?: (value: boolean) => void
+  closeProfileSelectDialog: () => void
 }
 
 export default function ConversationPreview({
@@ -23,13 +23,13 @@ export default function ConversationPreview({
   lastMessages,
   lastMessagesLoading,
   setSelectedProfileId,
-  setIsProfileSelectDialogOpen,
+  closeProfileSelectDialog,
 }: ConversationPreviewProps) {
   const currentUser = useChatlyStore((state) => state.user)
 
   const handleClick = () => {
     setSelectedProfileId(profile.user_id)
-    if (setIsProfileSelectDialogOpen) setIsProfileSelectDialogOpen(false)
+    closeProfileSelectDialog()
   }
 
   return (
