@@ -12,5 +12,3 @@ export default function TypingIndicator() {
     </div>
   )
 }
-
-// todo: improve this?

@@ -1,83 +1,95 @@
-import { render, waitFor } from '@testing-library/react'
+import { render } from '@testing-library/react'
 import Dashboard from '@/app/(private)/dashboard/page'
-import { useRouter, useSearchParams } from 'next/navigation'
-import { useUser } from '@/hooks/use-user'
 import { getCheckoutUrl } from '@/lib/get-checkout-url'
-import { SidebarProvider } from '@/components/ui/sidebar'
+import { useChatlyStore } from '@/providers/chatly-store-provider'
 
-jest.mock('next/navigation')
-jest.mock('@/hooks/use-user')
-jest.mock('@/lib/get-checkout-url')
-jest.mock('uuid', () => ({
-  v4: () => 'mocked-uuid',
-}))
+const replaceMock = jest.fn()
 
-jest.mock('@/hooks/use-mobile', () => ({
-  useIsMobile: () => false,
-}))
-
-jest.mock('@/hooks/use-typing-indicator', () => ({
-  useTypingIndicator: () => ({
-    isTyping: false,
-    updateTypingStatus: jest.fn(),
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({
+    replace: replaceMock,
+  }),
+  useSearchParams: () => ({
+    get: (key: string) => {
+      if (key === 'plan') return 'pro'
+      if (key === 'billing') return 'monthly'
+      return null
+    },
   }),
 }))
 
-jest.mock('@/utils/supabase/client', () => {
-  const queryBuilder = {
-    select: jest.fn().mockReturnThis(),
-    insert: jest.fn().mockReturnThis(),
-    delete: jest.fn().mockReturnThis(),
-    update: jest.fn().mockReturnThis(),
-    order: jest.fn().mockReturnThis(),
-    or: jest.fn().mockReturnThis(),
-    eq: jest.fn().mockReturnThis(),
-    single: jest.fn().mockResolvedValue({ data: null, error: null }),
-    then: jest.fn(),
-  }
+jest.mock('@/lib/get-checkout-url', () => ({
+  getCheckoutUrl: jest.fn(),
+}))
 
-  return {
-    createClient: () => ({
-      from: () => queryBuilder,
-      channel: () => ({
-        on: () => ({ subscribe: jest.fn() }),
-      }),
-      removeChannel: jest.fn(),
-    }),
-  }
+jest.mock('@/providers/chatly-store-provider', () => ({
+  useChatlyStore: jest.fn(),
+}))
+
+jest.mock('@/hooks/use-profiles', () => ({
+  useProfiles: () => ({
+    profiles: [],
+    filteredProfiles: [],
+    loading: false,
+  }),
+}))
+
+jest.mock('@/hooks/use-messages', () => ({
+  useMessages: () => ({
+    messages: [],
+    loading: false,
+    sendMessage: jest.fn(),
+    deleteMessage: jest.fn(),
+    editMessage: jest.fn(),
+    lastMessages: {},
+    lastMessagesLoading: false,
+  }),
+}))
+
+jest.mock('@/components/chat-panel', () => {
+  const ChatPanelMock = () => <div />
+  ChatPanelMock.displayName = 'ChatPanel'
+  return ChatPanelMock
+})
+
+jest.mock('@/components/conversations-panel', () => {
+  const ConversationsPanelMock = () => <div />
+  ConversationsPanelMock.displayName = 'ConversationsPanel'
+  return ConversationsPanelMock
+})
+
+jest.mock('@/components/conversation-select-dialog', () => {
+  const ConversationSelectDialogMock = () => <div />
+  ConversationSelectDialogMock.displayName = 'ConversationSelectDialog'
+  return ConversationSelectDialogMock
 })
 
 describe('Dashboard', () => {
-  it('redirects to the correct LS checkout URL when arriving from pricing signup', async () => {
-    const replace = jest.fn()
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
 
-    ;(useRouter as jest.Mock).mockReturnValue({ replace })
-    ;(useSearchParams as jest.Mock).mockReturnValue({
-      get: (key: string) => {
-        if (key === 'plan') return 'pro'
-        if (key === 'billing') return 'monthly'
-        return null
-      },
-    })
-    ;(useUser as jest.Mock).mockReturnValue({
-      user: { id: 'user-1', email: 'test@test.com' },
-      loading: false,
-      error: null,
-    })
+  it('redirects to checkout when user, plan, and billing exist', () => {
+    ;(useChatlyStore as jest.Mock).mockImplementation((selector) =>
+      selector({
+        user: {
+          id: 'user-1',
+          email: 'test@example.com',
+        },
+      }),
+    )
     ;(getCheckoutUrl as jest.Mock).mockReturnValue(
-      'https://chatly-store.lemonsqueezy.com/buy/test-checkout',
+      'https://checkout.example.com',
     )
 
-    render(
-      <SidebarProvider>
-        <Dashboard />
-      </SidebarProvider>,
+    render(<Dashboard />)
+
+    expect(getCheckoutUrl).toHaveBeenCalledWith(
+      'pro',
+      'monthly',
+      expect.objectContaining({ id: 'user-1' }),
     )
 
-    await waitFor(() => {
-      expect(replace).toHaveBeenCalledWith(
-        'https://chatly-store.lemonsqueezy.com/buy/test-checkout',
-      )
-    })
+    expect(replaceMock).toHaveBeenCalledWith('https://checkout.example.com')
   })
 })
