@@ -11,15 +11,6 @@ type TailwindRounded =
   | '3xl'
   | 'full'
 
-type TailwindSize = 4 | 5 | 6 | 8 | 10 | 12 | 16 | 20
-
-interface ProfileAvatarProps {
-  profile: Profile
-  height?: TailwindSize
-  width?: TailwindSize
-  rounded?: TailwindRounded
-}
-
 const ROUNDED_MAP: Record<TailwindRounded, string> = {
   none: 'rounded-none',
   sm: 'rounded-sm',
@@ -31,26 +22,20 @@ const ROUNDED_MAP: Record<TailwindRounded, string> = {
   full: 'rounded-full',
 }
 
-const H_MAP: Record<TailwindSize, string> = {
-  4: 'h-4',
-  5: 'h-5',
-  6: 'h-6',
-  8: 'h-8',
-  10: 'h-10',
-  12: 'h-12',
-  16: 'h-16',
-  20: 'h-20',
-}
-
-const W_MAP: Record<TailwindSize, string> = {
-  4: 'w-4',
-  5: 'w-5',
-  6: 'w-6',
-  8: 'w-8',
-  10: 'w-10',
-  12: 'w-12',
-  16: 'w-16',
-  20: 'w-20',
+interface ProfileAvatarProps {
+  /** The user profile data containing name, username, and avatar URL. */
+  profile: Profile
+  /** * The height following Tailwind's spacing scale (1 unit = 0.25rem).
+   * Example: 8 = 2rem (32px), 24 = 6rem (96px).
+   * @default 8
+   */
+  height?: number
+  /** * The width following Tailwind's spacing scale (1 unit = 0.25rem).
+   * @default 8
+   */
+  width?: number
+  /** The Tailwind border-radius class key. @default 'full' */
+  rounded?: TailwindRounded
 }
 
 export default function ProfileAvatar({
@@ -60,6 +45,11 @@ export default function ProfileAvatar({
   rounded = 'full',
 }: ProfileAvatarProps) {
   const { name, username, avatar_url } = profile
+
+  const sizeStyle = {
+    height: `${height * 0.25}rem`,
+    width: `${width * 0.25}rem`,
+  }
 
   const fallback =
     name
@@ -73,12 +63,8 @@ export default function ProfileAvatar({
 
   return (
     <Avatar
-      className={`
-        ${H_MAP[height]} 
-        ${W_MAP[width]} 
-        ${ROUNDED_MAP[rounded]} 
-        shadow shrink-0 overflow-hidden
-      `}
+      className={`${ROUNDED_MAP[rounded]} shadow shrink-0 overflow-hidden`}
+      style={sizeStyle}
     >
       <AvatarImage
         src={avatar_url || undefined}
