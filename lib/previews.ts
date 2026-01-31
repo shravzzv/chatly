@@ -42,7 +42,7 @@ export const derivePreviews = (
     const partnerId = getPartnerId(msg, currentUserId)
 
     if (!previews[partnerId]) {
-      previews[partnerId] = derivePreview(msg)
+      previews[partnerId] = derivePreview(msg, currentUserId)
     }
   }
 
@@ -61,11 +61,16 @@ export const derivePreviews = (
  * - delegates preview text derivation to internal rules
  *
  * @param message - The message used to derive the preview
+ * @param currentUserId
  * @returns A normalized conversation preview
  */
-export const derivePreview = (message: Message): Preview => ({
+export const derivePreview = (
+  message: Message,
+  currentUserId: string,
+): Preview => ({
   text: getMessagePreview(message),
   updatedAt: message.updated_at,
+  isOwnMsg: message.sender_id === currentUserId,
 })
 
 /**

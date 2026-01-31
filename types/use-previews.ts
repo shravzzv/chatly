@@ -20,6 +20,7 @@ import { type Message } from './message'
 export interface Preview {
   text: string
   updatedAt: string
+  isOwnMsg: boolean
 }
 
 /**

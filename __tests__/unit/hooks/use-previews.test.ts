@@ -17,10 +17,10 @@ jest.mock('@/lib/dashboard', () => ({
 }))
 
 jest.mock('@/lib/previews', () => ({
-  derivePreview: jest.fn((msg: Message) => ({
-    id: msg.id,
+  derivePreview: jest.fn((msg: Message, currentUserId: string) => ({
     text: msg.text,
     updatedAt: msg.updated_at,
+    isOwnMsg: msg.sender_id === currentUserId,
   })),
   derivePreviews: jest.fn(() => ({})),
 }))
@@ -112,7 +112,9 @@ describe('usePreviews', () => {
         result.current.updatePreview(msg)
       })
 
-      expect(result.current.previews['user-2']).toEqual(derivePreview(msg))
+      expect(result.current.previews['user-2']).toEqual(
+        derivePreview(msg, 'user-1'),
+      )
     })
 
     it('ignores stale updates based on updated_at', () => {
@@ -168,7 +170,9 @@ describe('usePreviews', () => {
         await result.current.deletePreview(last)
       })
 
-      expect(result.current.previews['user-2']).toEqual(derivePreview(previous))
+      expect(result.current.previews['user-2']).toEqual(
+        derivePreview(previous, 'user-1'),
+      )
     })
 
     it('removes preview when no previous message exists', async () => {
@@ -202,7 +206,9 @@ describe('usePreviews', () => {
         result.current.replacePreview('user-2', msg)
       })
 
-      expect(result.current.previews['user-2']).toEqual(derivePreview(msg))
+      expect(result.current.previews['user-2']).toEqual(
+        derivePreview(msg, 'user-1'),
+      )
     })
 
     it('removes preview when message is null', () => {

@@ -101,7 +101,7 @@ export function usePreviews(): UsePreviewsResult {
 
         return {
           ...prev,
-          [partnerId]: derivePreview(message),
+          [partnerId]: derivePreview(message, currentUserId),
         }
       })
     },
@@ -137,7 +137,7 @@ export function usePreviews(): UsePreviewsResult {
         const next = { ...prev }
 
         if (message) {
-          next[partnerId] = derivePreview(message)
+          next[partnerId] = derivePreview(message, currentUserId)
         } else {
           delete next[partnerId]
         }
@@ -161,16 +161,18 @@ export function usePreviews(): UsePreviewsResult {
    */
   const replacePreview = useCallback(
     (partnerId: string, message: Message | null) => {
+      if (!currentUserId) return
+
       setPreviews((prev) => {
         const next = { ...prev }
 
-        if (message) next[partnerId] = derivePreview(message)
+        if (message) next[partnerId] = derivePreview(message, currentUserId)
         else delete next[partnerId]
 
         return next
       })
     },
-    [],
+    [currentUserId],
   )
 
   return {

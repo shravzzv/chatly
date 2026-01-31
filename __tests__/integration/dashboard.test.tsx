@@ -14,49 +14,73 @@ jest.mock('next/navigation', () => ({
 jest.mock('@/providers/chatly-store-provider', () => ({
   useChatlyStore: <T,>(
     selector: (state: { user: { id: string; email: string } }) => T,
-  ) => selector({ user: { id: 'user-1', email: 'test@test.com' } }),
+  ) =>
+    selector({
+      user: { id: 'user-1', email: 'test@test.com' },
+    }),
 }))
 
-const mockProfiles = [{ id: '1', user_id: 'user-2', name: 'Alice' }]
+const setSelectedProfileId = jest.fn()
 
-jest.mock('@/hooks/use-profiles', () => ({
-  useProfiles: () => ({
-    profiles: mockProfiles,
-    filteredProfiles: mockProfiles,
-    loading: false,
-  }),
+const mockDashboardContext = {
+  profiles: [{ id: '1', user_id: 'user-2', name: 'Alice' }],
+  filteredProfiles: [{ id: '1', user_id: 'user-2', name: 'Alice' }],
+  profilesLoading: false,
+
+  previews: {},
+  previewsLoading: false,
+
+  messages: [],
+  messagesLoading: false,
+  sendMessage: jest.fn(),
+  deleteMessage: jest.fn(),
+  editMessage: jest.fn(),
+
+  searchQuery: '',
+  setSearchQuery: jest.fn(),
+
+  selectedProfile: { id: '1', user_id: 'user-2', name: 'Alice' },
+  selectedProfileId: 'user-2',
+  setSelectedProfileId,
+
+  isProfileSelectDialogOpen: false,
+  openProfileSelectDialog: jest.fn(),
+  closeProfileSelectDialog: jest.fn(),
+  closeChatPanel: jest.fn(),
+}
+
+jest.mock('@/providers/dashboard-provider', () => ({
+  DashboardProvider: ({ children }: { children: React.ReactNode }) => (
+    <>{children}</>
+  ),
+  useDashboardContext: () => mockDashboardContext,
 }))
 
 const useMessagesMock = jest.fn()
 
 jest.mock('@/hooks/use-messages', () => ({
-  useMessages: (profileId: string | null | undefined) =>
-    useMessagesMock(profileId),
+  useMessages: (args: {
+    selectedProfileId: string | null
+    updatePreview: (msg: unknown) => void
+    deletePreview: (msg: unknown) => Promise<void>
+  }) => useMessagesMock(args),
 }))
-
-interface ConversationsPanelProps {
-  setSelectedProfileId: (id: string) => void
-}
 
 jest.mock('@/components/conversations-panel', () => ({
   __esModule: true,
-  default: ({ setSelectedProfileId }: ConversationsPanelProps) => (
+  default: () => (
     <button onClick={() => setSelectedProfileId('user-2')}>
       select-profile
     </button>
   ),
 }))
 
-interface ChatPanelProps {
-  selectedProfile: { user_id: string } | null
-}
-
 jest.mock('@/components/chat-panel', () => ({
   __esModule: true,
-  default: ({ selectedProfile }: ChatPanelProps) => (
+  default: () => (
     <div>
       chat-panel
-      {selectedProfile && <span>{selectedProfile.user_id}</span>}
+      <span>user-2</span>
     </div>
   ),
 }))
@@ -68,32 +92,28 @@ jest.mock('@/components/conversation-select-dialog', () => ({
 
 describe('Dashboard integration', () => {
   beforeEach(() => {
+    jest.clearAllMocks()
+
     useMessagesMock.mockReturnValue({
       messages: [],
       loading: false,
       sendMessage: jest.fn(),
       deleteMessage: jest.fn(),
       editMessage: jest.fn(),
-      lastMessages: {},
-      lastMessagesLoading: false,
     })
   })
 
-  it('wires selected profile from the conversations panel to the chat panel and the useMessages hook', async () => {
+  it('wires selected profile through dashboard context to ChatPanel', async () => {
     const user = userEvent.setup()
 
     render(<Page />)
 
-    // initial render: no senderId in URL
-    expect(useMessagesMock).toHaveBeenCalledWith(undefined)
-
-    // user selects a conversation
     await user.click(screen.getByText('select-profile'))
 
-    // hook re-runs with selected profile id
-    expect(useMessagesMock).toHaveBeenLastCalledWith('user-2')
+    // selection written to dashboard context
+    expect(setSelectedProfileId).toHaveBeenCalledWith('user-2')
 
-    // chat panel receives derived selectedProfile
+    // chat panel reflects derived selected profile
     expect(screen.getByText('user-2')).toBeInTheDocument()
   })
 })
