@@ -2,116 +2,50 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { createClient } from '@/utils/supabase/client'
-import { toast } from 'sonner'
 import { v4 as uuidv4 } from 'uuid'
 import { type Message } from '@/types/message'
 import { useChatlyStore } from '@/providers/chatly-store-provider'
 import { type PostgrestError } from '@supabase/supabase-js'
-import { useLastMessages } from '@/hooks/use-last-messages'
 import { getPartnerId } from '@/lib/dashboard'
-
-/**
- * Public API returned by {@link useMessages}.
- *
- * This hook intentionally exposes **commands** (send/edit/delete)
- * alongside **derived state** (messages, lastMessages).
- *
- * The caller should treat:
- * - `messages` as the authoritative list for the active conversation
- * - `lastMessages` as a derived preview cache for conversation lists
- */
-interface UseMessagesResult {
-  /** Messages for the currently selected conversation */
-  messages: Message[]
-
-  /** Loading state for the initial fetch of messages */
-  loading: boolean
-
-  /** Error state for message fetching */
-  error: PostgrestError | null
-
-  /**
-   * Sends a new message to the selected profile.
-   *
-   * This method is **optimistic**:
-   * - The message appears immediately in `messages`
-   * - The conversation preview (`lastMessages`) updates immediately
-   * - A temporary id is used until the database confirms the insert
-   *
-   * On failure:
-   * - The optimistic message is removed
-   * - The previous `lastMessages` entry is restored explicitly
-   */
-  sendMessage: (text: string) => Promise<void>
-
-  /**
-   * Deletes a message by id.
-   *
-   * This method is **optimistic for the message list**, but
-   * **authoritative for `lastMessages`**:
-   * - The message is removed from `messages` immediately
-   * - `lastMessages` is only updated *after* the database confirms deletion
-   */
-  deleteMessage: (id: string) => Promise<void>
-
-  /**
-   * Edits the text of an existing message.
-   *
-   * This method uses **optimistic update with rollback**:
-   * - The message text updates immediately in `messages`
-   * - The conversation preview updates optimistically
-   * - A rollback closure restores prior state if the DB update fails
-   */
-  editMessage: (id: string, text: string) => Promise<void>
-
-  /**
-   * Map of `partnerId -> last message`.
-   *
-   * This is a **derived projection** maintained by {@link useLastMessages}
-   * and kept in sync via:
-   * - local optimistic actions
-   * - realtime database events
-   */
-  lastMessages: Record<string, Message | null>
-
-  /** Loading state for the initial `lastMessages` derivation */
-  lastMessagesLoading: boolean
-}
+import type {
+  SendMessageInput,
+  UseMessagesArgs,
+  UseMessagesResult,
+} from '@/types/use-messages'
+import type { MessageAttachment } from '@/types/message-attachment'
 
 /**
  * useMessages
  *
- * A high-level messaging hook responsible for:
+ * High-level messaging hook responsible for:
  * - fetching messages for the active conversation
  * - managing optimistic UI for send/edit/delete
- * - subscribing to realtime database changes
- * - coordinating with {@link useLastMessages} to keep conversation previews in sync
+ * - reconciling authoritative database state
+ * - reacting to realtime message and attachment events
  *
- * Architectural responsibilities:
- * - **Commands**: send/edit/delete messages (user intent)
- * - **Reconciliation**: apply realtime events (database facts)
+ * Architectural principles:
+ * - `messages` is authoritative for the active conversation
+ * - previews are updated via injected callbacks (event-style)
+ * - optimistic UI is applied only to `messages`, never to previews directly
  *
- * This hook deliberately separates:
- * - intent-driven mutations (user actions)
- * - event-driven reconciliation (realtime updates)
+ * Realtime guarantees:
+ * - Messages and attachments sent by other users appear without refresh
+ * - Attachments may arrive after the message and are reconciled incrementally
  *
- * @param selectedProfileId The currently active chat partner, or null
+ * @param selectedProfileId The active conversation partner, or null
+ * @param updatePreview Callback invoked when a conversation preview must be updated
+ * @param deletePreview Callback invoked when a conversation preview must be removed
  */
-export function useMessages(
-  selectedProfileId: string | null,
-): UseMessagesResult {
+export function useMessages({
+  selectedProfileId,
+  updatePreview,
+  deletePreview,
+}: UseMessagesArgs): UseMessagesResult {
   const [messages, setMessages] = useState<Message[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<PostgrestError | null>(null)
+
   const currentUserId = useChatlyStore((state) => state.user)?.id
-  const {
-    lastMessages,
-    loading: lastMessagesLoading,
-    insertLastMessage,
-    deleteLastMessage,
-    updateLastMessage,
-    replaceLastMessage,
-  } = useLastMessages()
 
   /**
    * Fetch messages when the selected conversation changes.
@@ -119,6 +53,7 @@ export function useMessages(
   useEffect(() => {
     if (!currentUserId || !selectedProfileId) {
       setMessages([])
+      setLoading(false)
       return
     }
 
@@ -136,15 +71,25 @@ export function useMessages(
 
         const { data, error } = await supabase
           .from('messages')
-          .select('*')
+          .select(`*, message_attachments (*)`)
           .or(filter)
           .order('created_at', { ascending: true })
 
         if (error) throw error
-        setMessages(data)
+
+        const normalizedMessages: Message[] = data.map((row) => ({
+          id: row.id,
+          text: row.text,
+          sender_id: row.sender_id,
+          receiver_id: row.receiver_id,
+          created_at: row.created_at,
+          updated_at: row.updated_at,
+          attachment: row.message_attachments?.[0],
+        }))
+
+        setMessages(normalizedMessages)
       } catch (error) {
         setError(error as PostgrestError)
-        toast.error('Failed to load messages')
         console.error('Error fetching messages:', error)
       } finally {
         setLoading(false)
@@ -156,6 +101,9 @@ export function useMessages(
 
   /**
    * Handle realtime events on messages.
+   *
+   * Messages are the authoritative unit of conversation state.
+   * Attachments may arrive later via a separate realtime channel.
    */
   useEffect(() => {
     if (!currentUserId) return
@@ -188,7 +136,7 @@ export function useMessages(
                 setMessages((prev) => [...prev, msg])
               }
 
-              insertLastMessage(msg)
+              updatePreview(msg)
               break
             }
 
@@ -212,7 +160,7 @@ export function useMessages(
                 )
               }
 
-              updateLastMessage(incomingMsg.id, incomingMsg.text)
+              updatePreview(incomingMsg)
               break
             }
 
@@ -223,7 +171,11 @@ export function useMessages(
 
               const deletedMessage = messages.find((m) => m.id === deletedId)
               if (deletedMessage) {
-                await deleteLastMessage(deletedMessage)
+                try {
+                  await deletePreview(deletedMessage)
+                } catch (error) {
+                  console.warn('Realtime messages preview delete failed', error)
+                }
               }
 
               break
@@ -236,127 +188,315 @@ export function useMessages(
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [
-    currentUserId,
-    selectedProfileId,
-    messages,
-    insertLastMessage,
-    deleteLastMessage,
-    updateLastMessage,
-  ])
+  }, [currentUserId, deletePreview, messages, selectedProfileId, updatePreview])
 
   /**
-   * Sends a new message to the active conversation.
+   * Handle realtime events on message_attachments.
    *
-   * Optimistic behavior:
-   * - A temporary message is inserted immediately
-   * - Conversation preview updates immediately
+   * Attachments are treated as enrichments to existing messages:
+   * - INSERT attaches a file to an already-known message
+   * - DELETE removes the attachment but does NOT delete the message
    *
-   * Failure handling:
-   * - Removes the optimistic message
-   * - Restores the previous conversation preview explicitly
+   * This allows attachments to arrive after the message itself
+   * without requiring a refetch or refresh.
+   */
+  useEffect(() => {
+    if (!currentUserId) return
+    const supabase = createClient()
+
+    const channel = supabase
+      .channel('message_attachments:realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'message_attachments',
+        },
+        async (payload) => {
+          switch (payload.eventType) {
+            case 'INSERT': {
+              const attachment = payload.new as MessageAttachment
+
+              setMessages((prev) =>
+                prev.map((msg) =>
+                  msg.id === attachment.message_id
+                    ? { ...msg, attachment }
+                    : msg,
+                ),
+              )
+
+              const relatedMsg = messages.find(
+                (msg) => msg.id === attachment.message_id,
+              )
+
+              if (relatedMsg) {
+                updatePreview({ ...relatedMsg, attachment })
+              }
+
+              break
+            }
+
+            case 'DELETE': {
+              const deletedId = payload.old.id as string
+
+              setMessages((prev) =>
+                prev.map((msg) =>
+                  msg.attachment?.id === deletedId
+                    ? { ...msg, attachment: undefined }
+                    : msg,
+                ),
+              )
+
+              const relatedMsg = messages.find(
+                (msg) => msg.attachment?.id === deletedId,
+              )
+
+              if (relatedMsg) {
+                updatePreview({ ...relatedMsg, attachment: undefined })
+              }
+
+              break
+            }
+          }
+        },
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [currentUserId, messages, updatePreview])
+
+  /**
+   * Creates an attachment for an existing message.
+   *
+   * This performs two operations:
+   * 1. Uploads the file to object storage
+   * 2. Inserts a row into the `message_attachments` table
+   *
+   * The attachment will later be reconciled via realtime for other clients.
+   *
+   * @throws PostgrestError if either upload or DB insert fails
+   */
+  const createMessageAttachment = useCallback(
+    async (messageId: string, file: File) => {
+      const supabase = createClient()
+      const path = `${messageId}/${uuidv4()}`
+
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('message_attachments')
+        .upload(path, file)
+
+      if (uploadError) throw uploadError
+
+      const { data: attachment, error: insertError } = await supabase
+        .from('message_attachments')
+        .insert({
+          message_id: messageId,
+          path: uploadData.path,
+          file_name: file.name,
+          mime_type: file.type,
+          size: file.size,
+        })
+        .select()
+        .single()
+
+      if (insertError) throw insertError
+
+      return attachment
+    },
+    [],
+  )
+
+  /**
+   * Only removes the attachment file from the bucket.
+   * The row in the message_attachments table is deleted via cascade on the messages table.
+   */
+  const deleteAttachment = useCallback(
+    async (attachment: MessageAttachment) => {
+      const supabase = createClient()
+
+      const { error } = await supabase.storage
+        .from('message_attachments')
+        .remove([attachment.path])
+
+      if (error) throw error
+    },
+    [],
+  )
+
+  /**
+   * Reconciles an optimistic message with its authoritative database version.
+   *
+   * Replaces the temporary message (identified by `tempId`) with the
+   * confirmed message returned by the database, and updates previews
+   * based on the final state.
+   *
+   * This function is intentionally local to `useMessages.sendMessage` and is not exposed.
+   */
+  const reconcileOptimisticMessage = useCallback(
+    (tempId: string, finalMessage: Message) => {
+      setMessages((prev) =>
+        prev.map((m) => (m.id === tempId ? finalMessage : m)),
+      )
+
+      updatePreview(finalMessage)
+    },
+    [updatePreview],
+  )
+
+  /**
+   * Sends a message to the active conversation.
+   *
+   * Behavior:
+   * 1. Optimistically inserts a temporary message into `messages`
+   * 2. Persists the message to the database
+   * 3. Reconciles the optimistic message with the confirmed version
+   * 4. Updates previews only after authoritative success
+   *
+   * Attachments are uploaded only after message creation succeeds.
    */
   const sendMessage = useCallback(
-    async (text: string) => {
-      if (!text.trim() || !currentUserId || !selectedProfileId) return
+    async ({ text, file }: SendMessageInput) => {
+      if (!currentUserId || !selectedProfileId) return
+
+      const hasText = typeof text === 'string' && text.trim().length > 0
+      const hasFile = !!file
+      if (!hasText && !hasFile) return
 
       const tempId = uuidv4()
       const now = new Date().toISOString()
 
       const optimisticMessage: Message = {
         id: tempId,
-        text,
+        text: text ?? null,
         sender_id: currentUserId,
         receiver_id: selectedProfileId,
         created_at: now,
         updated_at: now,
+        attachment: file
+          ? {
+              id: 'optimistic',
+              message_id: tempId,
+              path: '',
+              file_name: file.name,
+              mime_type: file.type,
+              size: file.size,
+              created_at: now,
+            }
+          : undefined,
       }
 
-      const prevLastMessage = lastMessages[selectedProfileId] ?? null
-
+      // 1. Optimistic UI update
       setMessages((prev) => [...prev, optimisticMessage])
-      insertLastMessage(optimisticMessage)
 
+      // 2. Authoritative DB insert
       const supabase = createClient()
-      const { data, error } = await supabase
+      const { data: message, error } = await supabase
         .from('messages')
         .insert({
-          text,
+          text: text ?? null,
           sender_id: currentUserId,
           receiver_id: selectedProfileId,
-          created_at: now,
-          updated_at: now,
         })
         .select()
         .single()
 
+      // 3. DB failure → rollback and exit
       if (error) {
         setMessages((prev) => prev.filter((m) => m.id !== tempId))
-        replaceLastMessage(selectedProfileId, prevLastMessage)
-        toast.error('Failed to send message')
         console.error('Error sending message:', error)
+        throw error
+      }
+
+      // 4. Upload attachment only if db insert succeeds
+      if (file) {
+        try {
+          const attachment = await createMessageAttachment(message.id, file)
+          reconcileOptimisticMessage(tempId, { ...message, attachment })
+        } catch (error) {
+          console.error(error)
+          throw new Error('UPLOAD_ATTACHMENT_FAILED', { cause: error })
+        }
         return
       }
 
-      setMessages((prev) => prev.map((m) => (m.id === tempId ? data : m)))
-      insertLastMessage(data)
+      // 5. Update previews after confirmed success
+      reconcileOptimisticMessage(tempId, message)
     },
     [
       currentUserId,
-      lastMessages,
-      insertLastMessage,
-      replaceLastMessage,
+      reconcileOptimisticMessage,
       selectedProfileId,
+      createMessageAttachment,
     ],
   )
 
   /**
    * Deletes a message by id.
    *
-   * This method:
-   * - Optimistically removes the message from the local list
-   * - Commits the deletion to the database
-   * - Updates conversation previews only after DB success
+   * Guarantees:
+   * - Message is removed optimistically from local state
+   * - Database deletion is authoritative
+   * - Associated attachment rows are deleted via ON DELETE CASCADE
+   *
+   * Best-effort behavior:
+   * - The attachment file is removed from storage if present
+   * - Storage cleanup failures do NOT rollback message deletion
    */
   const deleteMessage = useCallback(
     async (id: string) => {
       if (!currentUserId) return
 
+      const msg = messages.find((msg) => msg.id === id)
+      if (!msg) return
+
       const prevMessages = messages
+      const attachment = msg.attachment
 
-      setMessages((prev) => prev.filter((msg) => msg.id !== id))
+      // 1. Optimistic UI update
+      setMessages((prev) => prev.filter((m) => m.id !== id))
 
+      // 2. Authoritative DB delete
       const supabase = createClient()
       const { error } = await supabase.from('messages').delete().eq('id', id)
 
+      // 3. DB failure → rollback and exit
       if (error) {
         setMessages(prevMessages)
-        toast.error('Failed to delete message')
         console.error('Error deleting message:', error)
-        return
+        throw error
       }
 
-      // Intentionally updating lastMessages only after db update succeeds.
-      const deletedMessage = prevMessages.find((msg) => msg.id === id)
-      if (deletedMessage) await deleteLastMessage(deletedMessage)
+      // 4. Best-effort storage cleanup (non-authoritative)
+      if (attachment) {
+        try {
+          await deleteAttachment(attachment)
+        } catch (error) {
+          console.warn('Storage cleanup failed', error)
+        }
+      }
 
-      toast.success('Message deleted')
+      // 5. Update previews after confirmed success
+      const deletedMessage = prevMessages.find((msg) => msg.id === id)
+      if (deletedMessage) await deletePreview(deletedMessage)
     },
-    [currentUserId, messages, deleteLastMessage],
+    [currentUserId, deleteAttachment, deletePreview, messages],
   )
 
   /**
    * Edits the text of an existing message.
    *
-   * This method uses **optimistic update with explicit rollback**:
-   * - Message text updates immediately
-   * - Conversation preview updates optimistically
-   * - A rollback closure restores preview state if the DB update fails
+   * Notes:
+   * - Only text is editable; attachments are immutable
+   * - `updated_at` is optimistically updated, then reconciled with DB
    */
   const editMessage = useCallback(
     async (id: string, text: string) => {
       const prevMessages = messages
 
+      // 1. Optimistic UI update
       setMessages((prev) =>
         prev.map((msg) =>
           msg.id === id
@@ -365,30 +505,33 @@ export function useMessages(
         ),
       )
 
-      const rollbackLastMessage = updateLastMessage(id, text)
-
+      // 2. Authoritative DB update
       const supabase = createClient()
-      const { data, error } = await supabase
+      const { data: updatedMessage, error } = await supabase
         .from('messages')
         .update({ text })
         .eq('id', id)
         .select()
         .single()
 
+      // 3. DB failure → rollback and exit
       if (error) {
         setMessages(prevMessages)
-        rollbackLastMessage()
-        toast.error('Failed to update message')
         console.error('Error updating message:', error)
-        return
+        throw error
       }
 
-      setMessages((prev) => prev.map((msg) => (msg.id === id ? data : msg)))
-      updateLastMessage(id, data.text)
+      // 4. Reconcile messages
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === updatedMessage.id ? { ...msg, ...updatedMessage } : msg,
+        ),
+      )
 
-      toast.success('Message updated')
+      // 5. Update previews after confirmed success
+      updatePreview(updatedMessage)
     },
-    [messages, updateLastMessage],
+    [messages, updatePreview],
   )
 
   return {
@@ -396,9 +539,7 @@ export function useMessages(
     loading,
     error,
     sendMessage,
-    deleteMessage,
     editMessage,
-    lastMessages,
-    lastMessagesLoading,
+    deleteMessage,
   }
 }

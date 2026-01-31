@@ -1,6 +1,7 @@
 import { renderHook, act, waitFor } from '@testing-library/react'
 import { useMessages } from '@/hooks/use-messages'
 import type { Message } from '@/types/message'
+import type { SendMessageInput, UseMessagesArgs } from '@/types/use-messages'
 
 jest.mock('uuid', () => ({
   v4: () => 'temp-id',
@@ -17,25 +18,10 @@ jest.mock('@/providers/chatly-store-provider', () => ({
   ): T => selector({ user: { id: 'user-1' } }),
 }))
 
-const insertLastMessage = jest.fn()
-const updateLastMessage = jest.fn(() => jest.fn())
-const deleteLastMessage = jest.fn()
-const replaceLastMessage = jest.fn()
-
-jest.mock('@/hooks/use-last-messages', () => ({
-  useLastMessages: () => ({
-    lastMessages: {},
-    loading: false,
-    insertLastMessage,
-    updateLastMessage,
-    deleteLastMessage,
-    replaceLastMessage,
-  }),
-}))
-
 const mockFrom = jest.fn()
 const mockChannelOn = jest.fn().mockReturnThis()
 const mockSubscribe = jest.fn()
+const mockRemoveChannel = jest.fn()
 
 jest.mock('@/utils/supabase/client', () => ({
   createClient: () => ({
@@ -44,7 +30,13 @@ jest.mock('@/utils/supabase/client', () => ({
       on: mockChannelOn,
       subscribe: mockSubscribe,
     }),
-    removeChannel: jest.fn(),
+    removeChannel: mockRemoveChannel,
+    storage: {
+      from: () => ({
+        upload: jest.fn(),
+        remove: jest.fn(),
+      }),
+    },
   }),
 }))
 
@@ -58,27 +50,48 @@ const makeMessage = (overrides: Partial<Message> = {}): Message => ({
   ...overrides,
 })
 
+const setup = (overrides: Partial<UseMessagesArgs> = {}) => {
+  const updatePreview = jest.fn()
+  const deletePreview = jest.fn().mockResolvedValue(undefined)
+
+  const args: UseMessagesArgs = {
+    selectedProfileId: 'partner-1',
+    updatePreview,
+    deletePreview,
+    ...overrides,
+  }
+
+  const utils = renderHook(() => useMessages(args))
+
+  return { ...utils, updatePreview, deletePreview }
+}
+
 describe('useMessages', () => {
   beforeEach(() => {
     jest.clearAllMocks()
   })
 
   describe('initialization & fetching', () => {
-    it('starts in loading state and fetches messages', async () => {
+    it('fetches messages on mount', async () => {
       const msg = makeMessage()
 
       mockFrom.mockReturnValueOnce({
         select: () => ({
           or: () => ({
             order: async () => ({
-              data: [msg],
+              data: [
+                {
+                  ...msg,
+                  message_attachments: [],
+                },
+              ],
               error: null,
             }),
           }),
         }),
       })
 
-      const { result } = renderHook(() => useMessages('partner-1'))
+      const { result } = setup()
 
       expect(result.current.loading).toBe(true)
 
@@ -90,18 +103,23 @@ describe('useMessages', () => {
       expect(result.current.error).toBeNull()
     })
 
-    it('clears messages when selectedProfileId is null', () => {
-      const { result } = renderHook(() => useMessages(null))
+    it('clears messages when selectedProfileId is null', async () => {
+      const { result } = setup({ selectedProfileId: null })
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false)
+      })
+
       expect(result.current.messages).toEqual([])
     })
   })
 
   describe('sendMessage', () => {
-    it('optimistically inserts and replaces with db message on success', async () => {
+    it('optimistically inserts and reconciles message on success', async () => {
       const dbMessage = makeMessage({ id: 'real-id' })
 
       mockFrom
-        // 1️⃣ initial fetchMessages
+        // fetchMessages
         .mockReturnValueOnce({
           select: () => ({
             or: () => ({
@@ -112,7 +130,7 @@ describe('useMessages', () => {
             }),
           }),
         })
-        // 2️⃣ insert during sendMessage
+        // insert message
         .mockReturnValueOnce({
           insert: () => ({
             select: () => ({
@@ -124,24 +142,20 @@ describe('useMessages', () => {
           }),
         })
 
-      const { result } = renderHook(() => useMessages('partner-1'))
+      const { result, updatePreview } = setup()
 
-      await waitFor(() => {
-        expect(result.current.loading).toBe(false)
-      })
+      await waitFor(() => expect(result.current.loading).toBe(false))
 
       await act(async () => {
-        await result.current.sendMessage('hello')
+        await result.current.sendMessage({ text: 'hello' })
       })
 
-      expect(result.current.messages).toHaveLength(1)
-      expect(result.current.messages[0].id).toBe('real-id')
-      expect(insertLastMessage).toHaveBeenCalledTimes(2)
+      expect(result.current.messages).toEqual([dbMessage])
+      expect(updatePreview).toHaveBeenCalledWith(dbMessage)
     })
 
-    it('rolls back optimistic insert on failure', async () => {
+    it('rolls back optimistic insert on DB failure', async () => {
       mockFrom
-        // 1️⃣ initial fetchMessages on mount
         .mockReturnValueOnce({
           select: () => ({
             or: () => ({
@@ -152,7 +166,6 @@ describe('useMessages', () => {
             }),
           }),
         })
-        // 2️⃣ insert during sendMessage (failure)
         .mockReturnValueOnce({
           insert: () => ({
             select: () => ({
@@ -164,45 +177,44 @@ describe('useMessages', () => {
           }),
         })
 
-      const { result } = renderHook(() => useMessages('partner-1'))
+      const { result } = setup()
 
       await act(async () => {
-        await result.current.sendMessage('hello')
+        await expect(
+          result.current.sendMessage({ text: 'hello' }),
+        ).rejects.toThrow()
       })
 
       expect(result.current.messages).toEqual([])
-      expect(replaceLastMessage).toHaveBeenCalled()
     })
 
-    it('is a no-op when text is empty', async () => {
-      const { result } = renderHook(() => useMessages('partner-1'))
+    it('is a no-op when neither text nor file is provided', async () => {
+      const { result, updatePreview } = setup()
 
       await act(async () => {
-        await result.current.sendMessage('   ')
+        await result.current.sendMessage({} as SendMessageInput)
       })
 
       expect(result.current.messages).toEqual([])
-      expect(insertLastMessage).not.toHaveBeenCalled()
+      expect(updatePreview).not.toHaveBeenCalled()
     })
   })
 
   describe('editMessage', () => {
-    it('optimistically updates and rolls back on failure', async () => {
+    it('optimistically edits and rolls back on failure', async () => {
       const msg = makeMessage({ text: 'old' })
 
       mockFrom
-        // 1️⃣ initial fetchMessages
         .mockReturnValueOnce({
           select: () => ({
             or: () => ({
               order: async () => ({
-                data: [],
+                data: [{ ...msg, message_attachments: [] }],
                 error: null,
               }),
             }),
           }),
         })
-        // 2️⃣ update during editMessage (failure)
         .mockReturnValueOnce({
           update: () => ({
             eq: () => ({
@@ -216,40 +228,34 @@ describe('useMessages', () => {
           }),
         })
 
-      const { result } = renderHook(() => useMessages('partner-1'))
+      const { result } = setup()
 
-      await waitFor(() => {
-        expect(result.current.loading).toBe(false)
-      })
-
-      act(() => {
-        result.current.messages.push(msg)
-      })
+      await waitFor(() => expect(result.current.messages.length).toBe(1))
 
       await act(async () => {
-        await result.current.editMessage(msg.id, 'new')
+        await expect(
+          result.current.editMessage(msg.id, 'new'),
+        ).rejects.toThrow()
       })
 
       expect(result.current.messages[0].text).toBe('old')
-      expect(updateLastMessage).toHaveBeenCalled()
     })
 
     it('finalizes edit on success', async () => {
-      const updated = makeMessage({ text: 'new' })
+      const msg = makeMessage()
+      const updated = { ...msg, text: 'new' }
 
       mockFrom
-        // 1️⃣ initial fetchMessages
         .mockReturnValueOnce({
           select: () => ({
             or: () => ({
               order: async () => ({
-                data: [],
+                data: [{ ...msg, message_attachments: [] }],
                 error: null,
               }),
             }),
           }),
         })
-        // 2️⃣ update during editMessage (success)
         .mockReturnValueOnce({
           update: () => ({
             eq: () => ({
@@ -263,21 +269,16 @@ describe('useMessages', () => {
           }),
         })
 
-      const { result } = renderHook(() => useMessages('partner-1'))
+      const { result, updatePreview } = setup()
 
-      await waitFor(() => {
-        expect(result.current.loading).toBe(false)
-      })
-
-      act(() => {
-        result.current.messages.push(makeMessage())
-      })
+      await waitFor(() => expect(result.current.messages.length).toBe(1))
 
       await act(async () => {
-        await result.current.editMessage(updated.id, 'new')
+        await result.current.editMessage(msg.id, 'new')
       })
 
       expect(result.current.messages[0].text).toBe('new')
+      expect(updatePreview).toHaveBeenCalledWith(updated)
     })
   })
 
@@ -290,7 +291,7 @@ describe('useMessages', () => {
           select: () => ({
             or: () => ({
               order: async () => ({
-                data: [],
+                data: [{ ...msg, message_attachments: [] }],
                 error: null,
               }),
             }),
@@ -304,22 +305,16 @@ describe('useMessages', () => {
           }),
         })
 
-      const { result } = renderHook(() => useMessages('partner-1'))
+      const { result, deletePreview } = setup()
 
-      await waitFor(() => {
-        expect(result.current.loading).toBe(false)
-      })
-
-      act(() => {
-        result.current.messages.push(msg)
-      })
+      await waitFor(() => expect(result.current.messages.length).toBe(1))
 
       await act(async () => {
         await result.current.deleteMessage(msg.id)
       })
 
       expect(result.current.messages).toEqual([])
-      expect(deleteLastMessage).toHaveBeenCalledWith(msg)
+      expect(deletePreview).toHaveBeenCalledWith(msg)
     })
 
     it('rolls back delete on failure', async () => {
@@ -330,7 +325,7 @@ describe('useMessages', () => {
           select: () => ({
             or: () => ({
               order: async () => ({
-                data: [],
+                data: [{ ...msg, message_attachments: [] }],
                 error: null,
               }),
             }),
@@ -344,21 +339,15 @@ describe('useMessages', () => {
           }),
         })
 
-      const { result } = renderHook(() => useMessages('partner-1'))
+      const { result } = setup()
 
-      await waitFor(() => {
-        expect(result.current.loading).toBe(false)
-      })
-
-      act(() => {
-        result.current.messages.push(msg)
-      })
+      await waitFor(() => expect(result.current.messages.length).toBe(1))
 
       await act(async () => {
-        await result.current.deleteMessage(msg.id)
+        await expect(result.current.deleteMessage(msg.id)).rejects.toThrow()
       })
 
-      expect(result.current.messages).toHaveLength(1)
+      expect(result.current.messages.length).toBe(1)
     })
   })
 })
