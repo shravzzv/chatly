@@ -1,41 +1,52 @@
 import { renderHook, waitFor } from '@testing-library/react'
 import { useProfiles } from '@/hooks/use-profiles'
 import { type Profile } from '@/types/profile'
-import { toast } from 'sonner'
 import { createClient } from '@/utils/supabase/client'
 import { type PostgrestError } from '@supabase/supabase-js'
 
-jest.mock('sonner')
 jest.mock('@/utils/supabase/client', () => ({
   createClient: jest.fn(),
 }))
 
-function mockSupabaseSuccess(data: Profile[]) {
-  ;(createClient as jest.Mock).mockReturnValue({
-    from: () => ({
-      select: () => ({
-        order: () =>
+jest.mock('@/providers/chatly-store-provider', () => ({
+  useChatlyStore: <T>(
+    selector: (state: {
+      user: { id: string } | null
+      setProfile: jest.Mock
+    }) => T,
+  ): T =>
+    selector({
+      user: { id: 'user-1' },
+      setProfile: jest.fn(),
+    }),
+}))
+
+function createSupabaseMock({
+  data,
+  error,
+}: {
+  data: Profile[] | null
+  error: PostgrestError | null
+}) {
+  const channelMock = {
+    on: jest.fn().mockReturnThis(),
+    subscribe: jest.fn(),
+  }
+
+  return {
+    from: jest.fn(() => ({
+      select: jest.fn(() => ({
+        order: jest.fn(() =>
           Promise.resolve({
             data,
-            error: null,
-          }),
-      }),
-    }),
-  })
-}
-
-function mockSupabaseError(error: PostgrestError) {
-  ;(createClient as jest.Mock).mockReturnValue({
-    from: () => ({
-      select: () => ({
-        order: () =>
-          Promise.resolve({
-            data: null,
             error,
           }),
-      }),
-    }),
-  })
+        ),
+      })),
+    })),
+    channel: jest.fn(() => channelMock),
+    removeChannel: jest.fn(),
+  }
 }
 
 const mockProfiles: Profile[] = [
@@ -59,7 +70,9 @@ describe('useProfiles', () => {
   })
 
   it('starts in loading state with empty data', () => {
-    mockSupabaseSuccess([])
+    ;(createClient as jest.Mock).mockReturnValue(
+      createSupabaseMock({ data: [], error: null }),
+    )
 
     const { result } = renderHook(() => useProfiles(''))
 
@@ -70,7 +83,9 @@ describe('useProfiles', () => {
   })
 
   it('fetches profiles successfully', async () => {
-    mockSupabaseSuccess(mockProfiles)
+    ;(createClient as jest.Mock).mockReturnValue(
+      createSupabaseMock({ data: mockProfiles, error: null }),
+    )
 
     const { result } = renderHook(() => useProfiles(''))
 
@@ -84,7 +99,9 @@ describe('useProfiles', () => {
   })
 
   it('filters profiles by search query', async () => {
-    mockSupabaseSuccess(mockProfiles)
+    ;(createClient as jest.Mock).mockReturnValue(
+      createSupabaseMock({ data: mockProfiles, error: null }),
+    )
 
     const { result, rerender } = renderHook(({ query }) => useProfiles(query), {
       initialProps: { query: '' },
@@ -100,9 +117,12 @@ describe('useProfiles', () => {
     expect(result.current.filteredProfiles[0].name).toBe('John Doe')
   })
 
-  it('sets error state and shows toast on failure', async () => {
-    const error = { message: 'DB error' }
-    mockSupabaseError(error as PostgrestError)
+  it('sets error state when fetch fails', async () => {
+    const error = { message: 'DB error' } as PostgrestError
+
+    ;(createClient as jest.Mock).mockReturnValue(
+      createSupabaseMock({ data: null, error }),
+    )
 
     const { result } = renderHook(() => useProfiles(''))
 
@@ -111,7 +131,7 @@ describe('useProfiles', () => {
     })
 
     expect(result.current.profiles).toEqual([])
+    expect(result.current.filteredProfiles).toEqual([])
     expect(result.current.error).toEqual(error)
-    expect(toast.error).toHaveBeenCalledWith('Failed to load profiles')
   })
 })
