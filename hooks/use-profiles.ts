@@ -1,75 +1,54 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { toast } from 'sonner'
 import { createClient } from '@/utils/supabase/client'
 import { type Profile } from '@/types/profile'
 import { type PostgrestError } from '@supabase/supabase-js'
+import type { UseProfilesResult } from '@/types/use-profiles'
+import { useChatlyStore } from '@/providers/chatly-store-provider'
 
 /**
- * Return shape of the `useProfiles` hook.
+ * `useProfiles`
  *
- * Separates:
- * - the full authoritative profile list
- * - a filtered, view-ready subset derived from search input
+ * Fetches and maintains the authoritative list of user profiles,
+ * along with a memoized, search-filtered view for rendering.
  *
- * This allows consumers to:
- * - render the full list when needed
- * - avoid reimplementing filtering logic in UI components
- */
-interface UseProfilesReturnType {
-  /**
-   * The full list of profiles fetched from the database.
-   *
-   * This is the authoritative source of truth and is never mutated
-   * by search or UI-specific concerns.
-   */
-  profiles: Profile[]
-
-  /**
-   * A derived subset of `profiles`, filtered using the provided
-   * `searchQuery`.
-   *
-   * This value is memoized and safe to use directly in render logic.
-   */
-  filteredProfiles: Profile[]
-
-  /**
-   * Indicates whether the initial profile fetch is in progress.
-   */
-  loading: boolean
-
-  /**
-   * The last error encountered while fetching profiles, if any.
-   *
-   * This represents a *data-layer failure*, not a validation error.
-   */
-  error: PostgrestError | null
-}
-
-/**
- * useProfiles
- *
- * Fetches and manages the list of user profiles, along with a
- * memoized, search-filtered view of that list.
+ * This hook is **read-only** from the consumer’s perspective.
+ * It does not expose mutation methods; profile updates are handled
+ * elsewhere (e.g. account settings, global store updates).
  *
  * Responsibilities:
- * - Fetch profiles once on mount
+ * - Fetch the full profile list on mount
+ * - Keep profiles in sync via realtime database events
  * - Expose loading and error state
- * - Provide a filtered view based on `searchQuery`
+ * - Provide a derived, search-filtered view of profiles
  *
  * Non-responsibilities:
  * - Does not own search input state
- * - Does not perform pagination or realtime updates
+ * - Does not perform pagination
+ * - Does not initiate profile mutations
+ *
+ * Realtime behavior:
+ * - INSERT: new profiles are appended automatically
+ * - UPDATE: profiles are updated in-place
+ *   - If the updated profile belongs to the current user,
+ *     global profile state is synchronized
+ * - DELETE: removed profiles are pruned from the list
  *
  * @param searchQuery
- * A case-insensitive search string used to filter profiles by
- * name or username.
+ * A case-insensitive search string used to filter profiles
+ * by `name` or `username`.
+ *
+ * @returns An object containing the full profile list,
+ * a filtered subset, and loading/error state.
  */
-export function useProfiles(searchQuery: string): UseProfilesReturnType {
+export function useProfiles(searchQuery: string): UseProfilesResult {
   const [profiles, setProfiles] = useState<Profile[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<PostgrestError | null>(null)
+
+  const currentUserId = useChatlyStore((state) => state.user)?.id
+  const setProfile = useChatlyStore((state) => state.setProfile)
 
   /**
    * Fetch the full profile list on initial mount.
@@ -96,7 +75,6 @@ export function useProfiles(searchQuery: string): UseProfilesReturnType {
       } catch (error) {
         setError(error as PostgrestError)
         console.error('Error fetching profiles:', error)
-        toast.error('Failed to load profiles')
       } finally {
         setLoading(false)
       }
@@ -104,6 +82,61 @@ export function useProfiles(searchQuery: string): UseProfilesReturnType {
 
     fetchProfiles()
   }, [])
+
+  /**
+   * Handle realtime for profiles.
+   */
+  useEffect(() => {
+    const supabase = createClient()
+
+    const channel = supabase
+      .channel('profiles:realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'profiles',
+        },
+        async (payload) => {
+          switch (payload.eventType) {
+            case 'INSERT': {
+              const profile = payload.new as Profile
+
+              setProfiles((prev) => [...prev, profile])
+              break
+            }
+
+            case 'UPDATE': {
+              const updatedProfile = payload.new as Profile
+
+              setProfiles((prev) =>
+                prev.map((p) =>
+                  p.id === updatedProfile.id ? updatedProfile : p,
+                ),
+              )
+
+              if (updatedProfile.user_id === currentUserId) {
+                setProfile(updatedProfile)
+              }
+              break
+            }
+
+            case 'DELETE': {
+              const deletedId = payload.old.id as string
+
+              setProfiles((prev) => prev.filter((p) => p.id !== deletedId))
+              break
+            }
+          }
+        },
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [currentUserId, setProfile])
 
   /**
    * Derive a filtered view of profiles based on `searchQuery`.
