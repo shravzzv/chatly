@@ -82,14 +82,10 @@ export const derivePreview = (
  *   type-specific attachment label is used instead.
  * - As a defensive fallback, a generic placeholder is returned.
  *
- * This function is intentionally not exported. Preview semantics are
- * considered an internal implementation detail and should not be
- * relied upon by UI components directly.
- *
  * @param msg - The message from which to derive preview text
  * @returns A human-readable preview string
  */
-function getMessagePreview(msg: Message): string {
+export const getMessagePreview = (msg: Message): string => {
   if (msg.text && msg.text.trim().length > 0) {
     return msg.text
   }
