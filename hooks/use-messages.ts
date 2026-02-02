@@ -416,7 +416,9 @@ export function useMessages({
           const attachment = await createMessageAttachment(message.id, file)
           reconcileOptimisticMessage(tempId, { ...message, attachment })
         } catch (error) {
+          setMessages((prev) => prev.filter((m) => m.id !== tempId))
           console.error(error)
+          await supabase.from('messages').delete().eq('id', message.id)
           throw new Error('UPLOAD_ATTACHMENT_FAILED', { cause: error })
         }
         return

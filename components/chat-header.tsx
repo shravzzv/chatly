@@ -7,16 +7,14 @@ import { Profile } from '@/types/profile'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useChatlyStore } from '@/providers/chatly-store-provider'
 import { Button } from './ui/button'
+import { useDashboardContext } from '@/providers/dashboard-provider'
 
 interface ChatHeaderProps {
   selectedProfile: Profile
-  closeChatPanel: () => void
 }
 
-export default function ChatHeader({
-  selectedProfile,
-  closeChatPanel,
-}: ChatHeaderProps) {
+export default function ChatHeader({ selectedProfile }: ChatHeaderProps) {
+  const { closeChatPanel } = useDashboardContext()
   const isMobileView = useIsMobile()
   const currentUser = useChatlyStore((state) => state.user)
 

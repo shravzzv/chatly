@@ -10,25 +10,65 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Button } from '@/components/ui/button'
-import { AudioLines, ImagePlus, Paperclip, Plus } from 'lucide-react'
+import {
+  AudioLines,
+  Clapperboard,
+  ImagePlus,
+  Paperclip,
+  Plus,
+} from 'lucide-react'
 import { toast } from 'sonner'
+import type { MessageAttachmentKind } from '@/types/message-attachment'
+import { MAX_MESSAGE_ATTACHMENT_SIZE } from '@/data/constants'
+import { useDashboardContext } from '@/providers/dashboard-provider'
 
 export default function ChatInputDropdown() {
+  const { sendMessage } = useDashboardContext()
   const [open, setOpen] = useState(false)
+  /**
+   * Used to track attachment uploading.
+   * Only one attachment is allowed to be uploaded at a time.
+   */
+  const [isUploading, setIsUploading] = useState(false)
 
   const imageInputRef = useRef<HTMLInputElement>(null)
+  const videoInputRef = useRef<HTMLInputElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const audioInputRef = useRef<HTMLInputElement>(null)
 
-  const handleFileChange = (
+  const handleFileChange = async (
     e: React.ChangeEvent<HTMLInputElement>,
-    type: 'image' | 'audio' | 'file',
+    kind: MessageAttachmentKind,
   ) => {
+    if (isUploading) return
+
     const file = e.target.files?.[0]
     if (!file) return
 
-    toast.success(`${type} selected`)
-    setOpen(false)
+    if (kind !== 'file' && !file.type.startsWith(`${kind}`)) {
+      toast.error(`Please upload a valid ${kind} file`)
+      e.target.value = ''
+      return
+    }
+
+    if (file.size > MAX_MESSAGE_ATTACHMENT_SIZE) {
+      toast.error('File must be at most 50 MB')
+      e.target.value = ''
+      return
+    }
+
+    try {
+      setIsUploading(true)
+
+      await sendMessage({ file })
+      setOpen(false)
+    } catch (error) {
+      toast.error('Upload failed')
+      console.error(error)
+    } finally {
+      setIsUploading(false)
+      e.target.value = ''
+    }
   }
 
   const triggerPicker = (
@@ -49,6 +89,15 @@ export default function ChatInputDropdown() {
         accept='image/*'
         className='sr-only'
         onChange={(e) => handleFileChange(e, 'image')}
+        disabled={isUploading}
+      />
+      <input
+        ref={videoInputRef}
+        type='file'
+        accept='video/*'
+        className='sr-only'
+        onChange={(e) => handleFileChange(e, 'video')}
+        disabled={isUploading}
       />
       <input
         ref={audioInputRef}
@@ -56,16 +105,19 @@ export default function ChatInputDropdown() {
         accept='audio/*'
         className='sr-only'
         onChange={(e) => handleFileChange(e, 'audio')}
+        disabled={isUploading}
       />
       <input
         ref={fileInputRef}
         type='file'
+        accept='*'
         className='sr-only'
         onChange={(e) => handleFileChange(e, 'file')}
+        disabled={isUploading}
       />
 
       <DropdownMenu open={open} onOpenChange={setOpen}>
-        <DropdownMenuTrigger asChild>
+        <DropdownMenuTrigger asChild disabled={isUploading}>
           <Button
             variant='secondary'
             size='icon-lg'
@@ -83,6 +135,7 @@ export default function ChatInputDropdown() {
           <DropdownMenuItem
             className='flex items-center gap-2 cursor-pointer'
             onSelect={(e) => triggerPicker(e, imageInputRef)}
+            disabled={isUploading}
           >
             <ImagePlus className='w-4 h-4 text-muted-foreground' />
             Image
@@ -90,7 +143,17 @@ export default function ChatInputDropdown() {
 
           <DropdownMenuItem
             className='flex items-center gap-2 cursor-pointer'
+            onSelect={(e) => triggerPicker(e, videoInputRef)}
+            disabled={isUploading}
+          >
+            <Clapperboard className='w-4 h-4 text-muted-foreground' />
+            Video
+          </DropdownMenuItem>
+
+          <DropdownMenuItem
+            className='flex items-center gap-2 cursor-pointer'
             onSelect={(e) => triggerPicker(e, audioInputRef)}
+            disabled={isUploading}
           >
             <AudioLines className='w-4 h-4 text-muted-foreground' />
             Audio
@@ -99,6 +162,7 @@ export default function ChatInputDropdown() {
           <DropdownMenuItem
             className='flex items-center gap-2 cursor-pointer'
             onSelect={(e) => triggerPicker(e, fileInputRef)}
+            disabled={isUploading}
           >
             <Paperclip className='w-4 h-4 text-muted-foreground' />
             File

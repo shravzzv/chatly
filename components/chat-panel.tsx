@@ -2,35 +2,15 @@
 
 import { FilePen } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Profile } from '@/types/profile'
-import { Message } from '@/types/message'
 import ChatHeader from './chat-header'
 import MessageList from './message-list'
 import ChatInput from './chat-input'
 import { useTyping } from '@/hooks/use-typing'
+import { useDashboardContext } from '@/providers/dashboard-provider'
 
-interface ChatPanelProps {
-  selectedProfile: Profile | null
-  messages: Message[]
-  messagesLoading: boolean
-  sendMessage: (text: string) => Promise<void>
-  deleteMessage: (id: string) => Promise<void>
-  editMessage: (id: string, text: string) => Promise<void>
-  closeChatPanel: () => void
-  openProfileSelectDialog: () => void
-}
-
-export default function ChatPanel({
-  selectedProfile,
-  messages,
-  messagesLoading,
-  sendMessage,
-  deleteMessage,
-  editMessage,
-  closeChatPanel,
-  openProfileSelectDialog,
-}: ChatPanelProps) {
-  const selectedProfileId = selectedProfile?.user_id
+export default function ChatPanel() {
+  const { selectedProfile, selectedProfileId, openProfileSelectDialog } =
+    useDashboardContext()
   const { isTyping, updateTypingStatus } = useTyping(selectedProfileId || null)
 
   if (!selectedProfile) {
@@ -51,24 +31,11 @@ export default function ChatPanel({
         selectedProfile ? 'flex' : 'hidden md:flex'
       }`}
     >
-      <ChatHeader
-        selectedProfile={selectedProfile}
-        closeChatPanel={closeChatPanel}
-      />
+      <ChatHeader selectedProfile={selectedProfile} />
+      <MessageList isTyping={isTyping} />
 
-      <MessageList
-        messages={messages}
-        messagesLoading={messagesLoading}
-        isTyping={isTyping}
-        deleteMessage={deleteMessage}
-        editMessage={editMessage}
-      />
-
-      <div className='absolute bottom-0 left-0 right-0 z-10 pb-4 backdrop-blur-sm'>
-        <ChatInput
-          updateTypingStatus={updateTypingStatus}
-          sendMessage={sendMessage}
-        />
+      <div className='absolute bottom-0 left-0 right-0 z-10 pb-4 backdrop-blur-sm rounded-xl'>
+        <ChatInput updateTypingStatus={updateTypingStatus} />
       </div>
     </div>
   )

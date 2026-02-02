@@ -4,27 +4,24 @@ import { Button } from '@/components/ui/button'
 import { getDisplayName } from '@/lib/dashboard'
 import ProfileAvatar from '@/components/profile-avatar'
 import { Profile } from '@/types/profile'
-import { Message } from '@/types/message'
 import { useChatlyStore } from '@/providers/chatly-store-provider'
 import ConversationPreviewSubtitle from './conversation-preview-subtitle'
+import { useDashboardContext } from '@/providers/dashboard-provider'
 
 interface ConversationPreviewProps {
   profile: Profile
-  selectedProfile: Profile | null
-  lastMessages: Record<string, Message | null>
-  lastMessagesLoading: boolean
-  setSelectedProfileId: (profileId: string) => void
-  closeProfileSelectDialog: () => void
 }
 
 export default function ConversationPreview({
   profile,
-  selectedProfile,
-  lastMessages,
-  lastMessagesLoading,
-  setSelectedProfileId,
-  closeProfileSelectDialog,
 }: ConversationPreviewProps) {
+  const {
+    previews,
+    selectedProfile,
+    setSelectedProfileId,
+    closeProfileSelectDialog,
+  } = useDashboardContext()
+
   const currentUser = useChatlyStore((state) => state.user)
 
   const handleClick = () => {
@@ -47,13 +44,7 @@ export default function ConversationPreview({
           {profile.user_id === currentUser?.id && ' (You)'}
         </p>
 
-        <ConversationPreviewSubtitle
-          isLoading={lastMessagesLoading}
-          message={lastMessages[profile.user_id]?.text}
-          isOwnMessage={
-            lastMessages[profile.user_id]?.sender_id === currentUser?.id
-          }
-        />
+        <ConversationPreviewSubtitle preview={previews[profile.user_id]} />
       </div>
     </Button>
   )

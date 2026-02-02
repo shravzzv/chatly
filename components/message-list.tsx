@@ -1,36 +1,26 @@
 'use client'
 
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { MessageBubble } from '@/components/message-bubble'
-import { Badge } from '@/components/ui/badge'
 import { groupMessagesByDate } from '@/lib/dashboard'
 import TypingIndicator from '@/components/typing-indicator'
-import { Message } from '@/types/message'
 import MessageListSkeleton from './skeletons/message-list-skeleton'
 import { useCallback, useEffect, useRef } from 'react'
-import { formatDateHeader } from '@/lib/date'
+import MessageDateGroup from './message-date-group'
+import { useDashboardContext } from '@/providers/dashboard-provider'
 
 interface MessageListProps {
-  messages: Message[]
-  messagesLoading: boolean
   isTyping: boolean
-  deleteMessage: (id: string) => Promise<void>
-  editMessage: (id: string, text: string) => Promise<void>
 }
 
-export default function MessageList({
-  messages,
-  messagesLoading,
-  isTyping,
-  deleteMessage,
-  editMessage,
-}: MessageListProps) {
+export default function MessageList({ isTyping }: MessageListProps) {
+  const { messages, messagesLoading } = useDashboardContext()
   const isLoading = messagesLoading
   const isEmpty = messages.length === 0
-  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const messagesEndRef = useRef<HTMLDivElement | null>(null)
+  const prevMsgsLengthRef = useRef(0)
 
-  const scrollToBottom = useCallback(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  const scrollToBottom = useCallback((behavior: ScrollBehavior = 'smooth') => {
+    messagesEndRef.current?.scrollIntoView({ behavior })
   }, [])
 
   /**
@@ -41,12 +31,13 @@ export default function MessageList({
   }, [isTyping, scrollToBottom])
 
   /**
-   * Scroll to the bottom of the list whenever the message list changes
-   * (e.g. after fetching messages for a newly selected conversation
-   * or when a new message is appended).
+   * Scroll to the bottom of the list when a profile is selected.
    */
   useEffect(() => {
-    if (messages.length > 0) scrollToBottom()
+    if (messages.length > prevMsgsLengthRef.current) {
+      scrollToBottom('auto')
+    }
+    prevMsgsLengthRef.current = messages.length
   }, [messages.length, scrollToBottom])
 
   if (isLoading) return <MessageListSkeleton />
@@ -61,33 +52,20 @@ export default function MessageList({
 
   return (
     <ScrollArea
-      className='flex-1 overflow-y-auto px-4'
+      className='flex-1 overflow-y-auto px-4 relative'
       data-testid='message-list'
     >
       {groupMessagesByDate(messages).map((group) => (
-        <div key={group.date} className='relative'>
-          <div className='flex justify-center sticky top-2 z-10 py-2'>
-            <Badge variant='secondary'>
-              {formatDateHeader(new Date(group.date))}
-            </Badge>
-          </div>
-
-          <div className='space-y-4'>
-            {group.messages.map((msg) => (
-              <MessageBubble
-                key={msg.id}
-                deleteMessage={deleteMessage}
-                editMessage={editMessage}
-                {...msg}
-              />
-            ))}
-          </div>
-        </div>
+        <MessageDateGroup
+          key={group.date}
+          date={group.date}
+          messages={group.messages}
+        />
       ))}
 
       <div className='pb-20'>
         {isTyping && <TypingIndicator />}
-        <div ref={messagesEndRef} />
+        <div ref={messagesEndRef}></div>
       </div>
     </ScrollArea>
   )

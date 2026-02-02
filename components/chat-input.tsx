@@ -10,24 +10,18 @@ import {
 import { useIsMobile } from '@/hooks/use-mobile'
 import ChatInputDropdown from './chat-input-dropdown'
 import { useRef, useState } from 'react'
+import { useDashboardContext } from '@/providers/dashboard-provider'
 
 interface ChatInputProps {
   updateTypingStatus: (isTyping: boolean) => Promise<void>
-  sendMessage: (text: string) => Promise<void>
 }
 
-export default function ChatInput({
-  updateTypingStatus,
-  sendMessage,
-}: ChatInputProps) {
+export default function ChatInput({ updateTypingStatus }: ChatInputProps) {
+  const { sendMessage } = useDashboardContext()
   const isMobileView = useIsMobile()
   const [message, setMessage] = useState('')
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  /**
-   *
-   * @param e
-   */
   const handleMessageChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value
     setMessage(value)
@@ -42,23 +36,15 @@ export default function ChatInput({
     }
   }
 
-  /**
-   *
-   * @returns
-   */
   const handleSubmitMessage = async () => {
     if (!message.trim()) return
     updateTypingStatus(false)
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current)
 
-    await sendMessage(message)
+    await sendMessage({ text: message })
     setMessage('')
   }
 
-  /**
-   *
-   * @param e
-   */
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey && !isMobileView) {
       e.preventDefault()
@@ -70,7 +56,7 @@ export default function ChatInput({
     <div className='flex gap-2 px-3 md:px-2 items-end w-full max-w-2xl mx-auto'>
       <ChatInputDropdown />
 
-      <InputGroup className='flex items-end px-1 space-x-2 rounded-4xl bg-background'>
+      <InputGroup className='flex items-end px-1 space-x-2 rounded-4xl bg-background dark:bg-background'>
         <InputGroupTextarea
           placeholder='Type a message...'
           value={message}

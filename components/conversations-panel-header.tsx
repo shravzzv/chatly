@@ -11,18 +11,11 @@ import { Kbd } from '@/components/ui/kbd'
 import { SidebarTrigger } from '@/components/sidebar-trigger'
 import { useEffect, useRef } from 'react'
 import { useIsMobile } from '@/hooks/use-mobile'
+import { useDashboardContext } from '@/providers/dashboard-provider'
 
-interface ConversationsPanelHeaderProps {
-  searchQuery: string
-  setSearchQuery: (value: string) => void
-  openProfileSelectDialog: () => void
-}
-
-export default function ConversationsPanelHeader({
-  searchQuery,
-  setSearchQuery,
-  openProfileSelectDialog,
-}: ConversationsPanelHeaderProps) {
+export default function ConversationsPanelHeader() {
+  const { searchQuery, setSearchQuery, openProfileSelectDialog } =
+    useDashboardContext()
   const isMobileView = useIsMobile()
   const searchInputRef = useRef<HTMLInputElement | null>(null)
 

@@ -1,30 +1,14 @@
+'use client'
+
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Profile } from '@/types/profile'
-import { Message } from '@/types/message'
 import ConversationPreview from './conversation-preview'
 import ConversationPreviewSkeleton from './skeletons/conversation-preview-skeleton'
+import { useDashboardContext } from '@/providers/dashboard-provider'
 
-interface ConversationsListProps {
-  selectedProfile: Profile | null
-  filteredProfiles: Profile[]
-  profilesLoading: boolean
-  lastMessages: Record<string, Message | null>
-  lastMessagesLoading: boolean
-  searchQuery: string
-  setSelectedProfileId: (profileId: string) => void
-  closeProfileSelectDialog: () => void
-}
+export default function ConversationsList() {
+  const { filteredProfiles, profilesLoading, searchQuery } =
+    useDashboardContext()
 
-export default function ConversationsList({
-  selectedProfile,
-  filteredProfiles,
-  profilesLoading,
-  lastMessages,
-  lastMessagesLoading,
-  searchQuery,
-  setSelectedProfileId,
-  closeProfileSelectDialog,
-}: ConversationsListProps) {
   const isLoading = profilesLoading
   const isEmpty = filteredProfiles.length === 0
 
@@ -51,15 +35,7 @@ export default function ConversationsList({
   return (
     <ScrollArea className='flex-1 overflow-y-auto px-2 flex flex-col'>
       {filteredProfiles.map((profile) => (
-        <ConversationPreview
-          key={profile.id}
-          profile={profile}
-          selectedProfile={selectedProfile}
-          setSelectedProfileId={setSelectedProfileId}
-          lastMessages={lastMessages}
-          lastMessagesLoading={lastMessagesLoading}
-          closeProfileSelectDialog={closeProfileSelectDialog}
-        />
+        <ConversationPreview key={profile.id} profile={profile} />
       ))}
     </ScrollArea>
   )

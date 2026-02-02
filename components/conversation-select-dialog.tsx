@@ -1,3 +1,5 @@
+'use client'
+
 import { Search } from 'lucide-react'
 import {
   Dialog,
@@ -7,37 +9,18 @@ import {
   DialogTitle,
 } from './ui/dialog'
 import { InputGroup, InputGroupAddon, InputGroupInput } from './ui/input-group'
-import { Profile } from '@/types/profile'
-import { Message } from '@/types/message'
 import ConversationsList from './conversations-list'
+import { useDashboardContext } from '@/providers/dashboard-provider'
 
-interface ConversationSelectDialogProps {
-  searchQuery: string
-  profilesLoading: boolean
-  filteredProfiles: Profile[]
-  isProfileSelectDialogOpen: boolean
-  selectedProfile: Profile | null
-  lastMessages: Record<string, Message | null>
-  lastMessagesLoading: boolean
-  setSelectedProfileId: (id: string) => void
-  setSearchQuery: (query: string) => void
-  openProfileSelectDialog: () => void
-  closeProfileSelectDialog: () => void
-}
+export default function ConversationSelectDialog() {
+  const {
+    searchQuery,
+    isProfileSelectDialogOpen,
+    setSearchQuery,
+    openProfileSelectDialog,
+    closeProfileSelectDialog,
+  } = useDashboardContext()
 
-export default function ConversationSelectDialog({
-  searchQuery,
-  profilesLoading,
-  filteredProfiles,
-  isProfileSelectDialogOpen,
-  selectedProfile,
-  lastMessages,
-  lastMessagesLoading,
-  setSelectedProfileId,
-  setSearchQuery,
-  openProfileSelectDialog,
-  closeProfileSelectDialog,
-}: ConversationSelectDialogProps) {
   return (
     <Dialog
       open={isProfileSelectDialogOpen}
@@ -65,16 +48,7 @@ export default function ConversationSelectDialog({
           </InputGroupAddon>
         </InputGroup>
 
-        <ConversationsList
-          filteredProfiles={filteredProfiles}
-          lastMessages={lastMessages}
-          lastMessagesLoading={lastMessagesLoading}
-          profilesLoading={profilesLoading}
-          searchQuery={searchQuery}
-          selectedProfile={selectedProfile}
-          setSelectedProfileId={setSelectedProfileId}
-          closeProfileSelectDialog={closeProfileSelectDialog}
-        />
+        <ConversationsList />
       </DialogContent>
     </Dialog>
   )
