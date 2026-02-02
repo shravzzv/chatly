@@ -1,0 +1,42 @@
+'use client'
+
+import { ScrollArea } from '@/components/ui/scroll-area'
+import ConversationPreview from './conversation-preview'
+import ConversationPreviewSkeleton from './skeletons/conversation-preview-skeleton'
+import { useDashboardContext } from '@/providers/dashboard-provider'
+
+export default function ConversationsList() {
+  const { filteredProfiles, profilesLoading, searchQuery } =
+    useDashboardContext()
+
+  const isLoading = profilesLoading
+  const isEmpty = filteredProfiles.length === 0
+
+  if (isLoading) {
+    return (
+      <div className='space-y-2 p-4 overflow-y-hidden'>
+        {Array.from({ length: 12 }).map((_, i) => (
+          <ConversationPreviewSkeleton key={i} />
+        ))}
+      </div>
+    )
+  }
+
+  if (isEmpty) {
+    return (
+      <div className='flex flex-col items-center justify-center h-full text-center p-4'>
+        <p className='text-muted-foreground'>
+          {searchQuery ? 'No profiles found' : 'No profiles available'}
+        </p>
+      </div>
+    )
+  }
+
+  return (
+    <ScrollArea className='flex-1 overflow-y-auto px-2 flex flex-col'>
+      {filteredProfiles.map((profile) => (
+        <ConversationPreview key={profile.id} profile={profile} />
+      ))}
+    </ScrollArea>
+  )
+}

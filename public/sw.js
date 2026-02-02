@@ -4,7 +4,7 @@ self.addEventListener('push', (event) => {
   const title = data.title || 'New message'
   const options = {
     body: data.body,
-    icon: data.icon || '/default-avatar.jpg',
+    icon: data.icon,
     badge: '/icon-192x192.png',
     data: {
       senderId: data.senderId,
@@ -19,20 +19,21 @@ self.addEventListener('notificationclick', (event) => {
   event.notification.close()
 
   const senderId = event.notification.data?.senderId
-  const url = senderId ? `/dashboard?senderId=${senderId}` : '/dashboard'
+  const targetUrl = senderId ? `/dashboard?senderId=${senderId}` : '/dashboard'
 
   event.waitUntil(
     clients
       .matchAll({ type: 'window', includeUncontrolled: true })
       .then((clientList) => {
-        // Check if there's already a window open
         for (const client of clientList) {
-          if (client.url.includes('/dashboard') && 'focus' in client) {
-            return client.focus().then(() => client.navigate(url))
+          // Reuse any existing dashboard tab
+          if (client.url.startsWith(self.location.origin + '/dashboard')) {
+            return client.focus().then(() => client.navigate(targetUrl))
           }
         }
-        // If no window is open, open a new one
-        return clients.openWindow(url)
-      })
+
+        // No dashboard tab found → open a new one
+        return clients.openWindow(targetUrl)
+      }),
   )
 })

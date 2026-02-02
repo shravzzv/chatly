@@ -7,6 +7,7 @@ import { Toaster } from '@/components/ui/sonner'
 import { createClient } from '@/utils/supabase/server'
 import { ChatlyStoreProvider } from '@/providers/chatly-store-provider'
 import { type Profile } from '@/types/profile'
+import { CrossDeviceThemeSync } from '@/components/cross-device-theme-sync'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' })
 
@@ -120,6 +121,7 @@ export default async function RootLayout({
           >
             {children}
             <Toaster richColors />
+            <CrossDeviceThemeSync />
           </ThemeProvider>
         </ChatlyStoreProvider>
         <Analytics />
