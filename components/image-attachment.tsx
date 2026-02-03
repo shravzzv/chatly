@@ -16,7 +16,7 @@ export default function ImageAttachment({
       alt={attachment.file_name || 'Image attachment'}
       width={320}
       height={320}
-      className='max-w-3xs md:max-w-2xs rounded-2xl shadow-sm object-cover max-h-screen bg-muted'
+      className='max-w-3xs md:max-w-2xs rounded-2xl shadow-sm object-cover max-h-screen bg-transparent'
       sizes='(max-width: 640px) 70vw, 320px'
       loading='lazy'
     />

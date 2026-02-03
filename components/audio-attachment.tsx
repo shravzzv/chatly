@@ -8,7 +8,7 @@ export default function AudioAttachment({ signedUrl }: AudioAttachmentProps) {
       src={signedUrl}
       controls
       controlsList='nodownload'
-      className='max-w-full rounded-2xl bg-muted shadow-sm'
+      className='max-w-full rounded-2xl bg-transparent shadow-sm'
     />
   )
 }
