@@ -11,7 +11,7 @@ export default function VideoAttachment({ signedUrl }: VideoAttachmentProps) {
       playsInline
       preload='metadata'
       controlsList='nodownload'
-      className='max-w-3xs md:max-w-2xs rounded-2xl shadow-sm bg-muted object-contain max-h-screen overflow-hidden'
+      className='max-w-3xs md:max-w-2xs rounded-2xl shadow-sm bg-transparent object-contain max-h-screen overflow-hidden'
     />
   )
 }
