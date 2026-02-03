@@ -6,6 +6,7 @@ import type { PushSubscription } from 'web-push'
 import { Profile } from '@/types/profile'
 import { createAdminClient } from '@/utils/supabase/admin'
 import { getSiteURL } from '@/lib/url'
+import { generateText } from 'ai'
 
 /**
  * OAuth providers supported by the application.
@@ -365,4 +366,49 @@ export async function getSubscriptions() {
 
   if (error) throw error
   return data
+}
+
+/**
+ * Enhances a chat message using AI.
+ *
+ * This function is intentionally conservative. It improves clarity, grammar,
+ * and flow while preserving the original meaning, intent, and tone.
+ *
+ * Design guarantees:
+ * - Never adds new information or sentiment
+ * - Never over-formalizes casual chat
+ * - Returns the original text if no improvement is needed
+ * - Fails safely by returning the original text on any error
+ *
+ * @param text - The original message text to enhance
+ * @returns The enhanced message, or the original text if enhancement fails
+ */
+export async function enhanceText(text: string): Promise<string> {
+  if (!text || !text.trim()) return text
+
+  const systemPrompt = `
+    You improve chat messages.
+
+    Rules:
+    - Preserve the original meaning, intent, and tone.
+    - Do NOT add new information, emotion, or politeness.
+    - Keep the message natural for casual chat.
+    - Make minimal changes unless the message is clearly unclear.
+    - Do not over-formalize.
+    - If the message is already good, return it unchanged.
+    - Return ONLY the improved message, with no quotes or explanations.
+  `.trim()
+
+  try {
+    const result = await generateText({
+      model: 'openai/gpt-4o-mini',
+      system: systemPrompt,
+      prompt: text,
+    })
+
+    return result.text?.trim() || text
+  } catch (error) {
+    console.error('AI enhance failed:', error)
+    return text
+  }
 }

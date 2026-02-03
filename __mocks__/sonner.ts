@@ -4,4 +4,5 @@ export const toast = {
   info: jest.fn(),
   warning: jest.fn(),
   loading: jest.fn(),
+  message: jest.fn(),
 }

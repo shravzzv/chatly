@@ -9,14 +9,19 @@ import {
   updateProfile,
   deleteUser,
   getSubscriptions,
+  enhanceText,
 } from '@/app/actions'
 import { createClient } from '@/utils/supabase/server'
 import { createAdminClient } from '@/utils/supabase/admin'
 import { redirect } from 'next/navigation'
+import { generateText } from 'ai'
 
 jest.mock('@/utils/supabase/server')
 jest.mock('@/utils/supabase/admin')
 jest.mock('next/navigation')
+jest.mock('ai', () => ({
+  generateText: jest.fn(),
+}))
 
 describe('signup', () => {
   const signUpMock = jest.fn()
@@ -289,5 +294,62 @@ describe('getSubscriptions', () => {
     const result = await getSubscriptions()
 
     expect(result).toEqual([])
+  })
+})
+
+describe('enhanceText', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  it('returns original text if input is empty', async () => {
+    expect(await enhanceText('')).toBe('')
+    expect(await enhanceText('   ')).toBe('   ')
+  })
+
+  it('returns enhanced text when AI improves the message', async () => {
+    ;(generateText as jest.Mock).mockResolvedValue({
+      text: 'Hello there!',
+    })
+
+    const result = await enhanceText('hello there')
+
+    expect(result).toBe('Hello there!')
+  })
+
+  it('returns original text if AI returns empty text', async () => {
+    ;(generateText as jest.Mock).mockResolvedValue({
+      text: '',
+    })
+
+    const result = await enhanceText('Hello')
+
+    expect(result).toBe('Hello')
+  })
+
+  it('returns original text if AI throws an error', async () => {
+    ;(generateText as jest.Mock).mockRejectedValue(
+      new Error('Rate limit exceeded'),
+    )
+
+    const result = await enhanceText('Hello')
+
+    expect(result).toBe('Hello')
+  })
+
+  it('calls generateText with correct model and prompt', async () => {
+    ;(generateText as jest.Mock).mockResolvedValue({
+      text: 'Hi!',
+    })
+
+    await enhanceText('hi')
+
+    expect(generateText).toHaveBeenCalledWith(
+      expect.objectContaining({
+        model: 'openai/gpt-4o-mini',
+        prompt: 'hi',
+        system: expect.stringContaining('You improve chat messages'),
+      }),
+    )
   })
 })
