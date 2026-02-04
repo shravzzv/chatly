@@ -30,6 +30,12 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts"
   ],
-  "exclude": ["node_modules", "cypress", "./cypress.config.ts", "**/*.cy.tsx"],
+  "exclude": [
+    "node_modules",
+    "cypress",
+    "./cypress.config.ts",
+    "**/*.cy.tsx",
+    "supabase/functions"
+  ],
   "types": ["node", "jest", "@testing-library/jest-dom"]
 }
