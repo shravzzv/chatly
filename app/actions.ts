@@ -372,19 +372,25 @@ export async function getSubscriptions() {
 }
 
 /**
- * Enhances a chat message using AI.
+ * Enhances a chat message using AI while enforcing usage limits.
  *
- * This function is intentionally conservative. It improves clarity, grammar,
- * and flow while preserving the original meaning, intent, and tone.
+ * This is a **paid feature boundary**:
+ * - AI usage is incremented before generation
+ * - Limits are enforced server-side
+ * - Errors are thrown and must be handled by the caller
  *
- * Design guarantees:
- * - Never adds new information or sentiment
- * - Never over-formalizes casual chat
- * - Returns the original text if no improvement is needed
- * - Fails safely by returning the original text on any error
+ * The enhancement is conservative:
+ * - Preserves meaning, intent, and tone
+ * - Makes minimal changes
+ * - May return the original text if no improvement is needed
  *
- * @param text - The original message text to enhance
- * @returns The enhanced message, or the original text if enhancement fails
+ * @param text - Original message text
+ * @returns Enhanced (or unchanged) message text
+ *
+ * @throws Error if:
+ * - User is on a free plan (`USER_ON_FREE_PLAN`)
+ * - Daily AI limit is exceeded (`USAGE_LIMIT_EXCEEDED`)
+ * - AI service fails (`AI_SERVICE_ERROR`)
  */
 export async function enhanceText(text: string): Promise<string> {
   if (!text || !text.trim()) return text
@@ -432,23 +438,39 @@ export async function enhanceText(text: string): Promise<string> {
  * Checks whether the authenticated user is allowed to use a paid feature
  * within the current usage window, and atomically increments usage if allowed.
  *
- * This function is **server-side authoritative**:
- * - It resolves the user's effective subscription plan
- * - It enforces daily usage limits via a Postgres RPC
- * - It increments usage only if the limit has not been exceeded
+ * This function is **server-side authoritative** and represents the single
+ * source of truth for billing and rate limiting.
  *
- * It must be called only when the feature action is about to succeed
- * (e.g. before uploading media or enhancing text).
+ * **RESPONSIBILITIES**
+ * - Resolves the user's effective subscription plan
+ * - Enforces daily usage limits via a Postgres RPC
+ * - Atomically increments usage only if the limit has not been exceeded
+ *
+ * **CALLING SEMANTICS**
+ * This function MUST be called only after the system has determined that
+ * the feature action is valid and about to be committed:
+ *
+ * - **AI enhancements**: call immediately before applying the enhancement
+ * - **Media uploads**: call only after the file has been successfully stored
+ *
+ * This ensures that:
+ * - Failed actions are never charged
+ * - Usage is only counted for irreversible work
+ *
+ * **CLIENT SYNC**
+ *
+ * Clients MUST NOT optimistically assume success.
+ * Any UI usage updates (e.g. via `reflectUsageIncrement`) must happen
+ * **only after this function resolves successfully**.
  *
  * @param usageKind - The type of paid feature being used (`media` or `ai`)
  *
- * @returns The updated usage state for the current window, including:
- * - `used`: number of times this feature has been used today
- * - `usage_limit`: maximum allowed uses for today
+ * @returns The updated usage state for the current window as returned
+ *          by the database RPC (shape is intentionally opaque to callers).
  *
  * @throws Error if:
- * - The user is not on a paid plan
- * - The usage limit has been exceeded
+ * - The user is not on a paid plan (`USER_ON_FREE_PLAN`)
+ * - The daily usage limit has been exceeded (`USAGE_LIMIT_EXCEEDED`)
  * - The RPC fails or the user is not authenticated
  */
 export async function checkAndIncrementUsage(usageKind: UsageKind) {

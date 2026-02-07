@@ -13,10 +13,37 @@ import type { UseUsageResult } from '@/types/use-usage'
 /**
  * `useUsage`
  *
- * Read-only hook that exposes current plan usage
- * for driving client-side UI (limits, disable states, upgrade prompts).
+ * Advisory, **read-only** usage hook for client-side UX decisions.
  *
- * This hook is advisory only — the server remains authoritative.
+ * This hook mirrors the user's **current-day usage window** (`usage_windows`)
+ * and active subscription plan in order to:
+ *
+ * - Gate UI affordances (disable buttons, block actions)
+ * - Display remaining quota and progress meters
+ * - Trigger upgrade prompts at the correct boundary
+ *
+ * ⚠️ IMPORTANT SEMANTICS
+ * - This hook is **NOT authoritative**.
+ * - All enforcement, billing, and rate limiting MUST happen on the server.
+ * - Client-side checks are strictly for responsiveness and UX.
+ *
+ * The server remains the single source of truth.
+ *
+ * DATA SOURCES
+ * - Usage: fetched once on mount from `usage_windows` for *today (UTC)*
+ * - Plan: derived from subscriptions via `getSubscriptions()`
+ *
+ * SYNC MODEL
+ * This hook does NOT subscribe to realtime updates.
+ * Instead, it:
+ * - Initializes from the database on mount
+ * - Optionally mirrors *successful* usage via `reflectUsageIncrement`
+ *
+ * This avoids:
+ * - Realtime fanout on hot paths
+ * - Accidental coupling of billing logic to client state
+ *
+ * @returns An immutable snapshot of usage state + a local mirror helper
  */
 export const useUsage = (): Readonly<UseUsageResult> => {
   interface Usage {
@@ -39,6 +66,25 @@ export const useUsage = (): Readonly<UseUsageResult> => {
   const aiRemaining = Math.max(0, PLAN_LIMITS[plan].ai - aiUsed)
   const mediaRemaining = Math.max(0, PLAN_LIMITS[plan].media - mediaUsed)
 
+  /**
+   * Mirrors a successful usage increment locally.
+   *
+   * This is a **UI-only helper** used after the server has already
+   * accepted and recorded a usage event (e.g. AI enhancement succeeded,
+   * media upload completed).
+   *
+   * It exists to:
+   * - Keep the UI responsive without refetching
+   * - Ensure immediate consistency for limits and progress bars
+   *
+   * ⚠️ This function:
+   * - Does NOT write to the database
+   * - Does NOT perform validation
+   * - Must ONLY be called after server success
+   *
+   * Calling this optimistically without server confirmation
+   * would desynchronize the UI from reality.
+   */
   const reflectUsageIncrement = (kind: UsageKind) => {
     setUsage((prev) => {
       if (!prev) return prev
