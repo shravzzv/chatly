@@ -1,9 +1,10 @@
 'use server'
 
+import type { PushSubscription } from 'web-push'
+import type { Profile } from '@/types/profile'
+import type { UsageKind } from '@/types/plan'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/utils/supabase/server'
-import type { PushSubscription } from 'web-push'
-import { Profile } from '@/types/profile'
 import { createAdminClient } from '@/utils/supabase/admin'
 import { getSiteURL } from '@/lib/url'
 import { generateText } from 'ai'
@@ -340,6 +341,8 @@ export async function deleteUser(id: string) {
 
 /**
  * Fetches all subscription records for the authenticated user.
+ * A user can have multiple subscriptions. Expiry is the end of a subscription's lifecycle.
+ * Renewal requires a new subscription.
  *
  * This function performs no business logic — it simply returns
  * raw subscription rows.
@@ -399,6 +402,18 @@ export async function enhanceText(text: string): Promise<string> {
     - Return ONLY the improved message, with no quotes or explanations.
   `.trim()
 
+  /**
+   * AI usage is incremented **before** making the request.
+   *
+   * Unlike media uploads, AI calls incur cost even if they fail.
+   * By checking and incrementing upfront, it is ensured that:
+   * - Every attempted AI call is counted
+   * - Failed generations do not bypass usage limits
+   *
+   * This keeps billing and usage enforcement accurate.
+   */
+  await checkAndIncrementUsage('ai')
+
   try {
     const result = await generateText({
       model: 'openai/gpt-4o-mini',
@@ -406,9 +421,59 @@ export async function enhanceText(text: string): Promise<string> {
       prompt: text,
     })
 
-    return result.text?.trim() || text
+    return result.text.trim()
   } catch (error) {
-    console.error('AI enhance failed:', error)
-    return text
+    console.error('generateText failed', error)
+    throw Error('AI_SERVICE_ERROR', { cause: error })
   }
+}
+
+/**
+ * Checks whether the authenticated user is allowed to use a paid feature
+ * within the current usage window, and atomically increments usage if allowed.
+ *
+ * This function is **server-side authoritative**:
+ * - It resolves the user's effective subscription plan
+ * - It enforces daily usage limits via a Postgres RPC
+ * - It increments usage only if the limit has not been exceeded
+ *
+ * It must be called only when the feature action is about to succeed
+ * (e.g. before uploading media or enhancing text).
+ *
+ * @param usageKind - The type of paid feature being used (`media` or `ai`)
+ *
+ * @returns The updated usage state for the current window, including:
+ * - `used`: number of times this feature has been used today
+ * - `usage_limit`: maximum allowed uses for today
+ *
+ * @throws Error if:
+ * - The user is not on a paid plan
+ * - The usage limit has been exceeded
+ * - The RPC fails or the user is not authenticated
+ */
+export async function checkAndIncrementUsage(usageKind: UsageKind) {
+  const supabase = await createClient()
+
+  // delegate atomic enforcement + increment to the database
+  const { data, error } = await supabase.rpc('check_and_increment_usage', {
+    usage_kind: usageKind,
+  })
+
+  if (error) {
+    if (typeof error === 'object' && 'message' in error) {
+      const msg = String(error.message)
+
+      if (msg === 'USER_ON_FREE_PLAN') {
+        throw Error(msg)
+      }
+
+      if (msg === 'USAGE_LIMIT_EXCEEDED') {
+        throw Error(msg)
+      }
+    }
+
+    throw error
+  }
+
+  return data
 }

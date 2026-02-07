@@ -24,7 +24,7 @@ export async function seedSubscription({
   billing = 'monthly',
   endsAt = null,
   renewsAt = null,
-}: SeedSubscriptionInput) {
+}: SeedSubscriptionInput): Promise<void> {
   const now = new Date().toISOString()
 
   const record: Omit<Subscription, 'id'> = {

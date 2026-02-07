@@ -14,6 +14,8 @@ import { usePreviews } from '@/hooks/use-previews'
 import { toast } from 'sonner'
 import type { DashboardContextValue } from '@/types/dashboard'
 import { useSearchParams } from 'next/navigation'
+import { useUsage } from '@/hooks/use-usage'
+import { UsageKind } from '@/types/plan'
 
 const DashboardContext = createContext<DashboardContextValue | null>(null)
 
@@ -44,6 +46,7 @@ export function DashboardProvider({ children }: PropsWithChildren) {
   )
   const [isProfileSelectDialogOpen, setIsProfileSelectDialogOpen] =
     useState(false)
+  const [upgradeReason, setUpgradeReason] = useState<UsageKind | null>(null)
 
   const {
     profiles,
@@ -90,9 +93,31 @@ export function DashboardProvider({ children }: PropsWithChildren) {
     if (messagesError) toast.error('Failed to load messages')
   }, [messagesError])
 
+  const {
+    loading: usageLoading,
+    error: usageError,
+    plan,
+    aiRemaining,
+    aiUsed,
+    canUseAi,
+    canUseMedia,
+    mediaRemaining,
+    mediaUsed,
+    reflectUsageIncrement,
+  } = useUsage()
+
+  useEffect(() => {
+    if (usageError) console.warn('Failed to load usage')
+  }, [usageError])
+
   const openProfileSelectDialog = () => setIsProfileSelectDialogOpen(true)
   const closeProfileSelectDialog = () => setIsProfileSelectDialogOpen(false)
   const closeChatPanel = () => setSelectedProfileId(null)
+
+  const openUpgradeAlertDialog = (reason: UsageKind) => {
+    setUpgradeReason(reason)
+  }
+  const closeUpgradeAlertDialog = () => setUpgradeReason(null)
 
   const value: DashboardContextValue = {
     profiles,
@@ -119,6 +144,20 @@ export function DashboardProvider({ children }: PropsWithChildren) {
     openProfileSelectDialog,
     closeProfileSelectDialog,
     closeChatPanel,
+
+    usageLoading,
+    plan,
+    aiRemaining,
+    aiUsed,
+    canUseAi,
+    canUseMedia,
+    mediaRemaining,
+    mediaUsed,
+    reflectUsageIncrement,
+
+    upgradeReason,
+    openUpgradeAlertDialog,
+    closeUpgradeAlertDialog,
   }
 
   return (
