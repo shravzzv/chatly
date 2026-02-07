@@ -1,9 +1,10 @@
 'use server'
 
+import type { PushSubscription } from 'web-push'
+import type { Profile } from '@/types/profile'
+import type { UsageKind } from '@/types/plan'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/utils/supabase/server'
-import type { PushSubscription } from 'web-push'
-import { Profile } from '@/types/profile'
 import { createAdminClient } from '@/utils/supabase/admin'
 import { getSiteURL } from '@/lib/url'
 import { generateText } from 'ai'
@@ -340,6 +341,8 @@ export async function deleteUser(id: string) {
 
 /**
  * Fetches all subscription records for the authenticated user.
+ * A user can have multiple subscriptions. Expiry is the end of a subscription's lifecycle.
+ * Renewal requires a new subscription.
  *
  * This function performs no business logic — it simply returns
  * raw subscription rows.
@@ -369,19 +372,25 @@ export async function getSubscriptions() {
 }
 
 /**
- * Enhances a chat message using AI.
+ * Enhances a chat message using AI while enforcing usage limits.
  *
- * This function is intentionally conservative. It improves clarity, grammar,
- * and flow while preserving the original meaning, intent, and tone.
+ * This is a **paid feature boundary**:
+ * - AI usage is incremented before generation
+ * - Limits are enforced server-side
+ * - Errors are thrown and must be handled by the caller
  *
- * Design guarantees:
- * - Never adds new information or sentiment
- * - Never over-formalizes casual chat
- * - Returns the original text if no improvement is needed
- * - Fails safely by returning the original text on any error
+ * The enhancement is conservative:
+ * - Preserves meaning, intent, and tone
+ * - Makes minimal changes
+ * - May return the original text if no improvement is needed
  *
- * @param text - The original message text to enhance
- * @returns The enhanced message, or the original text if enhancement fails
+ * @param text - Original message text
+ * @returns Enhanced (or unchanged) message text
+ *
+ * @throws Error if:
+ * - User is on a free plan (`USER_ON_FREE_PLAN`)
+ * - Daily AI limit is exceeded (`USAGE_LIMIT_EXCEEDED`)
+ * - AI service fails (`AI_SERVICE_ERROR`)
  */
 export async function enhanceText(text: string): Promise<string> {
   if (!text || !text.trim()) return text
@@ -399,6 +408,18 @@ export async function enhanceText(text: string): Promise<string> {
     - Return ONLY the improved message, with no quotes or explanations.
   `.trim()
 
+  /**
+   * AI usage is incremented **before** making the request.
+   *
+   * Unlike media uploads, AI calls incur cost even if they fail.
+   * By checking and incrementing upfront, it is ensured that:
+   * - Every attempted AI call is counted
+   * - Failed generations do not bypass usage limits
+   *
+   * This keeps billing and usage enforcement accurate.
+   */
+  await checkAndIncrementUsage('ai')
+
   try {
     const result = await generateText({
       model: 'openai/gpt-4o-mini',
@@ -406,9 +427,75 @@ export async function enhanceText(text: string): Promise<string> {
       prompt: text,
     })
 
-    return result.text?.trim() || text
+    return result.text.trim()
   } catch (error) {
-    console.error('AI enhance failed:', error)
-    return text
+    console.error('generateText failed', error)
+    throw Error('AI_SERVICE_ERROR', { cause: error })
   }
+}
+
+/**
+ * Checks whether the authenticated user is allowed to use a paid feature
+ * within the current usage window, and atomically increments usage if allowed.
+ *
+ * This function is **server-side authoritative** and represents the single
+ * source of truth for billing and rate limiting.
+ *
+ * **RESPONSIBILITIES**
+ * - Resolves the user's effective subscription plan
+ * - Enforces daily usage limits via a Postgres RPC
+ * - Atomically increments usage only if the limit has not been exceeded
+ *
+ * **CALLING SEMANTICS**
+ * This function MUST be called only after the system has determined that
+ * the feature action is valid and about to be committed:
+ *
+ * - **AI enhancements**: call immediately before applying the enhancement
+ * - **Media uploads**: call only after the file has been successfully stored
+ *
+ * This ensures that:
+ * - Failed actions are never charged
+ * - Usage is only counted for irreversible work
+ *
+ * **CLIENT SYNC**
+ *
+ * Clients MUST NOT optimistically assume success.
+ * Any UI usage updates (e.g. via `reflectUsageIncrement`) must happen
+ * **only after this function resolves successfully**.
+ *
+ * @param usageKind - The type of paid feature being used (`media` or `ai`)
+ *
+ * @returns The updated usage state for the current window as returned
+ *          by the database RPC (shape is intentionally opaque to callers).
+ *
+ * @throws Error if:
+ * - The user is not on a paid plan (`USER_ON_FREE_PLAN`)
+ * - The daily usage limit has been exceeded (`USAGE_LIMIT_EXCEEDED`)
+ * - The RPC fails or the user is not authenticated
+ */
+export async function checkAndIncrementUsage(usageKind: UsageKind) {
+  const supabase = await createClient()
+
+  // delegate atomic enforcement + increment to the database
+  const { data, error } = await supabase.rpc('check_and_increment_usage', {
+    usage_kind: usageKind,
+  })
+
+  if (error) {
+    if (typeof error === 'object' && 'message' in error) {
+      const msg = String(error.message)
+
+      if (msg === 'USER_ON_FREE_PLAN') {
+        throw Error(msg)
+      }
+
+      if (msg === 'USAGE_LIMIT_EXCEEDED') {
+        throw Error(msg)
+      }
+    }
+
+    throw error
+  }
+
+  return data
 }

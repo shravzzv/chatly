@@ -1,5 +1,6 @@
-export type PricingPlanName = 'Free' | 'Pro' | 'Enterprise'
+import type { ChatlyPlan } from '@/types/plan'
 
+export type PricingPlanName = 'Free' | 'Pro' | 'Enterprise'
 export interface PricingPlan {
   name: PricingPlanName
   priceMonthly: number
@@ -33,7 +34,7 @@ export const PLANS: PricingPlan[] = [
       'Unlock richer conversations with media sharing and AI-powered message improvements.',
     features: [
       'Everything in Free',
-      'Up to 5 media (image/audio/file) attachments per day',
+      'Up to 5 media (image/video/audio/file) attachments per day',
       'Up to 5 AI-assisted message improvements per day',
     ],
   },
@@ -50,3 +51,9 @@ export const PLANS: PricingPlan[] = [
     ],
   },
 ]
+
+export const PLAN_LIMITS: Record<ChatlyPlan, { ai: number; media: number }> = {
+  free: { ai: 0, media: 0 },
+  pro: { ai: 5, media: 5 },
+  enterprise: { ai: 50, media: 20 },
+}

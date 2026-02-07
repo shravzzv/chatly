@@ -13,6 +13,7 @@ import type {
   UseMessagesResult,
 } from '@/types/use-messages'
 import type { MessageAttachment } from '@/types/message-attachment'
+import { checkAndIncrementUsage } from '@/app/actions'
 
 /**
  * useMessages
@@ -44,7 +45,6 @@ export function useMessages({
   const [messages, setMessages] = useState<Message[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<PostgrestError | null>(null)
-
   const currentUserId = useChatlyStore((state) => state.user)?.id
 
   /**
@@ -280,7 +280,7 @@ export function useMessages({
    * @throws PostgrestError if either upload or DB insert fails
    */
   const createMessageAttachment = useCallback(
-    async (messageId: string, file: File) => {
+    async (messageId: string, file: File): Promise<MessageAttachment> => {
       const supabase = createClient()
       const path = `${messageId}/${uuidv4()}`
 
@@ -313,7 +313,7 @@ export function useMessages({
    * Only removes the attachment file from the bucket.
    * The row in the message_attachments table is deleted via cascade on the messages table.
    */
-  const deleteAttachment = useCallback(
+  const deleteAttachmentFile = useCallback(
     async (attachment: MessageAttachment) => {
       const supabase = createClient()
 
@@ -356,6 +356,9 @@ export function useMessages({
    * 4. Updates previews only after authoritative success
    *
    * Attachments are uploaded only after message creation succeeds.
+   *
+   * `message_attachmens` has an updating role. It only ever updates
+   * an already existing message.
    */
   const sendMessage = useCallback(
     async ({ text, file }: SendMessageInput) => {
@@ -412,15 +415,35 @@ export function useMessages({
 
       // 4. Upload attachment only if db insert succeeds
       if (file) {
+        let attachment: MessageAttachment | null = null
+
         try {
-          const attachment = await createMessageAttachment(message.id, file)
+          attachment = await createMessageAttachment(message.id, file)
+
+          /**
+           * Media usage is incremented **after** a successful upload.
+           *
+           * Unlike AI calls, failed storage uploads do not incur cost.
+           * By checking usage only after the file is safely stored, we ensure:
+           * - Only successful uploads count toward the usage limit
+           * - Failed or rolled-back uploads are never charged
+           *
+           * This avoids overcounting while keeping rollback simple.
+           */
+          await checkAndIncrementUsage('media')
+
           reconcileOptimisticMessage(tempId, { ...message, attachment })
         } catch (error) {
-          setMessages((prev) => prev.filter((m) => m.id !== tempId))
           console.error(error)
-          await supabase.from('messages').delete().eq('id', message.id)
-          throw new Error('UPLOAD_ATTACHMENT_FAILED', { cause: error })
+          setMessages((prev) => prev.filter((m) => m.id !== tempId))
+
+          // delete everything regarding the message
+          await supabase.from('messages').delete().eq('id', message.id) // deletes message_attachment on cascade
+          if (attachment) deleteAttachmentFile(attachment)
+
+          throw error
         }
+
         return
       }
 
@@ -428,10 +451,11 @@ export function useMessages({
       reconcileOptimisticMessage(tempId, message)
     },
     [
+      createMessageAttachment,
       currentUserId,
+      deleteAttachmentFile,
       reconcileOptimisticMessage,
       selectedProfileId,
-      createMessageAttachment,
     ],
   )
 
@@ -474,7 +498,7 @@ export function useMessages({
       // 4. Best-effort storage cleanup (non-authoritative)
       if (attachment) {
         try {
-          await deleteAttachment(attachment)
+          await deleteAttachmentFile(attachment)
         } catch (error) {
           console.warn('Storage cleanup failed', error)
         }
@@ -484,7 +508,7 @@ export function useMessages({
       const deletedMessage = prevMessages.find((msg) => msg.id === id)
       if (deletedMessage) await deletePreview(deletedMessage)
     },
-    [currentUserId, deleteAttachment, deletePreview, messages],
+    [currentUserId, deleteAttachmentFile, deletePreview, messages],
   )
 
   /**

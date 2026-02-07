@@ -21,15 +21,19 @@ import { toast } from 'sonner'
 import type { MessageAttachmentKind } from '@/types/message-attachment'
 import { MAX_MESSAGE_ATTACHMENT_SIZE } from '@/data/constants'
 import { useDashboardContext } from '@/providers/dashboard-provider'
+import { PLAN_LIMITS } from '@/data/plans'
 
 export default function ChatInputDropdown() {
   const { sendMessage } = useDashboardContext()
   const [open, setOpen] = useState(false)
-  /**
-   * Used to track attachment uploading.
-   * Only one attachment is allowed to be uploaded at a time.
-   */
   const [isUploading, setIsUploading] = useState(false)
+  const {
+    plan,
+    mediaUsed,
+    canUseMedia,
+    openUpgradeAlertDialog,
+    reflectUsageIncrement,
+  } = useDashboardContext()
 
   const imageInputRef = useRef<HTMLInputElement>(null)
   const videoInputRef = useRef<HTMLInputElement>(null)
@@ -57,14 +61,27 @@ export default function ChatInputDropdown() {
       return
     }
 
-    try {
-      setIsUploading(true)
+    setIsUploading(true)
 
+    try {
       await sendMessage({ file })
+      reflectUsageIncrement('media')
       setOpen(false)
     } catch (error) {
-      toast.error('Upload failed')
       console.error(error)
+
+      if (error instanceof Error) {
+        switch (error.message) {
+          case 'USER_ON_FREE_PLAN':
+            toast.error('Upgrade your plan to send media attachments')
+            break
+          case 'USAGE_LIMIT_EXCEEDED':
+            toast.error('Daily media attachments limit reached')
+            break
+          default:
+            toast.error('Upload failed')
+        }
+      }
     } finally {
       setIsUploading(false)
       e.target.value = ''
@@ -76,6 +93,11 @@ export default function ChatInputDropdown() {
     ref: React.RefObject<HTMLInputElement | null>,
   ) => {
     e.preventDefault()
+    if (!canUseMedia) {
+      openUpgradeAlertDialog('media')
+      return
+    }
+
     if (!ref.current) return
     ref.current.click()
   }
@@ -131,6 +153,14 @@ export default function ChatInputDropdown() {
         <DropdownMenuContent align='start'>
           <DropdownMenuLabel>Attachments</DropdownMenuLabel>
           <DropdownMenuSeparator />
+          {canUseMedia && (
+            <>
+              <DropdownMenuLabel>
+                {mediaUsed}/{PLAN_LIMITS[plan].media} today
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+            </>
+          )}
 
           <DropdownMenuItem
             className='flex items-center gap-2 cursor-pointer'

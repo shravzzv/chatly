@@ -10,7 +10,22 @@ function isSameDay(a: Date, b: Date) {
   )
 }
 
-export function formatRelativeDate(date: string) {
+function getNextUtcMidnight() {
+  const now = new Date()
+  const next = new Date(
+    Date.UTC(
+      now.getUTCFullYear(),
+      now.getUTCMonth(),
+      now.getUTCDate() + 1,
+      0,
+      0,
+      0,
+    ),
+  )
+  return next
+}
+
+export const formatRelativeDate = (date: string) => {
   const target = new Date(date)
   const now = new Date()
 
@@ -31,7 +46,7 @@ export function formatRelativeDate(date: string) {
   return `in ${months} ${pluralize(months, 'month')}`
 }
 
-export function formatEditedTimestamp(createdAt: string, updatedAt: string) {
+export const formatEditedTimestamp = (createdAt: string, updatedAt: string) => {
   const created = new Date(createdAt)
   const updated = new Date(updatedAt)
 
@@ -73,4 +88,19 @@ export const formatDateHeader = (date: Date): string => {
       day: 'numeric',
     })
   }
+}
+
+/**
+ * Returns the local clock time at which daily usage resets.
+ *
+ * Usage resets at midnight UTC; this converts that moment
+ * into the user's local time for display.
+ */
+export const getUsageResetTime = () => {
+  const resetAt = getNextUtcMidnight()
+
+  return resetAt.toLocaleTimeString(undefined, {
+    hour: 'numeric',
+    minute: '2-digit',
+  })
 }
