@@ -1,37 +1,32 @@
 import Image from 'next/image'
 import heroImage from '@/public/landing-hero.jpg'
+import messagingImage from '@/public/features/messaging.png'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 
 const features = [
   {
-    title: 'Text Chat',
+    title: '1:1 Messaging',
     description:
-      'Chatly makes text conversations effortless. Send messages instantly, react to them, and stay connected with your friends and team anywhere in the world.',
+      'Send and receive messages in real time with a clean, focused chat experience designed for clarity and speed.',
+    image: messagingImage,
+  },
+  {
+    title: 'Media Attachments',
+    description:
+      'Share images and files directly in chat. Uploads are securely stored and optimized for fast access.',
     image: heroImage,
   },
   {
-    title: 'Image Chat',
+    title: 'AI Message Enhancements',
     description:
-      'Go beyond words — share images, screenshots, and media seamlessly. Chatly automatically optimizes them for fast delivery and viewing.',
+      'Improve clarity and tone of your messages with AI-assisted enhancements — without changing your intent.',
     image: heroImage,
   },
   {
-    title: 'Audio Calls',
+    title: 'Usage Limits & Billing',
     description:
-      'Experience reliable, low-latency audio calls that make distance feel irrelevant. Perfect for quick catch-ups or deep conversations.',
-    image: heroImage,
-  },
-  {
-    title: 'Video Calls',
-    description:
-      'Bring your conversations to life with high-quality video calls. Chatly is designed to work smoothly even with slower connections.',
-    image: heroImage,
-  },
-  {
-    title: 'Real-time Sync',
-    description:
-      'Start a chat on your laptop and pick it up instantly on your phone. Chatly automatically keeps all your messages and calls synced.',
+      'Clear daily usage limits per plan, with transparent billing and easy subscription management.',
     image: heroImage,
   },
 ]

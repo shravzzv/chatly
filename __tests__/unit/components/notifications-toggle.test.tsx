@@ -65,11 +65,13 @@ beforeEach(() => {
 })
 
 describe('NotificationsToggle', () => {
-  it('renders a loading state while checking support', () => {
+  it('renders a loading state while checking support', async () => {
     render(<NotificationsToggle />)
 
     expect(screen.getByText(/web push notifications/i)).toBeInTheDocument()
     expect(screen.getByRole('status')).toBeInTheDocument()
+    // NEW: Wait for the async effect to finish so it doesn't leak into the next test
+    await waitForElementToBeRemoved(() => screen.getByRole('status'))
   })
 
   it('shows unsupported alert when push is unavailable', async () => {
@@ -79,7 +81,7 @@ describe('NotificationsToggle', () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText(/doesn't fully support web push notifications/i)
+        screen.getByText(/doesn't fully support web push notifications/i),
       ).toBeInTheDocument()
     })
   })
@@ -104,7 +106,7 @@ describe('NotificationsToggle', () => {
     await waitFor(() => {
       expect(subscribeUser).toHaveBeenCalled()
       expect(toast.success).toHaveBeenCalledWith(
-        'Web push notifications enabled'
+        'Web push notifications enabled',
       )
     })
   })
@@ -121,8 +123,11 @@ describe('NotificationsToggle', () => {
     const toggle = await screen.findByRole('switch')
     await user.click(toggle)
 
-    expect(subscribeUser).not.toHaveBeenCalled()
-    expect(toast.info).toHaveBeenCalled()
+    // Wait for the expected outcome to ensure all state updates are captured
+    await waitFor(() => {
+      expect(subscribeUser).not.toHaveBeenCalled()
+      expect(toast.info).toHaveBeenCalled()
+    })
   })
 
   it('unsubscribes from push notifications when toggled off', async () => {
@@ -155,7 +160,7 @@ describe('NotificationsToggle', () => {
       expect(mockUnsubscribe).toHaveBeenCalled()
       expect(unsubscribeUser).toHaveBeenCalled()
       expect(toast.success).toHaveBeenCalledWith(
-        'Unsubscribed from web push notifications'
+        'Unsubscribed from web push notifications',
       )
     })
   })

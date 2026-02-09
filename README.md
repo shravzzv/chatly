@@ -1,36 +1,121 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Chatly
 
-## Getting Started
+Chatly is a real-time 1:1 messaging application with optional AI-assisted message enhancements and usage-based billing.
 
-First, run the development server:
+It is designed as a complete, production-grade SaaS example covering authentication, messaging, media uploads, rate limiting, billing, and enforcement — without placeholder flows.
+
+## Features
+
+- **1:1 Text Chat**: Real-time messaging with delivery states.
+- **Media Attachments**: Support for images and file sharing.
+- **AI Enhancement**: Integrated AI-assisted message refinement.
+- **Usage Enforcement**: Daily limits and plan-based feature gating.
+- **Real-time Infrastructure**: Powered by Supabase Realtime.
+- **Secure Auth**: Email and Google OAuth integration via Supabase Auth.
+- **Subscription Billing**: Full Lemon Squeezy integration including a customer billing portal.
+
+## Tech Stack
+
+- **Frontend:** Next.js (App Router), React, TypeScript, Tailwind CSS
+- **Backend:** Supabase (Postgres, Auth, Realtime, Storage)
+- **AI:** Vercel AI SDK
+- **Billing:** Lemon Squeezy
+- **Testing:** Jest (Unit), Playwright (E2E)
+- **Deployment:** Vercel
+
+## Architecture Overview
+
+Chatly follows a strict separation of concerns to ensure data integrity and security:
+
+- **Client UI**: Utilizes optimistic updates for messaging; maintains a read-only usage state for UI gating.
+- **Server Actions**: Acts as the authoritative layer for usage enforcement and billing state resolution.
+- **Database**: Postgres serves as the source of truth with atomic usage checks handled via RPCs and cascading deletes for data integrity.
+- **Storage**: Media is managed via Supabase Storage with periodic cron jobs for cleanup.
+
+The server remains authoritative for all billing status, usage limits, and enforcement decisions.
+
+## Local Development
+
+### Prerequisites
+
+- Node.js (LTS)
+- Supabase Project
+- Lemon Squeezy Store (optional for local testing)
+
+### Setup
+
+1. **Install dependencies:**
+
+```bash
+npm install
+```
+
+2. **Run the development server:**
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Environment Variables
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+The following environment variables are required in your `.env.local`:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
 
-## Learn More
+NEXT_PUBLIC_SITE_URL=
 
-To learn more about Next.js, take a look at the following resources:
+NEXT_PUBLIC_VAPID_PUBLIC_KEY=
+VAPID_PRIVATE_KEY=
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+AI_GATEWAY_API_KEY=
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+_Note: Billing-related features require a valid Lemon Squeezy configuration._
 
-## Deploy on Vercel
+## Billing & Usage Enforcement
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Chatly employs a server-side daily usage window strategy:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Rate Limiting**: AI enhancements and media uploads are throttled based on the active plan.
+- **Atomic Enforcement**: Usage is tracked and enforced via Postgres RPCs to prevent race conditions.
+- **Logic Rules**: Failed AI requests count toward usage (token consumption), while failed media uploads do not.
+- **UX**: Enterprise plans are never shown upgrade CTAs, even when limits are reached.
+
+## Testing
+
+The test suite exercises the full stack to ensure user-visible behavior is preserved:
+
+- **Unit Tests**: Focused on component logic and state transitions.
+- **E2E Tests**: Playwright scripts covering real auth flows, billing states, and usage enforcement.
+
+**Run tests:**
+
+```bash
+# Unit tests
+npm run test
+
+# E2E tests
+npm run test:e2e
+```
+
+_Note: CI stability may depend on the availability of external services (Supabase, Lemon Squeezy)._
+
+## Known Limitations
+
+- **1:1 Only**: No current support for group chats.
+- **Search**: Message search is not implemented.
+- **Offline**: No PWA/offline-first support.
+- **Admin Tools**: Limited built-in administrative dashboarding.
+
+## Project Status
+
+**Status: Closed / Feature Complete**
+
+Chatly is considered feature-complete and is not under active development. The repository may receive dependency updates, security patches, or infrastructure fixes, but no major features are planned.
+
+## License
+
+This project is licensed under the [MIT License](https://www.google.com/search?q=LICENSE).

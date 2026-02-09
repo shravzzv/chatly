@@ -31,12 +31,13 @@ const renderWithUser = (user: Partial<User> | null) =>
   render(
     <ChatlyStoreProvider hydrationData={{ user: user as User }}>
       <AccountEmailStatus />
-    </ChatlyStoreProvider>
+    </ChatlyStoreProvider>,
   )
 
 describe('AccountEmailStatus', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    jest.spyOn(console, 'error').mockImplementation(() => {})
   })
 
   it('renders nothing when user is missing', () => {
@@ -75,13 +76,13 @@ describe('AccountEmailStatus', () => {
 
     const user = userEvent.setup()
     await user.click(
-      screen.getByRole('button', { name: /resend confirmation/i })
+      screen.getByRole('button', { name: /resend confirmation/i }),
     )
 
     await waitFor(() => {
       expect(mockResend).toHaveBeenCalled()
       expect(toast.success).toHaveBeenCalledWith(
-        'Email confirmation sent. Check your inbox.'
+        'Email confirmation sent. Check your inbox.',
       )
     })
   })
@@ -98,12 +99,12 @@ describe('AccountEmailStatus', () => {
 
     const user = userEvent.setup()
     await user.click(
-      screen.getByRole('button', { name: /resend confirmation/i })
+      screen.getByRole('button', { name: /resend confirmation/i }),
     )
 
     await waitFor(() => {
       expect(toast.error).toHaveBeenCalledWith(
-        'Failed to send email confirmation'
+        'Failed to send email confirmation',
       )
     })
   })

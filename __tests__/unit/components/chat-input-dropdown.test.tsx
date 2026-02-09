@@ -27,6 +27,7 @@ describe('ChatInputDropdown', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     canUseMediaMock = true
+    jest.spyOn(console, 'error').mockImplementation(() => {})
   })
 
   it('opens the attachments dropdown', async () => {

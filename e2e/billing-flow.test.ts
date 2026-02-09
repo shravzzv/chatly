@@ -16,6 +16,10 @@ test.describe('Billing flow', () => {
     await cleanupUsers([user.id])
   })
 
+  test.afterEach(async () => {
+    await cleanupSubscriptions([user.id])
+  })
+
   test('unauth user is redirected to signup with pricing intent', async ({
     page,
   }) => {
@@ -91,8 +95,6 @@ test.describe('Billing flow', () => {
 
     await expect(manageBilling).toBeVisible()
     await expect(manageBilling).toHaveAttribute('href', LS_CUSTOMER_PORTAL_URL)
-
-    await cleanupSubscriptions([user.id])
   })
 
   test('expired subscription shows demotion alert', async ({ page }) => {
@@ -112,7 +114,5 @@ test.describe('Billing flow', () => {
 
     const renew = page.getByRole('link', { name: /renew/i })
     await expect(renew).toHaveAttribute('href', LS_CUSTOMER_PORTAL_URL)
-
-    await cleanupSubscriptions([user.id])
   })
 })

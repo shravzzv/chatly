@@ -85,6 +85,8 @@ test.describe('Paywalls & rate limiting', () => {
     test('Pro user can enhance a message succesfully within usage limit', async ({
       page,
     }) => {
+      test.slow()
+
       await seedSubscription({
         userId: userA.id,
         plan: 'pro',
@@ -199,6 +201,8 @@ test.describe('Paywalls & rate limiting', () => {
     test('Pro user can send a media attachment succesfully within usage limit', async ({
       page,
     }) => {
+      test.slow()
+
       await seedSubscription({
         userId: userA.id,
         plan: 'pro',

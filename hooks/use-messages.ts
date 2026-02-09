@@ -302,7 +302,14 @@ export function useMessages({
         .select()
         .single()
 
-      if (insertError) throw insertError
+      if (insertError) {
+        const { error } = await supabase.storage
+          .from('message_attachments')
+          .remove([path])
+
+        if (error) throw error
+        throw insertError
+      }
 
       return attachment
     },

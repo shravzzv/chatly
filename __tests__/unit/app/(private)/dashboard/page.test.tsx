@@ -66,11 +66,14 @@ jest.mock('@/components/conversation-select-dialog', () => {
 
 jest.mock('@/app/actions', () => ({
   enhanceText: jest.fn(),
+  getSubscriptions: jest.fn().mockResolvedValue({ data: [], error: null }),
 }))
 
 describe('Dashboard', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    jest.spyOn(console, 'error').mockImplementation(() => {})
+    jest.spyOn(console, 'warn').mockImplementation(() => {})
   })
 
   it('redirects to checkout when user, plan, and billing exist', () => {
