@@ -55,5 +55,5 @@ export const PLANS: PricingPlan[] = [
 export const PLAN_LIMITS: Record<ChatlyPlan, { ai: number; media: number }> = {
   free: { ai: 0, media: 0 },
   pro: { ai: 5, media: 5 },
-  enterprise: { ai: 50, media: 20 },
+  enterprise: { ai: 20, media: 50 },
 }
