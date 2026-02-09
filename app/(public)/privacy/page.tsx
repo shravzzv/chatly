@@ -7,7 +7,7 @@ export default function Page() {
         <header className='text-center space-y-2'>
           <h1 className='text-3xl font-bold'>Privacy Policy</h1>
           <p className='text-sm text-muted-foreground'>
-            Last updated: October 24, 2025
+            Last updated: February 9, 2026
           </p>
         </header>
 
@@ -147,6 +147,19 @@ export default function Page() {
             We use cookies for authentication, user preferences, and consent
             tracking.
           </p>
+
+          <h3 className='font-semibold'>Google Authentication</h3>
+          <p>
+            Chatly uses Google OAuth solely for user authentication. When you
+            sign in with Google, we receive basic account information such as
+            your name, email address, and profile image.
+          </p>
+          <p>
+            This information is used only to create and manage your Chatly
+            account. Chatly does not access your contacts, calendars, files, or
+            any other Google data, and this information is never sold or shared
+            with third parties.
+          </p>
         </section>
 
         <section className='space-y-2'>
@@ -271,10 +284,10 @@ export default function Page() {
           <p>
             Questions? Contact us via:{' '}
             <Link
-              href='https://chatly-brown.vercel.app/privacy'
+              href='https://chatly-brown.vercel.app/support'
               className='underline'
             >
-              https://chatly-brown.vercel.app/privacy
+              https://chatly-brown.vercel.app/support
             </Link>
           </p>
         </section>
