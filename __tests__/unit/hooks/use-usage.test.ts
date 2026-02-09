@@ -46,6 +46,13 @@ describe('useUsage', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     mockUser = { id: 'user-1' }
+    // Silence both errors and warnings to keep the test output clean
+    jest.spyOn(console, 'error').mockImplementation(() => {})
+    jest.spyOn(console, 'warn').mockImplementation(() => {})
+  })
+
+  afterEach(() => {
+    jest.restoreAllMocks()
   })
 
   it('returns safe defaults when no authenticated user', async () => {
@@ -84,13 +91,10 @@ describe('useUsage', () => {
     })
 
     expect(result.current.plan).toBe('pro')
-
     expect(result.current.aiUsed).toBe(2)
     expect(result.current.mediaUsed).toBe(1)
-
     expect(result.current.canUseAi).toBe(true)
     expect(result.current.canUseMedia).toBe(true)
-
     expect(result.current.aiRemaining).toBe(3)
     expect(result.current.mediaRemaining).toBe(4)
   })

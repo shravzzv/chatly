@@ -33,9 +33,21 @@ const mockedCreateClient = createClient as jest.MockedFunction<
   typeof createClient
 >
 
+function mockSupabaseResponse(response: { data: any[]; error: any }) {
+  mockedCreateClient.mockReturnValue({
+    from: jest.fn(() => ({
+      select: jest.fn(() => ({
+        or: jest.fn(() => ({
+          order: jest.fn(() => Promise.resolve(response)),
+        })),
+      })),
+    })),
+  } as any)
+}
+
 function mockSupabaseDeletePreview(response: {
   data: Message | null
-  error: null
+  error: any
 }) {
   mockedCreateClient.mockReturnValue({
     from: jest.fn(() => ({
@@ -62,50 +74,40 @@ const makeMessage = (overrides: Partial<Message> = {}): Message => ({
   ...overrides,
 })
 
+const waitForMount = async (result: any) => {
+  await waitFor(() => {
+    expect(result.current.loading).toBe(false)
+  })
+}
+
 describe('usePreviews', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    jest.spyOn(console, 'error').mockImplementation(() => {})
+    mockSupabaseResponse({ data: [], error: null })
+  })
+
+  afterEach(() => {
+    jest.restoreAllMocks()
   })
 
   it('starts in loading state', () => {
-    mockedCreateClient.mockReturnValue({
-      from: () => ({
-        select: () => ({
-          or: () => ({
-            order: () => Promise.resolve({ data: [], error: null }),
-          }),
-        }),
-      }),
-    } as any)
-
     const { result } = renderHook(() => usePreviews())
     expect(result.current.loading).toBe(true)
   })
 
   it('resolves to empty previews when DB returns no rows', async () => {
-    mockedCreateClient.mockReturnValue({
-      from: () => ({
-        select: () => ({
-          or: () => ({
-            order: () => Promise.resolve({ data: [], error: null }),
-          }),
-        }),
-      }),
-    } as any)
-
     const { result } = renderHook(() => usePreviews())
-
-    await waitFor(() => {
-      expect(result.current.loading).toBe(false)
-    })
+    await waitForMount(result)
 
     expect(result.current.previews).toEqual({})
     expect(result.current.error).toBeNull()
   })
 
   describe('updatePreview', () => {
-    it('creates or replaces a preview for the partner', () => {
+    it('creates or replaces a preview for the partner', async () => {
       const { result } = renderHook(() => usePreviews())
+      await waitForMount(result)
       const msg = makeMessage()
 
       act(() => {
@@ -117,8 +119,9 @@ describe('usePreviews', () => {
       )
     })
 
-    it('ignores stale updates based on updated_at', () => {
+    it('ignores stale updates based on updated_at', async () => {
       const { result } = renderHook(() => usePreviews())
+      await waitForMount(result)
 
       const newer = makeMessage({ updated_at: '2024-01-02T00:00:00Z' })
       const older = makeMessage({ updated_at: '2024-01-01T00:00:00Z' })
@@ -140,6 +143,7 @@ describe('usePreviews', () => {
   describe('deletePreview', () => {
     it('does nothing if preview does not exist', async () => {
       const { result } = renderHook(() => usePreviews())
+      await waitForMount(result)
 
       await act(async () => {
         await result.current.deletePreview(makeMessage())
@@ -155,15 +159,17 @@ describe('usePreviews', () => {
         updated_at: '2024-01-01T00:00:00Z',
       })
 
-      mockSupabaseDeletePreview({
-        data: previous,
-        error: null,
-      })
-
       const { result } = renderHook(() => usePreviews())
+      await waitForMount(result)
 
       act(() => {
         result.current.updatePreview(last)
+      })
+
+      // Re-mock specifically for the deletePreview database call
+      mockSupabaseDeletePreview({
+        data: previous,
+        error: null,
       })
 
       await act(async () => {
@@ -178,15 +184,16 @@ describe('usePreviews', () => {
     it('removes preview when no previous message exists', async () => {
       const last = makeMessage()
 
-      mockSupabaseDeletePreview({
-        data: null,
-        error: null,
-      })
-
       const { result } = renderHook(() => usePreviews())
+      await waitForMount(result)
 
       act(() => {
         result.current.updatePreview(last)
+      })
+
+      mockSupabaseDeletePreview({
+        data: null,
+        error: null,
       })
 
       await act(async () => {
@@ -198,8 +205,9 @@ describe('usePreviews', () => {
   })
 
   describe('replacePreview', () => {
-    it('overwrites preview authoritatively', () => {
+    it('overwrites preview authoritatively', async () => {
       const { result } = renderHook(() => usePreviews())
+      await waitForMount(result)
       const msg = makeMessage()
 
       act(() => {
@@ -211,8 +219,9 @@ describe('usePreviews', () => {
       )
     })
 
-    it('removes preview when message is null', () => {
+    it('removes preview when message is null', async () => {
       const { result } = renderHook(() => usePreviews())
+      await waitForMount(result)
 
       act(() => {
         result.current.replacePreview('user-2', null)

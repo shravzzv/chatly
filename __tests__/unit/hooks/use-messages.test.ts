@@ -98,6 +98,7 @@ const setup = (overrides: Partial<UseMessagesArgs> = {}) => {
 describe('useMessages', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    jest.spyOn(console, 'error').mockImplementation(() => {})
   })
 
   describe('initialization & fetching', () => {

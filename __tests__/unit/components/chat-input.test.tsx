@@ -49,6 +49,7 @@ describe('ChatInput', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     canUseAiMock = true
+    jest.spyOn(console, 'error').mockImplementation(() => {})
   })
 
   describe('basic message sending', () => {
