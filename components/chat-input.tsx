@@ -21,16 +21,23 @@ interface ChatInputProps {
 }
 
 export default function ChatInput({ updateTypingStatus }: ChatInputProps) {
-  const { sendMessage } = useDashboardContext()
-  const isMobileView = useIsMobile()
-  const [message, setMessage] = useState('')
+  const [text, setText] = useState('')
   const [isEnhancing, setIsEnhancing] = useState(false)
+
+  const {
+    sendMessage,
+    canUseAi,
+    openUpgradeAlertDialog,
+    reflectUsageIncrement,
+  } = useDashboardContext()
+  const isMobileView = useIsMobile()
+
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const originalMessageRef = useRef<string | null>(null)
 
-  const handleMessageChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+  const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value
-    setMessage(value)
+    setText(value)
 
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current)
 
@@ -42,45 +49,50 @@ export default function ChatInput({ updateTypingStatus }: ChatInputProps) {
     }
   }
 
-  const handleSubmitMessage = async () => {
-    if (!message.trim() || isEnhancing) return
+  const handleTextSubmit = async () => {
+    if (!text.trim() || isEnhancing) return
     updateTypingStatus(false)
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current)
 
-    await sendMessage({ text: message })
-    setMessage('')
-    originalMessageRef.current = null
+    try {
+      await sendMessage({ text })
+      setText('')
+      originalMessageRef.current = null
+    } catch (error) {
+      console.error(error)
+      toast.error('Failed to send message')
+    }
   }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey && !isMobileView) {
       e.preventDefault()
-      handleSubmitMessage()
+      handleTextSubmit()
     }
   }
 
   const handleEnhanceUndo = () => {
     if (!originalMessageRef.current) return
 
-    setMessage(originalMessageRef.current)
+    setText(originalMessageRef.current)
     originalMessageRef.current = null
   }
 
   const enhanceMessage = async () => {
-    if (!message.trim()) return
-    originalMessageRef.current = message
+    if (!canUseAi) {
+      openUpgradeAlertDialog('ai')
+      return
+    }
+
+    if (!text.trim()) return
+    originalMessageRef.current = text
 
     try {
       setIsEnhancing(true)
-      const enhancedText = await enhanceText(message)
+      const enhancedText = await enhanceText(text)
+      reflectUsageIncrement('ai')
+      setText(enhancedText)
 
-      if (enhancedText.trim() === message.trim()) {
-        toast.message('Already looks good ✨')
-        originalMessageRef.current = null
-        return
-      }
-
-      setMessage(enhancedText)
       toast.success('Message enhanced', {
         action: (
           <Button
@@ -92,12 +104,24 @@ export default function ChatInput({ updateTypingStatus }: ChatInputProps) {
             <Undo className='h-3.5 w-3.5' /> Undo
           </Button>
         ),
-        duration: 8 * 1000,
+        duration: 4 * 1000,
         position: 'top-right',
       })
-    } catch (error) {
+    } catch (error: unknown) {
       console.error(error)
-      toast.error('AI enhancement failed')
+
+      if (error instanceof Error) {
+        switch (error.message) {
+          case 'USER_ON_FREE_PLAN':
+            toast.error('Upgrade your plan to use AI enhancements')
+            break
+          case 'USAGE_LIMIT_EXCEEDED':
+            toast.error('Daily AI enhancements limit reached')
+            break
+          default:
+            toast.error('AI enhancement failed')
+        }
+      }
     } finally {
       setIsEnhancing(false)
     }
@@ -110,8 +134,8 @@ export default function ChatInput({ updateTypingStatus }: ChatInputProps) {
       <InputGroup className='flex items-end px-1 space-x-2 rounded-4xl bg-background dark:bg-background'>
         <InputGroupTextarea
           placeholder='Type a message...'
-          value={message}
-          onChange={handleMessageChange}
+          value={text}
+          onChange={handleTextChange}
           onKeyDown={handleKeyDown}
           className='min-h-10 max-h-50 resize-none overflow-y-auto text-sm placeholder:text-muted-foreground focus-visible:ring-0 outline-none border-0'
           disabled={isEnhancing}
@@ -123,7 +147,7 @@ export default function ChatInput({ updateTypingStatus }: ChatInputProps) {
             size='icon-sm'
             className='cursor-pointer disabled:cursor-not-allowed rounded-full'
             onClick={enhanceMessage}
-            disabled={!message.trim() || isEnhancing}
+            disabled={!text.trim() || isEnhancing}
             title='Enhance message'
             aria-label='Enhance message'
           >
@@ -136,8 +160,8 @@ export default function ChatInput({ updateTypingStatus }: ChatInputProps) {
             variant='default'
             size='icon-sm'
             className='cursor-pointer disabled:cursor-not-allowed rounded-full'
-            onClick={handleSubmitMessage}
-            disabled={!message.trim() || isEnhancing}
+            onClick={handleTextSubmit}
+            disabled={!text.trim() || isEnhancing}
             title='Send message'
             aria-label='Send message'
           >

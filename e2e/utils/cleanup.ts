@@ -11,13 +11,13 @@ import { supabaseAdmin } from './supabase'
  * test pollution across environments and runs.
  */
 export async function cleanupUsers(userIds: string[]) {
-  // 1. Delete subscriptions first (FK-safe)
-  await cleanupSubscriptions(userIds)
+  if (!userIds) return
 
-  // 2. Delete auth users
-  for (const id of userIds) {
-    await supabaseAdmin.auth.admin.deleteUser(id)
-  }
+  await Promise.all([cleanupUsage(userIds), cleanupSubscriptions(userIds)])
+
+  await Promise.all(
+    userIds.map((id) => supabaseAdmin.auth.admin.deleteUser(id)),
+  )
 }
 
 /**
@@ -29,12 +29,27 @@ export async function cleanupUsers(userIds: string[]) {
  * Throws if deletion fails to avoid leaving orphaned test data.
  */
 export async function cleanupSubscriptions(userIds: string[]) {
+  if (!userIds) return
+
   const { error } = await supabaseAdmin
     .from('subscriptions')
     .delete()
     .in('user_id', userIds)
 
   if (error) {
-    throw new Error(`Failed to cleanup subscriptions: ${error.message}`)
+    throw Error(`Failed to cleanup subscriptions: ${error.message}`)
+  }
+}
+
+export async function cleanupUsage(userIds: string[]) {
+  if (!userIds) return
+
+  const { error } = await supabaseAdmin
+    .from('usage_windows')
+    .delete()
+    .in('user_id', userIds)
+
+  if (error) {
+    throw Error(`Failed to cleanup usage: ${error.message}`)
   }
 }

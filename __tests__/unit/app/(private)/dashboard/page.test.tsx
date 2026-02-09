@@ -64,6 +64,10 @@ jest.mock('@/components/conversation-select-dialog', () => {
   return ConversationSelectDialogMock
 })
 
+jest.mock('@/app/actions', () => ({
+  enhanceText: jest.fn(),
+}))
+
 describe('Dashboard', () => {
   beforeEach(() => {
     jest.clearAllMocks()

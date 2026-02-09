@@ -6,10 +6,16 @@ import { enhanceText } from '@/app/actions'
 
 const sendMessage = jest.fn()
 const updateTypingStatus = jest.fn()
+const openUpgradeAlertDialog = jest.fn()
+const reflectUsageIncrement = jest.fn()
+let canUseAiMock = true
 
 jest.mock('@/providers/dashboard-provider', () => ({
   useDashboardContext: () => ({
     sendMessage,
+    canUseAi: canUseAiMock,
+    openUpgradeAlertDialog,
+    reflectUsageIncrement,
   }),
 }))
 
@@ -42,6 +48,7 @@ const setup = async () => {
 describe('ChatInput', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    canUseAiMock = true
   })
 
   describe('basic message sending', () => {
@@ -152,17 +159,6 @@ describe('ChatInput', () => {
       })
     })
 
-    it('shows "Already looks good" toast if enhancement returns same text', async () => {
-      ;(enhanceText as jest.Mock).mockResolvedValue('Hello')
-
-      const { user, textarea, enhanceButton } = await setup()
-
-      await user.type(textarea, 'Hello')
-      await user.click(enhanceButton)
-
-      expect(toast.message).toHaveBeenCalledWith('Already looks good ✨')
-    })
-
     it('shows success toast with Undo action when enhancement changes text', async () => {
       ;(enhanceText as jest.Mock).mockResolvedValue('Hello!')
 
@@ -210,6 +206,59 @@ describe('ChatInput', () => {
 
       expect(toast.error).toHaveBeenCalledWith('AI enhancement failed')
       expect(textarea).toHaveValue('Hello')
+    })
+
+    it('opens upgrade dialog instead of enhancing when AI usage is not allowed', async () => {
+      canUseAiMock = false
+
+      const { user, textarea, enhanceButton } = await setup()
+
+      await user.type(textarea, 'Hello')
+      await user.click(enhanceButton)
+
+      expect(openUpgradeAlertDialog).toHaveBeenCalledWith('ai')
+      expect(enhanceText).not.toHaveBeenCalled()
+    })
+
+    it('shows usage limit toast when AI daily limit is exceeded', async () => {
+      ;(enhanceText as jest.Mock).mockRejectedValue(
+        new Error('USAGE_LIMIT_EXCEEDED'),
+      )
+
+      const { user, textarea, enhanceButton } = await setup()
+
+      await user.type(textarea, 'Hello')
+      await user.click(enhanceButton)
+
+      expect(toast.error).toHaveBeenCalledWith(
+        'Daily AI enhancements limit reached',
+      )
+    })
+
+    it('shows upgrade toast when server reports free plan', async () => {
+      ;(enhanceText as jest.Mock).mockRejectedValue(
+        new Error('USER_ON_FREE_PLAN'),
+      )
+
+      const { user, textarea, enhanceButton } = await setup()
+
+      await user.type(textarea, 'Hello')
+      await user.click(enhanceButton)
+
+      expect(toast.error).toHaveBeenCalledWith(
+        'Upgrade your plan to use AI enhancements',
+      )
+    })
+
+    it('reflects AI usage increment after successful enhancement', async () => {
+      ;(enhanceText as jest.Mock).mockResolvedValue('Hello world')
+
+      const { user, textarea, enhanceButton } = await setup()
+
+      await user.type(textarea, 'Hello')
+      await user.click(enhanceButton)
+
+      expect(reflectUsageIncrement).toHaveBeenCalledWith('ai')
     })
   })
 })

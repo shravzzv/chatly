@@ -9,6 +9,7 @@ import ChatPanel from '@/components/chat-panel'
 import ConversationsPanel from '@/components/conversations-panel'
 import ConversationSelectDialog from '@/components/conversation-select-dialog'
 import { DashboardProvider } from '@/providers/dashboard-provider'
+import UpgradeAlertDialog from '@/components/upgrade-alert-dialog'
 
 export default function Page() {
   const router = useRouter()
@@ -39,6 +40,7 @@ export default function Page() {
         <ConversationsPanel />
         <ChatPanel />
         <ConversationSelectDialog />
+        <UpgradeAlertDialog />
       </DashboardProvider>
     </div>
   )

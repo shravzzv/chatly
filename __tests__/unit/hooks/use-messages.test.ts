@@ -2,6 +2,7 @@ import { renderHook, act, waitFor } from '@testing-library/react'
 import { useMessages } from '@/hooks/use-messages'
 import type { Message } from '@/types/message'
 import type { SendMessageInput, UseMessagesArgs } from '@/types/use-messages'
+import { checkAndIncrementUsage } from '@/app/actions'
 
 jest.mock('uuid', () => ({
   v4: () => 'temp-id',
@@ -18,10 +19,38 @@ jest.mock('@/providers/chatly-store-provider', () => ({
   ): T => selector({ user: { id: 'user-1' } }),
 }))
 
+jest.mock('@/app/actions', () => ({
+  checkAndIncrementUsage: jest.fn().mockResolvedValue(undefined),
+}))
+
+const mockedCheckAndIncrementUsage =
+  checkAndIncrementUsage as jest.MockedFunction<typeof checkAndIncrementUsage>
+
 const mockFrom = jest.fn()
 const mockChannelOn = jest.fn().mockReturnThis()
 const mockSubscribe = jest.fn()
 const mockRemoveChannel = jest.fn()
+
+const mockInsertSingle = jest.fn()
+const mockDeleteEq = jest.fn()
+
+const mockMessageQuery = {
+  insert: () => ({
+    select: () => ({
+      single: mockInsertSingle,
+    }),
+  }),
+  delete: () => ({
+    eq: mockDeleteEq,
+  }),
+}
+
+const mockUpload = jest.fn().mockResolvedValue({
+  data: { path: 'real-id/file' },
+  error: null,
+})
+
+const mockRemove = jest.fn().mockResolvedValue({ error: null })
 
 jest.mock('@/utils/supabase/client', () => ({
   createClient: () => ({
@@ -33,8 +62,8 @@ jest.mock('@/utils/supabase/client', () => ({
     removeChannel: mockRemoveChannel,
     storage: {
       from: () => ({
-        upload: jest.fn(),
-        remove: jest.fn(),
+        upload: mockUpload,
+        remove: mockRemove,
       }),
     },
   }),
@@ -197,6 +226,100 @@ describe('useMessages', () => {
 
       expect(result.current.messages).toEqual([])
       expect(updatePreview).not.toHaveBeenCalled()
+    })
+
+    it('calls checkAndIncrementUsage after successful media upload', async () => {
+      const file = new File(['hello'], 'test.txt', { type: 'text/plain' })
+      const dbMessage = makeMessage({ id: 'real-id' })
+      const attachment = {
+        id: 'att-1',
+        message_id: 'real-id',
+        path: 'real-id/file',
+        file_name: 'test.txt',
+        mime_type: 'text/plain',
+        size: 5,
+        created_at: '2024-01-01T00:00:00Z',
+      }
+
+      mockInsertSingle
+        .mockResolvedValueOnce({ data: dbMessage, error: null }) // message insert
+        .mockResolvedValueOnce({ data: attachment, error: null }) // attachment insert
+
+      mockDeleteEq.mockResolvedValue({ error: null })
+
+      mockFrom
+        // fetchMessages
+        .mockReturnValueOnce({
+          select: () => ({
+            or: () => ({
+              order: async () => ({ data: [], error: null }),
+            }),
+          }),
+        })
+        // message + attachment queries
+        .mockReturnValue(mockMessageQuery)
+
+      const { result } = setup()
+      await waitFor(() => expect(result.current.loading).toBe(false))
+
+      await act(async () => {
+        await result.current.sendMessage({ file })
+      })
+
+      expect(mockedCheckAndIncrementUsage).toHaveBeenCalledWith('media')
+      expect(mockedCheckAndIncrementUsage).toHaveBeenCalledTimes(1)
+    })
+
+    it('rolls back message when checkAndIncrementUsage fails after upload', async () => {
+      const file = new File(['hello'], 'test.txt', { type: 'text/plain' })
+      const dbMessage = makeMessage({ id: 'real-id' })
+      const attachment = {
+        id: 'att-1',
+        message_id: 'real-id',
+        path: 'real-id/file',
+        file_name: 'test.txt',
+        mime_type: 'text/plain',
+        size: 5,
+        created_at: '2024-01-01T00:00:00Z',
+      }
+
+      mockedCheckAndIncrementUsage.mockRejectedValueOnce(
+        new Error('USAGE_LIMIT_EXCEEDED'),
+      )
+
+      mockInsertSingle
+        .mockResolvedValueOnce({ data: dbMessage, error: null }) // message insert
+        .mockResolvedValueOnce({ data: attachment, error: null }) // attachment insert
+
+      mockDeleteEq.mockResolvedValue({ error: null })
+
+      mockFrom
+        // fetchMessages
+        .mockReturnValueOnce({
+          select: () => ({
+            or: () => ({
+              order: async () => ({ data: [], error: null }),
+            }),
+          }),
+        })
+        // message + attachment queries
+        .mockReturnValue(mockMessageQuery)
+
+      const { result } = setup()
+      await waitFor(() => expect(result.current.loading).toBe(false))
+
+      await act(async () => {
+        await expect(result.current.sendMessage({ file })).rejects.toThrow(
+          'USAGE_LIMIT_EXCEEDED',
+        )
+      })
+
+      // optimistic message is rolled back
+      expect(result.current.messages).toEqual([])
+
+      // usage was attempted
+      expect(mockedCheckAndIncrementUsage).toHaveBeenCalledWith('media')
+      expect(mockedCheckAndIncrementUsage).toHaveBeenCalledTimes(1)
     })
   })
 

@@ -1,18 +1,18 @@
 import { test, expect } from '@playwright/test'
 import { seedUser } from './utils/seed-user'
 import { loginAsUser } from './utils/auth'
-import { cleanupUsers } from './utils/cleanup'
+import { cleanupSubscriptions, cleanupUsers } from './utils/cleanup'
 import { seedSubscription } from './utils/seed-sub'
 import { LS_CUSTOMER_PORTAL_URL } from '@/data/constants'
 
 test.describe('Billing flow', () => {
   let user: Awaited<ReturnType<typeof seedUser>>
 
-  test.beforeEach(async () => {
+  test.beforeAll(async () => {
     user = await seedUser('billing-user')
   })
 
-  test.afterEach(async () => {
+  test.afterAll(async () => {
     await cleanupUsers([user.id])
   })
 
@@ -91,6 +91,8 @@ test.describe('Billing flow', () => {
 
     await expect(manageBilling).toBeVisible()
     await expect(manageBilling).toHaveAttribute('href', LS_CUSTOMER_PORTAL_URL)
+
+    await cleanupSubscriptions([user.id])
   })
 
   test('expired subscription shows demotion alert', async ({ page }) => {
@@ -110,5 +112,7 @@ test.describe('Billing flow', () => {
 
     const renew = page.getByRole('link', { name: /renew/i })
     await expect(renew).toHaveAttribute('href', LS_CUSTOMER_PORTAL_URL)
+
+    await cleanupSubscriptions([user.id])
   })
 })

@@ -90,6 +90,11 @@ jest.mock('@/components/conversation-select-dialog', () => ({
   default: () => null,
 }))
 
+jest.mock('@/components/upgrade-alert-dialog', () => ({
+  __esModule: true,
+  default: () => <div data-testid='upgrade-dialog-mock' />,
+}))
+
 describe('Dashboard integration', () => {
   beforeEach(() => {
     jest.clearAllMocks()
