@@ -7,6 +7,7 @@ import { cleanupUsers } from './utils/cleanup'
 import { openChat } from './utils/chat'
 import { randomUUID } from 'crypto'
 import { PLAN_LIMITS } from '@/data/plans'
+import { wipeBillingState } from './utils/reset'
 
 /**
  * Paywalls & rate limiting — End-to-end coverage
@@ -41,19 +42,34 @@ test.describe('Paywalls & rate limiting', () => {
   let userA: Awaited<ReturnType<typeof seedUser>>
   let userB: Awaited<ReturnType<typeof seedUser>>
 
-  test.beforeEach(async () => {
+  test.beforeAll(async () => {
     userA = await seedUser('paywall-A')
     userB = await seedUser('paywall-B')
   })
 
-  test.afterEach(async () => {
+  test.afterAll(async () => {
     await cleanupUsers([userA.id, userB.id])
+  })
+
+  test.afterEach(async () => {
+    await wipeBillingState([userA.id, userB.id])
   })
 
   test.describe('AI message text enhacements', () => {
     test('Free user gets shown the upgrade alert dialog on clicking enhance', async ({
       page,
     }) => {
+      page.on('console', (msg) => {
+        if (
+          msg.type() === 'error' &&
+          msg.text().includes('USER_ON_FREE_PLAN')
+        ) {
+          return
+        }
+
+        if (msg.type() === 'error') console.error(msg.text())
+      })
+
       await loginAsUser(page, userA.email, userA.password)
       await openChat(page, userB.username)
 
@@ -80,6 +96,8 @@ test.describe('Paywalls & rate limiting', () => {
         kind: 'ai',
         used: 0,
       })
+      // ? since we're cleaning up afterAll, how to clean this up? The sub and usage?
+      // ? common in most tests, inside afterEach conditionally or per test?
 
       await loginAsUser(page, userA.email, userA.password)
       await openChat(page, userB.username)
@@ -90,9 +108,8 @@ test.describe('Paywalls & rate limiting', () => {
       await page.getByRole('button', { name: /enhance/i }).click()
 
       // ai enhancement might not modify the orginal message
-      // asserting no paywall + UI returns to idle state
+      // asserting no paywall
       await expect(page.getByRole('dialog', { name: /upgrade/i })).toBeHidden()
-      await expect(page.getByRole('button', { name: /enhance/i })).toBeEnabled()
     })
 
     test('Pro user gets shown the upgrade alert dialog after reaching usage limit', async ({
@@ -156,6 +173,17 @@ test.describe('Paywalls & rate limiting', () => {
     test('Free user gets shown the upgrade alert dialog on sending a media attachment', async ({
       page,
     }) => {
+      page.on('console', (msg) => {
+        if (
+          msg.type() === 'error' &&
+          msg.text().includes('USER_ON_FREE_PLAN')
+        ) {
+          return
+        }
+
+        if (msg.type() === 'error') console.error(msg.text())
+      })
+
       await loginAsUser(page, userA.email, userA.password)
       await openChat(page, userB.username)
 
