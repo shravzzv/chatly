@@ -1,0 +1,32 @@
+name: CI Native
+permissions:
+  contents: read
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/native/**'
+
+  pull_request:
+    branches: [main]
+    paths:
+      - 'apps/native/**'
+
+jobs:
+  lint-native:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+
+        with:
+          node-version: lts/*
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - run: npm ci
+
+      - name: Lint Native
+        run: npm run lint:native:ci
