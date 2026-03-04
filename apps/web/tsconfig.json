@@ -1,6 +1,8 @@
+// apps/web/tsconfig.json
 {
   "compilerOptions": {
     "target": "ES2017",
+    "composite": true,
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
@@ -13,6 +15,7 @@
     "isolatedModules": true,
     "jsx": "react-jsx",
     "incremental": true,
+    "baseUrl": ".",
     "plugins": [
       {
         "name": "next"
@@ -32,10 +35,7 @@
   ],
   "exclude": [
     "node_modules",
-    "cypress",
-    "./cypress.config.ts",
-    "**/*.cy.tsx",
-    "supabase/functions"
+    "supabase/functions",
   ],
-  "types": ["node", "jest", "@testing-library/jest-dom"]
+  "types": ["node", "jest", "@testing-library/jest-dom"], 
 }

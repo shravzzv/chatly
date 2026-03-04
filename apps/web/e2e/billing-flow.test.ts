@@ -1,9 +1,9 @@
-import { test, expect } from '@playwright/test'
-import { seedUser } from './utils/seed-user'
+import { LS_CUSTOMER_PORTAL_URL } from '@/data/constants'
+import { expect, test } from '@playwright/test'
 import { loginAsUser } from './utils/auth'
 import { cleanupSubscriptions, cleanupUsers } from './utils/cleanup'
 import { seedSubscription } from './utils/seed-sub'
-import { LS_CUSTOMER_PORTAL_URL } from '@/data/constants'
+import { seedUser } from './utils/seed-user'
 
 test.describe('Billing flow', () => {
   let user: Awaited<ReturnType<typeof seedUser>>
@@ -12,12 +12,12 @@ test.describe('Billing flow', () => {
     user = await seedUser('billing-user')
   })
 
-  test.afterAll(async () => {
-    await cleanupUsers([user.id])
-  })
-
   test.afterEach(async () => {
     await cleanupSubscriptions([user.id])
+  })
+
+  test.afterAll(async () => {
+    await cleanupUsers([user.id])
   })
 
   test('unauth user is redirected to signup with pricing intent', async ({

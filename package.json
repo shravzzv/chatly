@@ -1,0 +1,11 @@
+{
+  "name": "chatly",
+  "private": true,
+  "workspaces": ["apps/*"],
+   "scripts": {
+    "dev:web": "npm run dev -w chatly-web",
+    "dev:native": "npm run start -w chatly-native",
+    "test:web": "npm test -w chatly-web",
+    "test:web:e2e": "npm run test:e2e -w chatly-web"
+  }
+}

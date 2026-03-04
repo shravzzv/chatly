@@ -1,9 +1,10 @@
-import { Text, View } from "react-native";
+// apps/native/app/index.tsx
+import { Text, View } from 'react-native';
 
 export default function Index() {
   return (
     <View>
-      <Text>Hello Chatly</Text>
+      <Text>Hi from Chatly</Text>
     </View>
-  );
+  )
 }

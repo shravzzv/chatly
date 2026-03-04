@@ -1,13 +1,13 @@
-import { test, expect } from '@playwright/test'
-import { seedUser } from './utils/seed-user'
+import { PLAN_LIMITS } from '@/data/plans'
+import { expect, test } from '@playwright/test'
+import { randomUUID } from 'crypto'
+import { loginAsUser } from './utils/auth'
+import { openChat } from './utils/chat'
+import { cleanupUsers } from './utils/cleanup'
+import { wipeBillingState } from './utils/reset'
 import { seedSubscription } from './utils/seed-sub'
 import { seedUsage } from './utils/seed-usage'
-import { loginAsUser } from './utils/auth'
-import { cleanupUsers } from './utils/cleanup'
-import { openChat } from './utils/chat'
-import { randomUUID } from 'crypto'
-import { PLAN_LIMITS } from '@/data/plans'
-import { wipeBillingState } from './utils/reset'
+import { seedUser } from './utils/seed-user'
 
 /**
  * Paywalls & rate limiting — End-to-end coverage
@@ -46,14 +46,15 @@ test.describe('Paywalls & rate limiting', () => {
     userA = await seedUser('paywall-A')
     userB = await seedUser('paywall-B')
   })
+  
+  test.afterEach(async () => {
+    await wipeBillingState([userA.id, userB.id])
+  })
 
   test.afterAll(async () => {
     await cleanupUsers([userA.id, userB.id])
   })
 
-  test.afterEach(async () => {
-    await wipeBillingState([userA.id, userB.id])
-  })
 
   test.describe('AI message text enhacements', () => {
     test('Free user gets shown the upgrade alert dialog on clicking enhance', async ({
