@@ -1,23 +1,17 @@
-name: Playwright Tests
-
+name: CI Web
 permissions:
   contents: read
-  pull-requests: write
 
-# ! Temporarily disabled automatic triggers due to CI flakiness.
-# ! Run manually until stabilized.
 on:
-  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/web/**'
 
-# on:
-#   push:
-#     branches: [main, master]
-#     paths:
-#       - "apps/web/**"
-#   pull_request:
-#     branches: [main, master]
-#     paths:
-#       - "apps/web/**"
+  pull_request:
+    branches: [main]
+    paths:
+      - 'apps/web/**'
 
 env:
   NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
@@ -29,7 +23,46 @@ env:
   AI_GATEWAY_API_KEY: ${{ secrets.AI_GATEWAY_API_KEY }}
 
 jobs:
-  test:
+  lint-web:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - run: npm ci
+
+      - name: Lint Web
+        run: npm run lint:web:ci
+
+  jest-tests:
+    needs: lint-web
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - run: npm ci
+
+      - name: Run Jest tests
+        run: npm run test:web
+
+  playwright-tests:
+    # temporarily disabled due to CI flakiness
+    if: false
+    needs: lint-web
+
     timeout-minutes: 60
     runs-on: ubuntu-latest
 
@@ -42,11 +75,8 @@ jobs:
           cache: npm
           cache-dependency-path: package-lock.json
 
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Install Playwright Browsers
-        run: npx playwright install --with-deps
+      - run: npm ci
+      - run: npx playwright install --with-deps
 
       - name: Run Playwright tests
         run: npm run test:web:e2e
