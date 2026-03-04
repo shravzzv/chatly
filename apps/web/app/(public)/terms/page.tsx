@@ -2,11 +2,11 @@ import Link from 'next/link'
 
 export default function Page() {
   return (
-    <div className='min-h-svh bg-muted flex flex-col items-center justify-start py-12 px-4'>
-      <div className='w-full max-w-7xl bg-background p-8 md:p-12 rounded-2xl shadow-sm space-y-8'>
-        <header className='text-center space-y-2'>
+    <div className='bg-muted flex min-h-svh flex-col items-center justify-start px-4 py-12'>
+      <div className='bg-background w-full max-w-7xl space-y-8 rounded-2xl p-8 shadow-sm md:p-12'>
+        <header className='space-y-2 text-center'>
           <h1 className='text-3xl font-bold'>Terms of service</h1>
-          <p className='text-sm text-muted-foreground'>
+          <p className='text-muted-foreground text-sm'>
             Last updated: October 25, 2025
           </p>
         </header>
@@ -17,10 +17,10 @@ export default function Page() {
             Service.
           </p>
 
-          <h2 className='text-xl font-semibold mt-6'>
+          <h2 className='mt-6 text-xl font-semibold'>
             Interpretation and Definitions
           </h2>
-          <h3 className='text-lg font-medium my-4'>Interpretation</h3>
+          <h3 className='my-4 text-lg font-medium'>Interpretation</h3>
           <p>
             The words whose initial letters are capitalized have meanings
             defined under the following conditions. The following definitions
@@ -28,9 +28,9 @@ export default function Page() {
             singular or in plural.
           </p>
 
-          <h3 className='text-lg font-medium my-4'>Definitions</h3>
+          <h3 className='my-4 text-lg font-medium'>Definitions</h3>
           <p>For the purposes of these Terms and Conditions:</p>
-          <ul className='list-disc pl-6 space-y-2'>
+          <ul className='list-disc space-y-2 pl-6'>
             <li>
               <p>
                 <strong>Affiliate</strong> means an entity that controls, is
@@ -111,7 +111,7 @@ export default function Page() {
             </li>
           </ul>
 
-          <h2 className='text-xl font-semibold mt-6 mb-2'>Acknowledgment</h2>
+          <h2 className='mt-6 mb-2 text-xl font-semibold'>Acknowledgment</h2>
           <p>
             These are the Terms and Conditions governing the use of this Service
             and the agreement that operates between You and the Company. These
@@ -143,7 +143,7 @@ export default function Page() {
             carefully before using Our Service.
           </p>
 
-          <h2 className='text-xl font-semibold mt-6 mb-2'>
+          <h2 className='mt-6 mb-2 text-xl font-semibold'>
             Links to Other Websites
           </h2>
           <p>
@@ -164,7 +164,7 @@ export default function Page() {
             policies of any third-party web sites or services that You visit.
           </p>
 
-          <h2 className='text-xl font-semibold mt-6 mb-2'>Termination</h2>
+          <h2 className='mt-6 mb-2 text-xl font-semibold'>Termination</h2>
           <p>
             We may terminate or suspend Your access immediately, without prior
             notice or liability, for any reason whatsoever, including without
@@ -175,7 +175,7 @@ export default function Page() {
             immediately.
           </p>
 
-          <h2 className='text-xl font-semibold mt-6 mb-2'>
+          <h2 className='mt-6 mb-2 text-xl font-semibold'>
             Limitation of Liability
           </h2>
           <p>
@@ -207,7 +207,7 @@ export default function Page() {
             greatest extent permitted by law.
           </p>
 
-          <h2 className='text-xl font-semibold mt-6 mb-2'>
+          <h2 className='mt-6 mb-2 text-xl font-semibold'>
             &quot;AS IS&quot; and &quot;AS AVAILABLE&quot; Disclaimer
           </h2>
           <p>
@@ -250,7 +250,7 @@ export default function Page() {
             enforceable under applicable law.
           </p>
 
-          <h2 className='text-xl font-semibold mt-6 mb-2'>Governing Law</h2>
+          <h2 className='mt-6 mb-2 text-xl font-semibold'>Governing Law</h2>
           <p>
             The laws of the Country, excluding its conflicts of law rules, shall
             govern this Terms and Your use of the Service. Your use of the
@@ -258,7 +258,7 @@ export default function Page() {
             international laws.
           </p>
 
-          <h2 className='text-xl font-semibold mt-6 mb-2'>
+          <h2 className='mt-6 mb-2 text-xl font-semibold'>
             Disputes Resolution
           </h2>
           <p>
@@ -267,7 +267,7 @@ export default function Page() {
             Company.
           </p>
 
-          <h2 className='text-xl font-semibold mt-6 mb-2'>
+          <h2 className='mt-6 mb-2 text-xl font-semibold'>
             For European Union (EU) Users
           </h2>
           <p>
@@ -276,7 +276,7 @@ export default function Page() {
             resident.
           </p>
 
-          <h2 className='text-xl font-semibold mt-6 mb-2'>
+          <h2 className='mt-6 mb-2 text-xl font-semibold'>
             United States Legal Compliance
           </h2>
           <p>
@@ -287,10 +287,10 @@ export default function Page() {
             States government list of prohibited or restricted parties.
           </p>
 
-          <h2 className='text-xl font-semibold mt-6 mb-2'>
+          <h2 className='mt-6 mb-2 text-xl font-semibold'>
             Severability and Waiver
           </h2>
-          <h3 className='text-lg font-medium my-4'>Severability</h3>
+          <h3 className='my-4 text-lg font-medium'>Severability</h3>
           <p>
             If any provision of these Terms is held to be unenforceable or
             invalid, such provision will be changed and interpreted to
@@ -298,7 +298,7 @@ export default function Page() {
             possible under applicable law and the remaining provisions will
             continue in full force and effect.
           </p>
-          <h3 className='text-lg font-medium my-4'>Waiver</h3>
+          <h3 className='my-4 text-lg font-medium'>Waiver</h3>
           <p>
             Except as provided herein, the failure to exercise a right or to
             require performance of an obligation under these Terms shall not
@@ -307,7 +307,7 @@ export default function Page() {
             constitute a waiver of any subsequent breach.
           </p>
 
-          <h2 className='text-xl font-semibold mt-6 mb-2'>
+          <h2 className='mt-6 mb-2 text-xl font-semibold'>
             Translation Interpretation
           </h2>
           <p>
@@ -316,7 +316,7 @@ export default function Page() {
             English text shall prevail in the case of a dispute.
           </p>
 
-          <h2 className='text-xl font-semibold mt-6 mb-2'>
+          <h2 className='mt-6 mb-2 text-xl font-semibold'>
             Changes to These Terms and Conditions
           </h2>
           <p>
@@ -333,12 +333,12 @@ export default function Page() {
             using the website and the Service.
           </p>
 
-          <h2 className='text-xl font-semibold mt-6 mb-2'>Contact Us</h2>
+          <h2 className='mt-6 mb-2 text-xl font-semibold'>Contact Us</h2>
           <p>
             If you have any questions about these Terms and Conditions, You can
             contact us:
           </p>
-          <ul className='list-disc pl-6 space-y-2'>
+          <ul className='list-disc space-y-2 pl-6'>
             <li>
               By visiting this page on our website:{' '}
               <Link
@@ -354,7 +354,7 @@ export default function Page() {
         </section>
 
         <section className='prose max-w-none'>
-          <h2 className='text-xl font-semibold mt-6 mb-2'>Accounts</h2>
+          <h2 className='mt-6 mb-2 text-xl font-semibold'>Accounts</h2>
           <p>
             Users may create accounts to access certain features of Chatly
             (including but not limited to posting content, saving preferences,
@@ -370,7 +370,7 @@ export default function Page() {
             compromised, contact support immediately.
           </p>
 
-          <h2 className='text-xl font-semibold mt-6 mb-2'>
+          <h2 className='mt-6 mb-2 text-xl font-semibold'>
             User Content (Creation & Upload)
           </h2>
           <p>
@@ -394,7 +394,7 @@ export default function Page() {
             our discretion and without prior notice.
           </p>
 
-          <h2 className='text-xl font-semibold mt-6 mb-2'>
+          <h2 className='mt-6 mb-2 text-xl font-semibold'>
             Subscription Plans & Billing
           </h2>
           <p>
@@ -411,7 +411,7 @@ export default function Page() {
             subscription pricing and features with reasonable notice.
           </p>
 
-          <h2 className='text-xl font-semibold mt-6 mb-2'>
+          <h2 className='mt-6 mb-2 text-xl font-semibold'>
             Intellectual Property & Trademarks
           </h2>
           <p>
@@ -432,7 +432,7 @@ export default function Page() {
           </p>
         </section>
 
-        <footer className='text-sm text-muted-foreground'>
+        <footer className='text-muted-foreground text-sm'>
           <p>
             This Terms and Conditions document includes the original generator
             content you provided plus additional clauses for account creation,

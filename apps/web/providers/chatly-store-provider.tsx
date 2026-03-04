@@ -25,7 +25,7 @@ export interface ChatlyStoreProviderProps {
 
 // create the context
 export const ChatlyStoreContext = createContext<ChatlyStoreApi | undefined>(
-  undefined
+  undefined,
 )
 
 export const ChatlyStoreProvider = ({

@@ -35,7 +35,7 @@ export default function AccountEmailStatus() {
 
   if (!newEmail) {
     return (
-      <p className='text-sm text-emerald-600 font-medium'>
+      <p className='text-sm font-medium text-emerald-600'>
         Your email <strong>{user.email}</strong> is verified and active.
       </p>
     )

@@ -64,7 +64,7 @@ export function ModeToggle() {
           <DropdownMenuItem
             key={value}
             onClick={() => handleThemeChange(value)}
-            className='flex justify-between cursor-pointer'
+            className='flex cursor-pointer justify-between'
           >
             <span>{name}</span>
             {theme === value && <Check className='h-4 w-4' />}

@@ -46,7 +46,7 @@ test.describe('Paywalls & rate limiting', () => {
     userA = await seedUser('paywall-A')
     userB = await seedUser('paywall-B')
   })
-  
+
   test.afterEach(async () => {
     await wipeBillingState([userA.id, userB.id])
   })
@@ -54,7 +54,6 @@ test.describe('Paywalls & rate limiting', () => {
   test.afterAll(async () => {
     await cleanupUsers([userA.id, userB.id])
   })
-
 
   test.describe('AI message text enhacements', () => {
     test('Free user gets shown the upgrade alert dialog on clicking enhance', async ({

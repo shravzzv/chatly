@@ -2,11 +2,11 @@ import { Skeleton } from '@/components/ui/skeleton'
 
 export default function ConversationPreviewSkeleton() {
   return (
-    <div className='w-full flex items-center gap-3 p-4 rounded-xl'>
+    <div className='flex w-full items-center gap-3 rounded-xl p-4'>
       {/* Avatar */}
-      <Skeleton className='h-10 w-10 rounded-full shrink-0' />
+      <Skeleton className='h-10 w-10 shrink-0 rounded-full' />
 
-      <div className='flex flex-col gap-2 flex-1 min-w-0'>
+      <div className='flex min-w-0 flex-1 flex-col gap-2'>
         {/* Display name */}
         <Skeleton className='h-4 w-3/4' />
 

@@ -35,11 +35,11 @@ export default function ConversationsPanelHeader() {
   }, [])
 
   return (
-    <header className='border-b px-4 space-y-4 py-4'>
+    <header className='space-y-4 border-b px-4 py-4'>
       <div className='flex items-center justify-between'>
         <SidebarTrigger />
 
-        <h2 className='text-xl font-semibold flex items-center gap-4'>
+        <h2 className='flex items-center gap-4 text-xl font-semibold'>
           Inbox
           <MessagesSquare />
         </h2>
@@ -50,7 +50,7 @@ export default function ConversationsPanelHeader() {
           className='cursor-pointer'
           onClick={openProfileSelectDialog}
         >
-          <FilePen className='w-5 h-5' />
+          <FilePen className='h-5 w-5' />
         </Button>
       </div>
 
@@ -63,7 +63,7 @@ export default function ConversationsPanelHeader() {
           onChange={(e) => setSearchQuery(e.target.value)}
         />
         <InputGroupAddon>
-          <Search className='w-4 h-4' />
+          <Search className='h-4 w-4' />
         </InputGroupAddon>
         {!isMobileView && (
           <InputGroupAddon align='inline-end'>

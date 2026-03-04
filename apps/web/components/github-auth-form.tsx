@@ -13,7 +13,7 @@ function SubmitButton() {
     <Button
       variant='outline'
       type='submit'
-      className='cursor-pointer w-full h-10 p-0 flex items-center justify-center'
+      className='flex h-10 w-full cursor-pointer items-center justify-center p-0'
       disabled={pending}
       title='Continue with GitHub'
     >

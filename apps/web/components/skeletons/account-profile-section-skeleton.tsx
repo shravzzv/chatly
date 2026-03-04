@@ -9,7 +9,7 @@ export default function AccountProfileSectionSkeleton() {
 
       {/* Avatar */}
       <div className='flex items-center gap-4'>
-        <Skeleton className='h-24 w-24 rounded-full shrink-0' />
+        <Skeleton className='h-24 w-24 shrink-0 rounded-full' />
         <div className='flex flex-col gap-1'>
           <Skeleton className='h-4 w-40' />
           <Skeleton className='h-4 w-40' />

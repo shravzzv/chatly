@@ -15,7 +15,7 @@ export default function ChatPanel() {
 
   if (!selectedProfile) {
     return (
-      <div className='flex-1 hidden md:flex flex-col items-center justify-center gap-4 h-full text-muted-foreground min-w-0 rounded-xl'>
+      <div className='text-muted-foreground hidden h-full min-w-0 flex-1 flex-col items-center justify-center gap-4 rounded-xl md:flex'>
         <FilePen />
         <p>Select a chat to start messaging</p>
         <Button className='cursor-pointer' onClick={openProfileSelectDialog}>
@@ -27,14 +27,14 @@ export default function ChatPanel() {
 
   return (
     <div
-      className={`flex flex-col flex-1 h-full min-w-0 rounded-xl relative ${
+      className={`relative flex h-full min-w-0 flex-1 flex-col rounded-xl ${
         selectedProfile ? 'flex' : 'hidden md:flex'
       }`}
     >
       <ChatHeader selectedProfile={selectedProfile} />
       <MessageList isTyping={isTyping} />
 
-      <div className='absolute bottom-0 left-0 right-0 z-10 pb-4 backdrop-blur-sm rounded-xl'>
+      <div className='absolute right-0 bottom-0 left-0 z-10 rounded-xl pb-4 backdrop-blur-sm'>
         <ChatInput updateTypingStatus={updateTypingStatus} />
       </div>
     </div>

@@ -96,14 +96,14 @@ export default function AccountPasswordInput() {
         )}
       />
 
-      <p className='text-xs text-muted-foreground'>
+      <p className='text-muted-foreground text-xs'>
         Changing your password will sign you out of other sessions.
       </p>
 
       <Field>
         <Button
           type='submit'
-          className='cursor-pointer max-w-fit'
+          className='max-w-fit cursor-pointer'
           disabled={!isDirty || isSubmitting}
         >
           {isSubmitting ? (

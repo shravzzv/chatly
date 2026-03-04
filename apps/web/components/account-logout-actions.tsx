@@ -73,14 +73,14 @@ export default function AccountLogoutActions() {
             </AlertDialogDescription>
           </AlertDialogHeader>
 
-          <p className='text-sm text-muted-foreground'>
+          <p className='text-muted-foreground text-sm'>
             Prefer to stay signed in here? You can log out of all other sessions
             instead.
           </p>
 
           <Button
             onClick={handleOtherLogout}
-            className='cursor-pointer w-max'
+            className='w-max cursor-pointer'
             variant='secondary'
             size='sm'
             disabled={loggingOut !== null}

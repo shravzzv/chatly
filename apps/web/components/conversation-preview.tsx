@@ -33,13 +33,13 @@ export default function ConversationPreview({
     <Button
       variant='ghost'
       size='lg'
-      className={`w-full justify-start gap-3 px-4 py-8 rounded-xl hover:bg-muted transition text-left cursor-pointer ${selectedProfile?.id === profile.id ? 'bg-muted' : ''}`}
+      className={`hover:bg-muted w-full cursor-pointer justify-start gap-3 rounded-xl px-4 py-8 text-left transition ${selectedProfile?.id === profile.id ? 'bg-muted' : ''}`}
       onClick={handleClick}
     >
       <ProfileAvatar profile={profile} />
 
-      <div className='flex flex-col text-left overflow-hidden min-w-0'>
-        <p className='font-medium truncate'>
+      <div className='flex min-w-0 flex-col overflow-hidden text-left'>
+        <p className='truncate font-medium'>
           {getDisplayName(profile)}
           {profile.user_id === currentUser?.id && ' (You)'}
         </p>

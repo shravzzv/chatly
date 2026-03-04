@@ -77,7 +77,7 @@ const renderWithProvider = (children: React.ReactElement) => {
       }}
     >
       {children}
-    </ChatlyStoreProvider>
+    </ChatlyStoreProvider>,
   )
 }
 

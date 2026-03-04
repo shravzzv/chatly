@@ -34,7 +34,7 @@ const renderWithStore = ({
   render(
     <ChatlyStoreProvider hydrationData={{ user, profile }}>
       <ModeToggle />
-    </ChatlyStoreProvider>
+    </ChatlyStoreProvider>,
   )
 
 describe('ModeToggle', () => {

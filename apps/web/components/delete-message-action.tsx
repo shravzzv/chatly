@@ -28,7 +28,7 @@ export default function DeleteMessageAction({ id }: DeleteMessageActionProps) {
         <Button
           variant='ghost'
           size='icon-sm'
-          className='cursor-pointer text-muted-foreground hover:text-destructive'
+          className='text-muted-foreground hover:text-destructive cursor-pointer'
         >
           <Trash className='h-4 w-4' />
         </Button>

@@ -12,9 +12,9 @@ export function SidebarTrigger() {
       onClick={toggleSidebar}
       aria-label={open ? 'Collapse sidebar' : 'Expand sidebar'}
       className={cn(
-        'inline-flex items-center justify-center rounded-md p-2 text-muted-foreground transition-colors',
+        'text-muted-foreground inline-flex items-center justify-center rounded-md p-2 transition-colors',
         'hover:bg-accent hover:text-accent-foreground cursor-pointer',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2'
+        'focus-visible:ring-ring focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none',
       )}
     >
       <PanelLeft className='h-5 w-5 transition-transform duration-200' />

@@ -28,7 +28,7 @@ export default function ConversationSelectDialog() {
         open ? openProfileSelectDialog() : closeProfileSelectDialog()
       }
     >
-      <DialogContent className='max-h-[60vh] flex flex-col'>
+      <DialogContent className='flex max-h-[60vh] flex-col'>
         <DialogHeader>
           <DialogTitle>New Message</DialogTitle>
           <DialogDescription>
@@ -44,7 +44,7 @@ export default function ConversationSelectDialog() {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
           <InputGroupAddon>
-            <Search className='w-4 h-4' />
+            <Search className='h-4 w-4' />
           </InputGroupAddon>
         </InputGroup>
 

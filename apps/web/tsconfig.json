@@ -33,9 +33,6 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts"
   ],
-  "exclude": [
-    "node_modules",
-    "supabase/functions",
-  ],
-  "types": ["node", "jest", "@testing-library/jest-dom"], 
+  "exclude": ["node_modules", "supabase/functions"],
+  "types": ["node", "jest", "@testing-library/jest-dom"]
 }

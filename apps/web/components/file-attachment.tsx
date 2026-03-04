@@ -15,17 +15,17 @@ export default function FileAttachment({
   signedUrl,
 }: FileAttachmentProps) {
   return (
-    <div className='flex items-center gap-2 max-w-2xs rounded-2xl shadow-sm bg-transparent px-3 py-2'>
-      <div className='flex h-10 w-10 items-center justify-center rounded-lg bg-background'>
+    <div className='flex max-w-2xs items-center gap-2 rounded-2xl bg-transparent px-3 py-2 shadow-sm'>
+      <div className='bg-background flex h-10 w-10 items-center justify-center rounded-lg'>
         <FileAttachmentIcon mimeType={attachment.mime_type} />
       </div>
 
-      <div className='flex-1 min-w-0'>
+      <div className='min-w-0 flex-1'>
         <p className='line-clamp-2 text-sm font-medium'>
           {attachment.file_name}
         </p>
 
-        <p className='text-xs text-muted-foreground'>
+        <p className='text-muted-foreground text-xs'>
           <span>{formatMimeType(attachment.mime_type)}</span>
           <span> • </span>
           <span>{formatFileSize(attachment.size)}</span>

@@ -2,8 +2,8 @@ import { supabase } from './supabase.ts'
 
 export const updateProfile = async (userId: string) => {
   const { data } = supabase.storage
-  .from('avatars')
-  .getPublicUrl(`${userId}/avatar`)
+    .from('avatars')
+    .getPublicUrl(`${userId}/avatar`)
 
   const { error } = await supabase
     .from('profiles')

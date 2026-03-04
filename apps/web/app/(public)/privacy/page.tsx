@@ -2,11 +2,11 @@ import Link from 'next/link'
 
 export default function Page() {
   return (
-    <div className='min-h-svh bg-muted flex flex-col items-center justify-start py-12 px-4'>
-      <div className='w-full max-w-7xl bg-background p-8 md:p-12 rounded-2xl shadow-sm space-y-8'>
-        <header className='text-center space-y-2'>
+    <div className='bg-muted flex min-h-svh flex-col items-center justify-start px-4 py-12'>
+      <div className='bg-background w-full max-w-7xl space-y-8 rounded-2xl p-8 shadow-sm md:p-12'>
+        <header className='space-y-2 text-center'>
           <h1 className='text-3xl font-bold'>Privacy Policy</h1>
-          <p className='text-sm text-muted-foreground'>
+          <p className='text-muted-foreground text-sm'>
             Last updated: February 9, 2026
           </p>
         </header>
@@ -40,7 +40,7 @@ export default function Page() {
           </p>
 
           <h3 className='font-semibold'>Definitions</h3>
-          <ul className='list-disc list-inside space-y-1'>
+          <ul className='list-inside list-disc space-y-1'>
             <li>
               <strong>Account:</strong> a unique account created for You to
               access our Service or parts of our Service.
@@ -105,7 +105,7 @@ export default function Page() {
             We may ask You to provide personally identifiable information,
             including:
           </p>
-          <ul className='list-disc list-inside space-y-1'>
+          <ul className='list-inside list-disc space-y-1'>
             <li>Email address</li>
             <li>First name and last name</li>
             <li>Phone number</li>
@@ -124,7 +124,7 @@ export default function Page() {
             We use Cookies, Web Beacons, and similar technologies to monitor
             activity and improve the Service.
           </p>
-          <ul className='list-disc list-inside space-y-1'>
+          <ul className='list-inside list-disc space-y-1'>
             <li>
               <strong>Cookies or Browser Cookies:</strong> small files on your
               device. You can refuse cookies, but some parts of the Service may
@@ -165,7 +165,7 @@ export default function Page() {
         <section className='space-y-2'>
           <h2 className='text-2xl font-semibold'>Use of Your Personal Data</h2>
           <p>We may use Personal Data for:</p>
-          <ul className='list-disc list-inside space-y-1'>
+          <ul className='list-inside list-disc space-y-1'>
             <li>Providing and maintaining our Service</li>
             <li>Managing your Account</li>
             <li>Performance of contracts</li>
@@ -177,7 +177,7 @@ export default function Page() {
 
         <section className='space-y-2'>
           <h2 className='text-2xl font-semibold'>Sharing Your Personal Data</h2>
-          <ul className='list-disc list-inside space-y-1'>
+          <ul className='list-inside list-disc space-y-1'>
             <li>Service Providers</li>
             <li>Business transfers or mergers</li>
             <li>Affiliates</li>
@@ -223,7 +223,7 @@ export default function Page() {
             Disclosure of Your Personal Data
           </h2>
           <p>May be disclosed for:</p>
-          <ul className='list-disc list-inside space-y-1'>
+          <ul className='list-inside list-disc space-y-1'>
             <li>Business Transactions (mergers, sales)</li>
             <li>Law Enforcement</li>
             <li>

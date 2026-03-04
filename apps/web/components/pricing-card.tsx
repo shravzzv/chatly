@@ -33,11 +33,11 @@ export default function PricingCard({
       }`}
     >
       <CardHeader>
-        <CardTitle className='flex gap-4 items-center text-2xl font-bold'>
+        <CardTitle className='flex items-center gap-4 text-2xl font-bold'>
           {plan.name}
           {plan.name === 'Pro' && <Badge>Most Popular</Badge>}
         </CardTitle>
-        <CardDescription className='mt-2 text-muted-foreground'>
+        <CardDescription className='text-muted-foreground mt-2'>
           {plan.description}
         </CardDescription>
       </CardHeader>
@@ -45,14 +45,14 @@ export default function PricingCard({
       <CardContent>
         <p className='text-4xl font-extrabold'>
           ${billingCycle === 'monthly' ? plan.priceMonthly : plan.priceYearly}
-          <span className='text-xs text-muted-foreground font-normal'>
+          <span className='text-muted-foreground text-xs font-normal'>
             /{billingCycle.slice(0, -2)}
           </span>
         </p>
 
         <Button
           asChild
-          className='w-full mt-6'
+          className='mt-6 w-full'
           variant={plan.name === 'Pro' ? 'default' : 'outline'}
         >
           <Link href={cta.href}>{cta.label}</Link>

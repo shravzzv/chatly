@@ -128,16 +128,16 @@ export default function ChatInput({ updateTypingStatus }: ChatInputProps) {
   }
 
   return (
-    <div className='flex gap-2 px-3 md:px-2 items-end w-full max-w-2xl mx-auto'>
+    <div className='mx-auto flex w-full max-w-2xl items-end gap-2 px-3 md:px-2'>
       <ChatInputDropdown />
 
-      <InputGroup className='flex items-end px-1 space-x-2 rounded-4xl bg-background dark:bg-background'>
+      <InputGroup className='bg-background dark:bg-background flex items-end space-x-2 rounded-4xl px-1'>
         <InputGroupTextarea
           placeholder='Type a message...'
           value={text}
           onChange={handleTextChange}
           onKeyDown={handleKeyDown}
-          className='min-h-10 max-h-50 resize-none overflow-y-auto text-sm placeholder:text-muted-foreground focus-visible:ring-0 outline-none border-0'
+          className='placeholder:text-muted-foreground max-h-50 min-h-10 resize-none overflow-y-auto border-0 text-sm outline-none focus-visible:ring-0'
           disabled={isEnhancing}
         />
 
@@ -145,13 +145,13 @@ export default function ChatInput({ updateTypingStatus }: ChatInputProps) {
           <InputGroupButton
             variant='secondary'
             size='icon-sm'
-            className='cursor-pointer disabled:cursor-not-allowed rounded-full'
+            className='cursor-pointer rounded-full disabled:cursor-not-allowed'
             onClick={enhanceMessage}
             disabled={!text.trim() || isEnhancing}
             title='Enhance message'
             aria-label='Enhance message'
           >
-            {isEnhancing ? <Spinner /> : <Sparkles className='w-5 h-5' />}
+            {isEnhancing ? <Spinner /> : <Sparkles className='h-5 w-5' />}
           </InputGroupButton>
         </InputGroupAddon>
 
@@ -159,13 +159,13 @@ export default function ChatInput({ updateTypingStatus }: ChatInputProps) {
           <InputGroupButton
             variant='default'
             size='icon-sm'
-            className='cursor-pointer disabled:cursor-not-allowed rounded-full'
+            className='cursor-pointer rounded-full disabled:cursor-not-allowed'
             onClick={handleTextSubmit}
             disabled={!text.trim() || isEnhancing}
             title='Send message'
             aria-label='Send message'
           >
-            <Send className='w-5 h-5' />
+            <Send className='h-5 w-5' />
           </InputGroupButton>
         </InputGroupAddon>
       </InputGroup>

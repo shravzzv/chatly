@@ -144,13 +144,13 @@ export function SigninForm({
               </FieldGroup>
             </form>
 
-            <div className='grid grid-cols-3 gap-4 my-6'>
+            <div className='my-6 grid grid-cols-3 gap-4'>
               <GoogleAuthForm />
               <GitHubAuthForm />
               <AppleAuthForm />
             </div>
 
-            <FieldDescription className='text-center mt-6'>
+            <FieldDescription className='mt-6 text-center'>
               Don&apos;t have an account? <Link href='/signup'>Sign up</Link>
             </FieldDescription>
           </div>

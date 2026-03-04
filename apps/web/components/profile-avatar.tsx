@@ -63,7 +63,7 @@ export default function ProfileAvatar({
 
   return (
     <Avatar
-      className={`${ROUNDED_MAP[rounded]} shadow shrink-0 overflow-hidden`}
+      className={`${ROUNDED_MAP[rounded]} shrink-0 overflow-hidden shadow`}
       style={sizeStyle}
     >
       <AvatarImage

@@ -12,17 +12,17 @@ export default function MessageAttachmentSkeleton({
   switch (kind) {
     case 'image':
       return (
-        <Skeleton className='w-[320px] max-w-2xs rounded-xl shadow aspect-square cursor-progress' />
+        <Skeleton className='aspect-square w-[320px] max-w-2xs cursor-progress rounded-xl shadow' />
       )
 
     case 'video':
       return (
-        <Skeleton className='w-[320px] max-w-2xs rounded-xl shadow aspect-video cursor-progress' />
+        <Skeleton className='aspect-video w-[320px] max-w-2xs cursor-progress rounded-xl shadow' />
       )
 
     case 'audio':
       return (
-        <Skeleton className='w-[320px] max-w-2xs h-16 rounded-xl shadow aspect-square cursor-progress' />
+        <Skeleton className='aspect-square h-16 w-[320px] max-w-2xs cursor-progress rounded-xl shadow' />
       )
 
     default:

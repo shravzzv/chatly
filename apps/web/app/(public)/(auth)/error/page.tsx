@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 
 export default function ErrorPage() {
   return (
-    <div className='min-h-svh flex flex-col items-center justify-center p-6 bg-muted'>
+    <div className='bg-muted flex min-h-svh flex-col items-center justify-center p-6'>
       <div className='w-full max-w-md space-y-6 text-center'>
         <Alert variant='destructive' className='text-left'>
           <AlertCircle className='h-5 w-5' />
@@ -16,7 +16,7 @@ export default function ErrorPage() {
           </AlertDescription>
         </Alert>
 
-        <div className='flex flex-col sm:flex-row gap-3 justify-center mt-4'>
+        <div className='mt-4 flex flex-col justify-center gap-3 sm:flex-row'>
           <Button asChild variant='default' className='w-full sm:w-auto'>
             <Link href='/signin'>Go to Sign In</Link>
           </Button>
@@ -25,7 +25,7 @@ export default function ErrorPage() {
           </Button>
         </div>
 
-        <p className='text-sm text-muted-foreground mt-4'>
+        <p className='text-muted-foreground mt-4 text-sm'>
           Still having trouble? Try contacting support or come back later.
         </p>
       </div>

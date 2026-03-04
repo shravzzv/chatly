@@ -2,7 +2,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 
 export default function MessageListSkeleton() {
   return (
-    <div className='space-y-4 flex-1 overflow-y-hidden p-4'>
+    <div className='flex-1 space-y-4 overflow-y-hidden p-4'>
       {[...Array(8)].map((_, i) => (
         <div
           key={i}

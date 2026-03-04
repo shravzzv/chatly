@@ -14,7 +14,7 @@ export function UsageMeter({ label, used, limit }: UsageMeterProps) {
     <Field>
       <FieldLabel
         htmlFor={label}
-        className='text-sm text-muted-foreground font-medium'
+        className='text-muted-foreground text-sm font-medium'
       >
         <span>{label}</span>
 

@@ -17,7 +17,7 @@ export default function MessageMetadata({ message }: MessageMetadataProps) {
     new Date(updated_at).getTime() - new Date(created_at).getTime() > 60000
 
   return (
-    <div className='flex items-center gap-1 text-[10px] text-muted-foreground'>
+    <div className='text-muted-foreground flex items-center gap-1 text-[10px]'>
       <span>{createdTime}</span>
 
       {hasMeaningfulEdit && (

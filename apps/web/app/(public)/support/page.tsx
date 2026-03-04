@@ -6,7 +6,7 @@ import { DISCORD_SERVER_INVITE_URL, SUPPORT_EMAIL } from '@/data/constants'
 
 export default function Page() {
   return (
-    <main className='mx-auto max-w-2xl px-6 py-12 space-y-5'>
+    <main className='mx-auto max-w-2xl space-y-5 px-6 py-12'>
       <header className='space-y-2'>
         <h1 className='text-3xl font-semibold'>Support</h1>
         <p className='text-muted-foreground text-sm'>
@@ -22,12 +22,12 @@ export default function Page() {
 
         <CardContent className='space-y-4'>
           <div className='flex items-start gap-3'>
-            <Mail className='h-5 w-5 text-muted-foreground mt-0.5' />
+            <Mail className='text-muted-foreground mt-0.5 h-5 w-5' />
 
             <div className='space-y-1'>
               <p className='font-medium'>Email</p>
 
-              <p className='text-sm text-muted-foreground'>
+              <p className='text-muted-foreground text-sm'>
                 Contact support at{' '}
                 <Link
                   href={`mailto:${SUPPORT_EMAIL}`}
@@ -37,7 +37,7 @@ export default function Page() {
                 </Link>
               </p>
 
-              <p className='text-xs text-muted-foreground'>
+              <p className='text-muted-foreground text-xs'>
                 Most messages receive a response within 24 hours.
               </p>
             </div>
@@ -52,10 +52,10 @@ export default function Page() {
 
         <CardContent className='space-y-4'>
           <div className='flex items-start gap-3'>
-            <MessageCircle className='h-5 w-5 text-muted-foreground mt-0.5' />
+            <MessageCircle className='text-muted-foreground mt-0.5 h-5 w-5' />
             <div className='space-y-2'>
               <p className='font-medium'>Discord</p>
-              <p className='text-sm text-muted-foreground'>
+              <p className='text-muted-foreground text-sm'>
                 Join the Chatly Discord to ask questions, report bugs, or share
                 feedback.
               </p>

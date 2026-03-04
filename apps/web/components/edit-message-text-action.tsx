@@ -31,7 +31,7 @@ export default function EditMessageTextAction({
         <Button
           variant='ghost'
           size='icon-sm'
-          className='cursor-pointer text-muted-foreground hover:text-foreground'
+          className='text-muted-foreground hover:text-foreground cursor-pointer'
         >
           <Pencil className='h-4 w-4' />
         </Button>

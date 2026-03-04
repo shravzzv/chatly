@@ -1,8 +1,10 @@
-import { defineConfig, globalIgnores } from 'eslint/config'
+// apps/web/eslint.config.mjs
 import nextVitals from 'eslint-config-next/core-web-vitals'
 import nextTs from 'eslint-config-next/typescript'
+import prettier from 'eslint-config-prettier'
 import pluginJest from 'eslint-plugin-jest'
 import pluginPlaywright from 'eslint-plugin-playwright'
+import { defineConfig, globalIgnores } from 'eslint/config'
 
 const eslintConfig = defineConfig([
   ...nextVitals,
@@ -35,6 +37,8 @@ const eslintConfig = defineConfig([
     // ignore jest coverage
     'coverage/**',
   ]),
+
+  prettier,
 ])
 
 export default eslintConfig

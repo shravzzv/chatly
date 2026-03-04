@@ -58,7 +58,7 @@ const renderWithProvider = (children: React.ReactNode) => {
       }}
     >
       {children}
-    </ChatlyStoreProvider>
+    </ChatlyStoreProvider>,
   )
 }
 
@@ -67,7 +67,7 @@ describe('AccountProfileSection', () => {
     render(
       <ChatlyStoreProvider hydrationData={{ user: null, profile: null }}>
         <AccountProfileSection />
-      </ChatlyStoreProvider>
+      </ChatlyStoreProvider>,
     )
 
     expect(screen.getByTestId('skeleton')).toBeInTheDocument()
@@ -80,7 +80,7 @@ describe('AccountProfileSection', () => {
 
     // Check Heading
     expect(
-      screen.getByRole('heading', { name: /^profile$/i, level: 2 })
+      screen.getByRole('heading', { name: /^profile$/i, level: 2 }),
     ).toBeInTheDocument()
 
     const nameInput = screen.getByLabelText(/^Name$/i, { selector: 'input' })

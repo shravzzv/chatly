@@ -165,7 +165,7 @@ export default function AccountDangerZone() {
         </AlertDialogContent>
       </AlertDialog>
 
-      <p className='text-xs text-muted-foreground'>
+      <p className='text-muted-foreground text-xs'>
         You need to cancel your{' '}
         <Link href='/plan' className='underline'>
           plan

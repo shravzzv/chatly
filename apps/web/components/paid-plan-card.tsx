@@ -30,7 +30,7 @@ export default function PaidPlanCard({ subscription }: PaidPlanCardProps) {
   return (
     <Card>
       <CardHeader className='space-y-1 md:space-y-0'>
-        <CardTitle className='text-xl font-medium capitalize flex flex-col items-start gap-1 sm:flex-row sm:items-center sm:gap-2'>
+        <CardTitle className='flex flex-col items-start gap-1 text-xl font-medium capitalize sm:flex-row sm:items-center sm:gap-2'>
           {subscription.plan}
           <Badge className={getStatusBadgeClass(subscription.status)}>
             {subscription.status.replace('_', ' ')}
@@ -47,14 +47,14 @@ export default function PaidPlanCard({ subscription }: PaidPlanCardProps) {
       </CardHeader>
 
       <CardContent className='space-y-4'>
-        <ul className='list-disc pl-4 text-sm text-muted-foreground space-y-1'>
+        <ul className='text-muted-foreground list-disc space-y-1 pl-4 text-sm'>
           {highlights.map((feature) => (
             <li key={feature}>{feature}</li>
           ))}
         </ul>
 
         {timeline && (
-          <p className='flex items-center gap-1 text-sm text-muted-foreground'>
+          <p className='text-muted-foreground flex items-center gap-1 text-sm'>
             {timeline.label} {formatRelativeDate(timeline.date)} (
             {new Date(timeline.date).toLocaleDateString()}).
           </p>

@@ -107,7 +107,7 @@ export default function AccountEmailInput() {
         <Field>
           <Button
             type='submit'
-            className='cursor-pointer max-w-fit'
+            className='max-w-fit cursor-pointer'
             disabled={!isDirty || isSubmitting}
           >
             {isSubmitting ? (

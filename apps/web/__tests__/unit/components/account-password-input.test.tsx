@@ -22,7 +22,7 @@ describe('AccountPasswordInput', () => {
 
     expect(screen.getByPlaceholderText(/••••••••/i)).toBeInTheDocument()
     expect(
-      screen.getByRole('button', { name: /update password/i })
+      screen.getByRole('button', { name: /update password/i }),
     ).toBeInTheDocument()
   })
 
@@ -30,7 +30,7 @@ describe('AccountPasswordInput', () => {
     render(<AccountPasswordInput />)
 
     expect(
-      screen.getByRole('button', { name: /update password/i })
+      screen.getByRole('button', { name: /update password/i }),
     ).toBeDisabled()
   })
 
@@ -44,7 +44,7 @@ describe('AccountPasswordInput', () => {
     await user.click(screen.getByRole('button', { name: /update password/i }))
 
     expect(
-      await screen.findByText(/at least 8 characters/i)
+      await screen.findByText(/at least 8 characters/i),
     ).toBeInTheDocument()
   })
 

@@ -132,7 +132,7 @@ export function ForgotPasswordEmailForm({
                   </Alert>
                 )}
 
-                <FieldDescription className='text-center mt-6'>
+                <FieldDescription className='mt-6 text-center'>
                   Remembered your password?{' '}
                   <Link href='/signin' className='underline'>
                     Sign in

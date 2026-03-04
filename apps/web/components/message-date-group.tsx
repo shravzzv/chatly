@@ -24,7 +24,7 @@ export default function MessageDateGroup({
   return (
     <div className='relative'>
       <div ref={badgeTopRef}></div>
-      <div className='flex justify-center sticky top-2 z-10 py-2'>
+      <div className='sticky top-2 z-10 flex justify-center py-2'>
         <Badge
           variant='secondary'
           className='cursor-pointer'

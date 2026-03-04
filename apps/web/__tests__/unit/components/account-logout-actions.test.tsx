@@ -42,7 +42,7 @@ describe('AccountLogoutActions', () => {
     await user.click(screen.getByText(/log out of all sessions/i))
 
     expect(
-      await screen.findByText(/log out of all sessions\?/i)
+      await screen.findByText(/log out of all sessions\?/i),
     ).toBeInTheDocument()
   })
 
@@ -56,7 +56,7 @@ describe('AccountLogoutActions', () => {
     await user.click(
       await screen.findByRole('button', {
         name: /log out of all other sessions/i,
-      })
+      }),
     )
 
     await waitFor(() => {
@@ -81,7 +81,7 @@ describe('AccountLogoutActions', () => {
   it('disables buttons while logging out', async () => {
     let resolveLogout!: (value: void | PromiseLike<void>) => void
     logoutMock.mockImplementation(
-      () => new Promise<void>((resolve) => (resolveLogout = resolve))
+      () => new Promise<void>((resolve) => (resolveLogout = resolve)),
     )
 
     render(<AccountLogoutActions />)

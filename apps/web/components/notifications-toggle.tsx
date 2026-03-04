@@ -23,7 +23,7 @@ export function NotificationsToggle() {
   const [isSupported, setIsSupported] = useState(false)
   const [checkingSupport, setCheckingSupport] = useState(true)
   const [subscription, setSubscription] = useState<PushSubscription | null>(
-    null
+    null,
   )
 
   // Check support and register service worker
@@ -59,7 +59,7 @@ export function NotificationsToggle() {
     try {
       if (Notification.permission === 'denied') {
         toast.info(
-          'Notifications are blocked. Please enable them in your browser settings.'
+          'Notifications are blocked. Please enable them in your browser settings.',
         )
         return
       }
@@ -70,7 +70,7 @@ export function NotificationsToggle() {
       const sub = await registration.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(
-          process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!
+          process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
         ),
       })
 
@@ -82,11 +82,11 @@ export function NotificationsToggle() {
       console.error('Subscription failed', err)
       if (Notification.permission === 'denied') {
         toast.info(
-          'You chose not to allow notifications. You can enable them anytime in your browser settings.'
+          'You chose not to allow notifications. You can enable them anytime in your browser settings.',
         )
       } else {
         toast.error(
-          'Unable to enable notifications. Please try again or check browser settings.'
+          'Unable to enable notifications. Please try again or check browser settings.',
         )
       }
     } finally {

@@ -26,7 +26,7 @@ export default function MessageContent({ message }: MessageContentProps) {
 
   return (
     <p
-      className={`px-3 py-2 rounded-2xl text-sm ${
+      className={`rounded-2xl px-3 py-2 text-sm ${
         isOwn ? 'bg-primary text-primary-foreground' : 'bg-muted'
       }`}
     >

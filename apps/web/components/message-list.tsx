@@ -44,7 +44,7 @@ export default function MessageList({ isTyping }: MessageListProps) {
 
   if (isEmpty) {
     return (
-      <div className='flex items-center justify-center h-full flex-1 overflow-y-auto p-4 text-muted-foreground text-sm'>
+      <div className='text-muted-foreground flex h-full flex-1 items-center justify-center overflow-y-auto p-4 text-sm'>
         <p>No messages yet. Start the conversation!</p>
       </div>
     )
@@ -52,7 +52,7 @@ export default function MessageList({ isTyping }: MessageListProps) {
 
   return (
     <ScrollArea
-      className='flex-1 overflow-y-auto px-4 relative'
+      className='relative flex-1 overflow-y-auto px-4'
       data-testid='message-list'
     >
       {groupMessagesByDate(messages).map((group) => (

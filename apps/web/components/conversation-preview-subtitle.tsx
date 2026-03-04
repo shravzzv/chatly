@@ -20,5 +20,5 @@ export default function ConversationPreviewSubtitle({
     ? `${preview.isOwnMsg ? 'You: ' : ''}${preview.text}`
     : 'No messages yet'
 
-  return <p className='text-xs text-muted-foreground truncate'>{text}</p>
+  return <p className='text-muted-foreground truncate text-xs'>{text}</p>
 }

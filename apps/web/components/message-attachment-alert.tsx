@@ -12,15 +12,15 @@ export default function MessageAttachmentAlert({
   onRetry,
 }: MessageAttachmentAlertProps) {
   return (
-    <Alert variant='destructive' className='rounded-2xl max-w-2xs space-y-1'>
-      <AlertCircleIcon className='h-4 w-4 mt-0.5 shrink-0' />
+    <Alert variant='destructive' className='max-w-2xs space-y-1 rounded-2xl'>
+      <AlertCircleIcon className='mt-0.5 h-4 w-4 shrink-0' />
 
       <AlertTitle className='font-medium'>
         Failed to load {attachmentKind}
       </AlertTitle>
 
       <AlertDescription className='flex items-center gap-2'>
-        <span className='text-xs text-muted-foreground'>
+        <span className='text-muted-foreground text-xs'>
           This attachment couldn&apos;t be loaded.
         </span>
 
@@ -28,7 +28,7 @@ export default function MessageAttachmentAlert({
           size='xs'
           variant='outline'
           onClick={onRetry}
-          className='cursor-pointer text-foreground'
+          className='text-foreground cursor-pointer'
         >
           <RotateCw />
           Retry

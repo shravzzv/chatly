@@ -36,7 +36,7 @@ export default function DownloadAttachmentAction({
     <Button
       variant='ghost'
       size='icon-sm'
-      className='cursor-pointer text-muted-foreground hover:text-foreground'
+      className='text-muted-foreground hover:text-foreground cursor-pointer'
       onClick={handleClick}
       disabled={!attachment}
     >

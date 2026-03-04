@@ -202,13 +202,13 @@ export function SignupForm({
               </FieldGroup>
             </form>
 
-            <div className='grid grid-cols-3 gap-4 my-6'>
+            <div className='my-6 grid grid-cols-3 gap-4'>
               <GoogleAuthForm />
               <GitHubAuthForm />
               <AppleAuthForm />
             </div>
 
-            <FieldDescription className='text-center mt-6'>
+            <FieldDescription className='mt-6 text-center'>
               Already have an account? <Link href='/signin'>Sign in</Link>
             </FieldDescription>
           </div>

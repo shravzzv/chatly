@@ -6,10 +6,10 @@ import AccountDangerZone from '@/components/account-danger-zone'
 
 export default function Page() {
   return (
-    <div className='p-8 h-[calc(100vh-1rem)] overflow-y-auto rounded-xl'>
+    <div className='h-[calc(100vh-1rem)] overflow-y-auto rounded-xl p-8'>
       <AccountHeader />
 
-      <main className='mt-4 mx-auto max-w-xl space-y-12'>
+      <main className='mx-auto mt-4 max-w-xl space-y-12'>
         <AccountProfileSection />
         <AccountPreferencesSection />
         <AccountSecuritySection />

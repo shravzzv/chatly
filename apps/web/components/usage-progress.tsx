@@ -53,7 +53,7 @@ export function UsageProgress() {
         limit={PLAN_LIMITS[plan].ai}
       />
 
-      <p className='text-xs text-muted-foreground'>
+      <p className='text-muted-foreground text-xs'>
         Usage resets every day at {getUsageResetTime()} your time.
       </p>
     </div>

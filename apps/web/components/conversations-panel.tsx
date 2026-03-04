@@ -9,7 +9,7 @@ export default function ConversationsPanel() {
 
   return (
     <aside
-      className={`flex flex-col h-full p-2 w-full md:w-80 shrink-0 border-r rounded-xl ${
+      className={`flex h-full w-full shrink-0 flex-col rounded-xl border-r p-2 md:w-80 ${
         selectedProfile ? 'hidden md:flex' : 'flex'
       }`}
     >

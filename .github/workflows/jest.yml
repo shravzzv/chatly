@@ -7,12 +7,12 @@ on:
     branches:
       - main
     paths:
-      - "apps/web/**"
+      - 'apps/web/**'
   pull_request:
     branches:
       - main
     paths:
-      - "apps/web/**"
+      - 'apps/web/**'
 env:
   NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
   NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
@@ -34,7 +34,7 @@ jobs:
 
         with:
           node-version: lts/*
-          cache: "npm"
+          cache: 'npm'
           cache-dependency-path: package-lock.json
 
       - name: Install Dependencies

@@ -9,6 +9,6 @@ export function createAdminClient() {
         persistSession: false,
         autoRefreshToken: false,
       },
-    }
+    },
   )
 }

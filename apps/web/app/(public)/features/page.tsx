@@ -33,23 +33,23 @@ const features = [
 
 export default function FeaturesPage() {
   return (
-    <main className='flex flex-col items-center justify-center w-full'>
-      <section className='w-full max-w-6xl px-6 py-16 sm:py-20 md:py-24 text-center'>
+    <main className='flex w-full flex-col items-center justify-center'>
+      <section className='w-full max-w-6xl px-6 py-16 text-center sm:py-20 md:py-24'>
         <h1 className='text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl'>
           Powerful Features Built for Connection
         </h1>
 
-        <p className='mt-8 text-lg text-muted-foreground max-w-2xl mx-auto'>
+        <p className='text-muted-foreground mx-auto mt-8 max-w-2xl text-lg'>
           Chatly brings together all the ways you communicate — text, images,
           voice, and video — in one seamless, secure platform.
         </p>
       </section>
 
-      <section className='w-full max-w-6xl px-6 space-y-12 md:space-y-24'>
+      <section className='w-full max-w-6xl space-y-12 px-6 md:space-y-24'>
         {features.map((feature, index) => (
           <div
             key={feature.title}
-            className={`flex flex-col md:flex-row items-center gap-12 ${
+            className={`flex flex-col items-center gap-12 md:flex-row ${
               index % 2 === 1 ? 'md:flex-row-reverse' : ''
             }`}
           >
@@ -57,12 +57,12 @@ export default function FeaturesPage() {
               <Image
                 src={feature.image}
                 alt={feature.title}
-                className='rounded-2xl shadow-md object-cover w-full h-80'
+                className='h-80 w-full rounded-2xl object-cover shadow-md'
               />
             </div>
             <div className='flex-1'>
               <h2 className='text-3xl font-semibold'>{feature.title}</h2>
-              <p className='mt-4 leading-relaxed text-muted-foreground'>
+              <p className='text-muted-foreground mt-4 leading-relaxed'>
                 {feature.description}
               </p>
             </div>
@@ -71,12 +71,12 @@ export default function FeaturesPage() {
       </section>
 
       <section className='w-full py-24 text-center'>
-        <div className='max-w-2xl mx-auto px-6'>
-          <h2 className='text-3xl sm:text-4xl font-bold tracking-tight'>
+        <div className='mx-auto max-w-2xl px-6'>
+          <h2 className='text-3xl font-bold tracking-tight sm:text-4xl'>
             You&apos;ve seen what Chatly can do — now experience it for
             yourself.
           </h2>
-          <p className='mt-8 text-lg text-muted-foreground max-w-xl mx-auto'>
+          <p className='text-muted-foreground mx-auto mt-8 max-w-xl text-lg'>
             Start building better connections with your team today. It&apos;s
             fast, secure, and completely free to get started.
           </p>

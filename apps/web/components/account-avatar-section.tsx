@@ -84,7 +84,7 @@ export default function AccountAvatarSection({
 
       <Label
         htmlFor='avatar'
-        className={`relative cursor-pointer group shrink-0 transition-transform active:scale-95 ${
+        className={`group relative shrink-0 cursor-pointer transition-transform active:scale-95 ${
           loading ? 'cursor-not-allowed' : ''
         }`}
       >
@@ -94,18 +94,18 @@ export default function AccountAvatarSection({
 
         {/* Overlay UI */}
         <div
-          className={`absolute inset-0 rounded-full flex items-center justify-center transition-all duration-200 ${
+          className={`absolute inset-0 flex items-center justify-center rounded-full transition-all duration-200 ${
             loading
               ? 'bg-black/20 opacity-100'
               : 'bg-black/40 opacity-0 group-hover:opacity-100'
           }`}
         >
           {loading ? (
-            <Spinner className='w-8 h-8 text-white' />
+            <Spinner className='h-8 w-8 text-white' />
           ) : (
-            <div className='flex flex-col items-center text-white gap-1'>
-              <Pen className='w-5 h-5' />
-              <span className='text-[10px] font-medium uppercase tracking-wider'>
+            <div className='flex flex-col items-center gap-1 text-white'>
+              <Pen className='h-5 w-5' />
+              <span className='text-[10px] font-medium tracking-wider uppercase'>
                 Edit
               </span>
             </div>
@@ -115,7 +115,7 @@ export default function AccountAvatarSection({
 
       <div className='flex flex-col gap-1'>
         <h3 className='text-sm font-medium'>Profile Picture</h3>
-        <p className='text-xs text-muted-foreground'>
+        <p className='text-muted-foreground text-xs'>
           {loading ? 'Uploading your new look...' : 'JPG, PNG or GIF. Max 5MB.'}
         </p>
       </div>

@@ -87,11 +87,11 @@ export function NavUser() {
               </Link>
             </DropdownMenuItem>
 
-            <DropdownMenuItem className='cursor-pointer group' asChild>
+            <DropdownMenuItem className='group cursor-pointer' asChild>
               <Link href='/download' rel='noopener noreferrer' target='_blank'>
                 <Download />
                 Download apps
-                <ExternalLink className='text-muted-foreground sm:opacity-0 group-hover:opacity-100 transition-opacity ml-auto' />
+                <ExternalLink className='text-muted-foreground ml-auto transition-opacity group-hover:opacity-100 sm:opacity-0' />
               </Link>
             </DropdownMenuItem>
 

@@ -19,7 +19,7 @@ export default function ChatHeader({ selectedProfile }: ChatHeaderProps) {
   const currentUser = useChatlyStore((state) => state.user)
 
   return (
-    <header className='flex items-center gap-3 p-4 border-b'>
+    <header className='flex items-center gap-3 border-b p-4'>
       {isMobileView && (
         <Button
           size='icon'
@@ -27,20 +27,20 @@ export default function ChatHeader({ selectedProfile }: ChatHeaderProps) {
           className='cursor-pointer'
           onClick={closeChatPanel}
         >
-          <ArrowLeft className='w-5 h-5' />
+          <ArrowLeft className='h-5 w-5' />
         </Button>
       )}
 
       <ProfileAvatar profile={selectedProfile} height={10} width={10} />
 
       <div>
-        <p className='font-semibold truncate'>
+        <p className='truncate font-semibold'>
           {getDisplayName(selectedProfile)}
           {selectedProfile.user_id === currentUser?.id && ' (You)'}
         </p>
 
         {selectedProfile.username && (
-          <p className='text-xs text-muted-foreground truncate'>
+          <p className='text-muted-foreground truncate text-xs'>
             @{selectedProfile.username}
           </p>
         )}

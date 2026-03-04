@@ -1,15 +1,15 @@
 'use client'
 
-import { useEffect } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
-import { getCheckoutUrl } from '@/lib/get-checkout-url'
-import type { Billing, Plan } from '@/types/subscription'
-import { useChatlyStore } from '@/providers/chatly-store-provider'
 import ChatPanel from '@/components/chat-panel'
-import ConversationsPanel from '@/components/conversations-panel'
 import ConversationSelectDialog from '@/components/conversation-select-dialog'
-import { DashboardProvider } from '@/providers/dashboard-provider'
+import ConversationsPanel from '@/components/conversations-panel'
 import UpgradeAlertDialog from '@/components/upgrade-alert-dialog'
+import { getCheckoutUrl } from '@/lib/get-checkout-url'
+import { useChatlyStore } from '@/providers/chatly-store-provider'
+import { DashboardProvider } from '@/providers/dashboard-provider'
+import type { Billing, Plan } from '@/types/subscription'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { useEffect } from 'react'
 
 export default function Page() {
   const router = useRouter()
@@ -35,7 +35,7 @@ export default function Page() {
   }, [currentUser, plan, billing, router])
 
   return (
-    <div className='h-[calc(100vh-1rem)] rounded-xl flex'>
+    <div className='flex h-[calc(100vh-1rem)] rounded-xl'>
       <DashboardProvider>
         <ConversationsPanel />
         <ChatPanel />

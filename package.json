@@ -1,11 +1,24 @@
 {
   "name": "chatly",
   "private": true,
-  "workspaces": ["apps/*"],
-   "scripts": {
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
     "dev:web": "npm run dev -w chatly-web",
     "dev:native": "npm run start -w chatly-native",
     "test:web": "npm test -w chatly-web",
-    "test:web:e2e": "npm run test:e2e -w chatly-web"
+    "test:web:e2e": "npm run test:e2e -w chatly-web",
+    "format": "prettier . --write",
+    "format:ci": "prettier . --check",
+    "lint:web:ci": "npm run lint -w chatly-web",
+    "lint:web:fix": "npm run lint:fix -w chatly-web",
+    "lint:native:ci": "npm run lint -w chatly-native",
+    "lint:native:fix": "npm run lint:fix -w chatly-native"
+  },
+  "devDependencies": {
+    "eslint-config-prettier": "^10.1.8",
+    "prettier": "^3.8.1",
+    "prettier-plugin-tailwindcss": "^0.7.2"
   }
 }

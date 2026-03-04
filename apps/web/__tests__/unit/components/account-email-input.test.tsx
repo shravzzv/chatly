@@ -24,7 +24,7 @@ const renderWithUser = (email = 'john@example.com') =>
       }}
     >
       <AccountEmailInput />
-    </ChatlyStoreProvider>
+    </ChatlyStoreProvider>,
   )
 
 describe('AccountEmailInput', () => {

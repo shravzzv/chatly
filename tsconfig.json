@@ -1,7 +1,4 @@
 // tsconfig.json
 {
-  "references": [
-    { "path": "./apps/web" },
-    { "path": "./apps/native" }
-  ]
+  "references": [{ "path": "./apps/web" }, { "path": "./apps/native" }]
 }

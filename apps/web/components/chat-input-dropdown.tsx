@@ -143,10 +143,10 @@ export default function ChatInputDropdown() {
           <Button
             variant='secondary'
             size='icon-lg'
-            className='rounded-full cursor-pointer'
+            className='cursor-pointer rounded-full'
             aria-label='Add attachment'
           >
-            <Plus className='w-5 h-5' />
+            <Plus className='h-5 w-5' />
           </Button>
         </DropdownMenuTrigger>
 
@@ -163,38 +163,38 @@ export default function ChatInputDropdown() {
           )}
 
           <DropdownMenuItem
-            className='flex items-center gap-2 cursor-pointer'
+            className='flex cursor-pointer items-center gap-2'
             onSelect={(e) => triggerPicker(e, imageInputRef)}
             disabled={isUploading}
           >
-            <ImagePlus className='w-4 h-4 text-muted-foreground' />
+            <ImagePlus className='text-muted-foreground h-4 w-4' />
             Image
           </DropdownMenuItem>
 
           <DropdownMenuItem
-            className='flex items-center gap-2 cursor-pointer'
+            className='flex cursor-pointer items-center gap-2'
             onSelect={(e) => triggerPicker(e, videoInputRef)}
             disabled={isUploading}
           >
-            <Clapperboard className='w-4 h-4 text-muted-foreground' />
+            <Clapperboard className='text-muted-foreground h-4 w-4' />
             Video
           </DropdownMenuItem>
 
           <DropdownMenuItem
-            className='flex items-center gap-2 cursor-pointer'
+            className='flex cursor-pointer items-center gap-2'
             onSelect={(e) => triggerPicker(e, audioInputRef)}
             disabled={isUploading}
           >
-            <AudioLines className='w-4 h-4 text-muted-foreground' />
+            <AudioLines className='text-muted-foreground h-4 w-4' />
             Audio
           </DropdownMenuItem>
 
           <DropdownMenuItem
-            className='flex items-center gap-2 cursor-pointer'
+            className='flex cursor-pointer items-center gap-2'
             onSelect={(e) => triggerPicker(e, fileInputRef)}
             disabled={isUploading}
           >
-            <Paperclip className='w-4 h-4 text-muted-foreground' />
+            <Paperclip className='text-muted-foreground h-4 w-4' />
             File
           </DropdownMenuItem>
         </DropdownMenuContent>

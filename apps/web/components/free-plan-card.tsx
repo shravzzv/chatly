@@ -21,11 +21,11 @@ export default function FreePlanCard({ hideAction }: FreePlanCardProps) {
       </CardHeader>
 
       <CardContent className='space-y-3'>
-        <p className='text-sm text-muted-foreground'>
+        <p className='text-muted-foreground text-sm'>
           A complete 1:1 chat experience to get started.
         </p>
 
-        <ul className='text-sm text-muted-foreground list-disc pl-4 space-y-1'>
+        <ul className='text-muted-foreground list-disc space-y-1 pl-4 text-sm'>
           <li>Unlimited 1:1 text messages</li>
           <li>Message history</li>
           <li>Web push notifications</li>

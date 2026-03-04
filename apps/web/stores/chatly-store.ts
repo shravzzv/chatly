@@ -33,7 +33,7 @@ export const createChatlyStore = () => {
       if (error) {
         console.error('Error signing out:', error)
         toast.error(
-          'Logout failed. Please check your connection and try again.'
+          'Logout failed. Please check your connection and try again.',
         )
         return
       }

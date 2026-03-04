@@ -28,7 +28,7 @@ export default function DemotedPlanAlert({
         </p>
 
         {subscription.ends_at && (
-          <p className='text-xs text-muted-foreground'>
+          <p className='text-muted-foreground text-xs'>
             {subscription.status === 'expired' ? 'Expired' : 'Cancelled'} on{' '}
             {new Date(subscription.ends_at).toLocaleDateString()}.
           </p>

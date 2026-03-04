@@ -14,7 +14,7 @@ export default function ConversationsList() {
 
   if (isLoading) {
     return (
-      <div className='space-y-2 p-4 overflow-y-hidden'>
+      <div className='space-y-2 overflow-y-hidden p-4'>
         {Array.from({ length: 12 }).map((_, i) => (
           <ConversationPreviewSkeleton key={i} />
         ))}
@@ -24,7 +24,7 @@ export default function ConversationsList() {
 
   if (isEmpty) {
     return (
-      <div className='flex flex-col items-center justify-center h-full text-center p-4'>
+      <div className='flex h-full flex-col items-center justify-center p-4 text-center'>
         <p className='text-muted-foreground'>
           {searchQuery ? 'No profiles found' : 'No profiles available'}
         </p>
@@ -33,7 +33,7 @@ export default function ConversationsList() {
   }
 
   return (
-    <ScrollArea className='flex-1 overflow-y-auto px-2 flex flex-col'>
+    <ScrollArea className='flex flex-1 flex-col overflow-y-auto px-2'>
       {filteredProfiles.map((profile) => (
         <ConversationPreview key={profile.id} profile={profile} />
       ))}
