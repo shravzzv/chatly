@@ -1,6 +1,6 @@
-import { render, screen } from '@testing-library/react'
-import { DISCORD_SERVER_INVITE_URL, SUBREDDIT_URL } from '@/data/constants'
 import Footer from '@/components/footer'
+import { DISCORD_SERVER_INVITE_URL, SUBREDDIT_URL } from '@/data/constants'
+import { render, screen } from '@testing-library/react'
 
 jest.mock('@/components/mode-toggle', () => ({
   ModeToggle: () => <button>Toggle theme</button>,
