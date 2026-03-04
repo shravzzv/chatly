@@ -15,6 +15,7 @@ const eslintConfig = defineConfig([
     plugins: { jest: pluginJest },
     rules: {
       ...pluginJest.configs.recommended.rules,
+      '@typescript-eslint/no-explicit-any': 'off',
     },
   },
 

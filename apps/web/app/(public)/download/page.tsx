@@ -27,6 +27,7 @@ export default function Page() {
       (navigator as Navigator & { standalone?: boolean }).standalone === true
 
     if (standalone) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setState('installed')
       return
     }

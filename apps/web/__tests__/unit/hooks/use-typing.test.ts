@@ -1,6 +1,6 @@
-import { renderHook, act } from '@testing-library/react'
-import type { RealtimeChannel } from '@supabase/supabase-js'
 import { useTyping } from '@/hooks/use-typing'
+import type { RealtimeChannel } from '@supabase/supabase-js'
+import { act, renderHook } from '@testing-library/react'
 
 jest.mock('@/providers/chatly-store-provider', () => ({
   useChatlyStore: <T>(

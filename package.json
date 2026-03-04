@@ -11,10 +11,10 @@
     "test:web:e2e": "npm run test:e2e -w chatly-web",
     "format": "prettier . --write",
     "format:ci": "prettier . --check",
+    "lint:web": "npm run lint:fix -w chatly-web",
     "lint:web:ci": "npm run lint -w chatly-web",
-    "lint:web:fix": "npm run lint:fix -w chatly-web",
-    "lint:native:ci": "npm run lint -w chatly-native",
-    "lint:native:fix": "npm run lint:fix -w chatly-native"
+    "lint:native": "npm run lint:fix -w chatly-native",
+    "lint:native:ci": "npm run lint -w chatly-native"
   },
   "devDependencies": {
     "eslint-config-prettier": "^10.1.8",

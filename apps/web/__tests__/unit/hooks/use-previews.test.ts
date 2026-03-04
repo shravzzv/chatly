@@ -1,9 +1,8 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { renderHook, act, waitFor } from '@testing-library/react'
 import { usePreviews } from '@/hooks/use-previews'
+import { derivePreview } from '@/lib/previews'
 import type { Message } from '@/types/message'
 import { createClient } from '@/utils/supabase/client'
-import { derivePreview } from '@/lib/previews'
+import { act, renderHook, waitFor } from '@testing-library/react'
 
 jest.mock('@/providers/chatly-store-provider', () => ({
   useChatlyStore: <T>(
