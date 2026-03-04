@@ -20,22 +20,25 @@ env:
   NEXT_PUBLIC_SITE_URL: ${{ secrets.NEXT_PUBLIC_SITE_URL }}
   NEXT_PUBLIC_VAPID_PUBLIC_KEY: ${{ secrets.NEXT_PUBLIC_VAPID_PUBLIC_KEY }}
   VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
+
 jobs:
   test:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: apps/web
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+
       - name: Set up Node.js
         uses: actions/setup-node@v3
+
         with:
           node-version: lts/*
           cache: "npm"
-          cache-dependency-path: apps/web/package-lock.json
+          cache-dependency-path: package-lock.json
+
       - name: Install Dependencies
         run: npm ci
+
       - name: Run tests
-        run: npm test
+        run: npm run test:web
