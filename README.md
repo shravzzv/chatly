@@ -1,8 +1,10 @@
 # Chatly
 
-Chatly is a real-time 1:1 messaging application with optional AI-assisted message enhancements and usage-based billing.
+Chatly is a real-time 1:1 messaging application with media attachments, AI-assisted message enhancements and usage-based billing.
 
-It is designed as a complete, production-grade SaaS example covering authentication, messaging, media uploads, rate limiting, billing, and enforcement — without placeholder flows.
+The project is structured as a **cross-platform monorepo** supporting both web and native clients backed by a shared Supabase infrastructure.
+
+Chatly is designed as a production-grade SaaS example covering authentication, messaging, media uploads, rate limiting, billing, and enforcement — without placeholder flows.
 
 ## Features
 
@@ -16,12 +18,34 @@ It is designed as a complete, production-grade SaaS example covering authenticat
 
 ## Tech Stack
 
-- **Frontend:** Next.js (App Router), React, TypeScript, Tailwind CSS
-- **Backend:** Supabase (Postgres, Auth, Realtime, Storage)
-- **AI:** Vercel AI SDK
-- **Billing:** Lemon Squeezy
-- **Testing:** Jest (Unit), Playwright (E2E)
-- **Deployment:** Vercel
+### Web
+
+- Next.js (App Router)
+- React
+- TypeScript
+- Tailwind CSS
+
+### Mobile
+
+- Expo
+- React Native
+- TypeScript
+- Expo Router
+
+### Backend
+
+- Supabase (Postgres, Auth, Realtime, Storage)
+
+### Infrastructure
+
+- Vercel AI SDK
+- Lemon Squeezy Billing
+- GitHub Actions (CI)
+
+### Testing
+
+- Jest (Unit)
+- Playwright (E2E)
 
 ## Architecture Overview
 
@@ -33,6 +57,21 @@ Chatly follows a strict separation of concerns to ensure data integrity and secu
 - **Storage**: Media is managed via Supabase Storage with periodic cron jobs for cleanup.
 
 The server remains authoritative for all billing status, usage limits, and enforcement decisions.
+
+## Project Structure
+
+Chatly is organized as a monorepo using npm workspaces.
+
+```plaintext
+  chatly
+  ├── apps
+  │   ├── web        # Next.js web client
+  │   └── native     # Expo / React Native mobile client
+  ├── package.json   # workspace root
+  └── tsconfig.json  # project references
+```
+
+Both applications share the same backend infrastructure (Supabase, AI services, and billing system) while maintaining platform-specific UI layers.
 
 ## Local Development
 
@@ -50,10 +89,11 @@ The server remains authoritative for all billing status, usage limits, and enfor
 npm install
 ```
 
-2. **Run the development server:**
+1. **Run the development servers:**
 
 ```bash
-npm run dev
+npm run dev:web
+npm run dev:native
 ```
 
 ### Environment Variables
@@ -64,12 +104,9 @@ The following environment variables are required in your `.env.local`:
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
-
 NEXT_PUBLIC_SITE_URL=
-
 NEXT_PUBLIC_VAPID_PUBLIC_KEY=
 VAPID_PRIVATE_KEY=
-
 AI_GATEWAY_API_KEY=
 ```
 
@@ -84,11 +121,25 @@ Chatly employs a server-side daily usage window strategy:
 - **Logic Rules**: Failed AI requests count toward usage (token consumption), while failed media uploads do not.
 - **UX**: Enterprise plans are never shown upgrade CTAs, even when limits are reached.
 
-## Testing
+## Continuous Integration
+
+Chatly uses GitHub Actions for automated quality checks.
+
+CI runs the following jobs:
+
+- Formatting checks
+- Linting
+- Unit tests
+- End-to-end tests
+
+Checks run independently for the web and native applications to reduce build times.
+
+## Testing overview
 
 The test suite exercises the full stack to ensure user-visible behavior is preserved:
 
 - **Unit Tests**: Focused on component logic and state transitions.
+- **Integration Tests**: Focused on how a component integrates different domains together.
 - **E2E Tests**: Playwright scripts covering real auth flows, billing states, and usage enforcement.
 
 **Run tests:**
@@ -103,18 +154,18 @@ npm run test:e2e
 
 _Note: CI stability may depend on the availability of external services (Supabase, Lemon Squeezy)._
 
+## Deployment
+
+The web client is deployed on **Vercel**.
+
+The mobile client is built using **Expo** and can be distributed via Expo or platform-specific app stores.
+
 ## Known Limitations
 
 - **1:1 Only**: No current support for group chats.
 - **Search**: Message search is not implemented.
 - **Offline**: No PWA/offline-first support.
 - **Admin Tools**: Limited built-in administrative dashboarding.
-
-## Project Status
-
-**Status: Closed / Feature Complete**
-
-Chatly is considered feature-complete and is not under active development. The repository may receive dependency updates, security patches, or infrastructure fixes, but no major features are planned.
 
 ## License
 

@@ -1,5 +1,5 @@
 {
-  "deno.enablePaths": ["supabase/functions"],
+  "deno.enablePaths": ["apps/web/supabase/functions"],
   "deno.lint": true,
   "deno.unstable": [
     "bare-node-builtins",
@@ -15,5 +15,6 @@
     "fs",
     "http",
     "net"
-  ]
+  ],
+  "jest.rootPath": "apps/web"
 }

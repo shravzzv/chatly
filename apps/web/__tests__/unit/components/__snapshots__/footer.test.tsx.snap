@@ -1,0 +1,147 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`Footer matches the snapshot 1`] = `
+<div>
+  <footer
+    class="mx-auto max-w-7xl px-6 py-12 sm:px-8 lg:px-12"
+  >
+    <div
+      class="grid grid-cols-1 gap-10 lg:grid-cols-2"
+    >
+      <div
+        class="space-y-6"
+      >
+        <a
+          href="/"
+        >
+          <h2
+            class="mb-4 text-2xl font-bold transition-opacity hover:opacity-80"
+          >
+            Chatly
+          </h2>
+        </a>
+        <p
+          class="text-muted-foreground max-w-sm text-sm"
+        >
+          Realtime chat, media sharing, ai enhacements, and more — built for seamless communication anywhere.
+        </p>
+        <button>
+          Toggle theme
+        </button>
+      </div>
+      <div
+        class="grid grid-cols-2 gap-8 md:grid-cols-3"
+      >
+        <div>
+          <h3
+            class="mb-3 font-semibold"
+          >
+            Product
+          </h3>
+          <ul
+            class="space-y-2 text-sm"
+          >
+            <li>
+              <a
+                class="capitalize underline-offset-4 hover:underline"
+                href="/features"
+              >
+                features
+              </a>
+            </li>
+            <li>
+              <a
+                class="capitalize underline-offset-4 hover:underline"
+                href="/pricing"
+              >
+                pricing
+              </a>
+            </li>
+            <li>
+              <a
+                class="capitalize underline-offset-4 hover:underline"
+                href="/download"
+              >
+                download
+              </a>
+            </li>
+            <li>
+              <a
+                class="capitalize underline-offset-4 hover:underline"
+                href="/support"
+              >
+                support
+              </a>
+            </li>
+          </ul>
+        </div>
+        <div>
+          <h3
+            class="mb-3 font-semibold"
+          >
+            Socials
+          </h3>
+          <ul
+            class="space-y-2 text-sm"
+          >
+            <li>
+              <a
+                class="hover:underline"
+                href="https://discord.gg/VdWBPWeVnm"
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                Discord
+              </a>
+            </li>
+            <li>
+              <a
+                class="hover:underline"
+                href="https://www.reddit.com/r/chatly_app"
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                Reddit
+              </a>
+            </li>
+          </ul>
+        </div>
+        <div>
+          <h3
+            class="mb-3 font-semibold"
+          >
+            Legal
+          </h3>
+          <ul
+            class="space-y-2 text-sm"
+          >
+            <li>
+              <a
+                class="hover:underline"
+                href="/privacy"
+              >
+                Privacy Policy
+              </a>
+            </li>
+            <li>
+              <a
+                class="hover:underline"
+                href="/terms"
+              >
+                Terms of Service
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div
+      class="text-muted-foreground mt-8 border-t pt-6 text-center text-sm"
+    >
+      © 
+      2026
+       Chatly. All rights reserved.
+    </div>
+  </footer>
+</div>
+`;
