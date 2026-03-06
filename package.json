@@ -19,10 +19,14 @@
   "devDependencies": {
     "eslint-config-prettier": "^10.1.8",
     "prettier": "^3.8.1",
-    "prettier-plugin-tailwindcss": "^0.7.2"
+    "prettier-plugin-tailwindcss": "^0.7.2",
+    "@types/react": "19.1.17",
+    "@types/react-dom": "19.1.7"
   },
   "overrides": {
     "react": "19.1.0",
-    "react-dom": "19.1.0"
+    "react-dom": "19.1.0",
+    "@types/react": "19.1.17",
+    "@types/react-dom": "19.1.7"
   }
 }
