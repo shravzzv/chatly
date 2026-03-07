@@ -16,5 +16,16 @@
     "http",
     "net"
   ],
-  "jest.rootPath": "apps/web"
+  "jest.virtualFolders": [
+    {
+      "name": "web",
+      "rootPath": "apps/web",
+      "jestCommandLine": "npm test -w chatly-web --"
+    },
+    {
+      "name": "native",
+      "rootPath": "apps/native",
+      "jestCommandLine": "npm test -w chatly-native --"
+    }
+  ]
 }
