@@ -13,7 +13,9 @@
     "lint:fix": "expo lint --fix",
     "test": "jest",
     "test:cov": "jest --coverage",
-    "e2e": "cross-env APP_ID=host.exp.exponent maestro test .maestro"
+    "e2e": "cross-env APP_ID=host.exp.exponent maestro test .maestro",
+    "build": "eas build --platform android",
+    "preview": "eas build --profile preview --platform android"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
@@ -32,6 +34,7 @@
     "expo-status-bar": "~3.0.9",
     "expo-symbols": "~1.0.8",
     "expo-system-ui": "~6.0.9",
+    "expo-updates": "~29.0.16",
     "expo-web-browser": "~15.0.10",
     "nativewind": "^4.2.2",
     "react": "19.1.0",

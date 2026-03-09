@@ -1,0 +1,51 @@
+# Node
+node_modules
+npm-debug.log*
+
+# Git
+.git
+.gitignore
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Testing
+coverage
+.maestro
+
+# Build artifacts
+.next
+dist
+build
+.expo
+
+# Web app
+apps/web
+
+# E2E
+playwright-report
+test-results
+
+# Editor
+.vscode
+.prettierrc
+.prettierignore
+
+# CI
+.github
+
+# Env
+.env*
+
+# Docs
+README.md
+TESTING.md
+LICENSE
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts

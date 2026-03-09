@@ -16,7 +16,9 @@
     "lint:web": "npm run lint:fix -w chatly-web",
     "lint:web:ci": "npm run lint -w chatly-web",
     "lint:native": "npm run lint:fix -w chatly-native",
-    "lint:native:ci": "npm run lint -w chatly-native"
+    "lint:native:ci": "npm run lint -w chatly-native",
+    "build:native": "npm run build -w chatly-native",
+    "preview:native": "npm run preview -w chatly-native"
   },
   "devDependencies": {
     "@types/react": "19.1.17",
