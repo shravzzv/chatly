@@ -100,7 +100,9 @@ __tests__/
    └─ pricing-signup.integration.test.tsx
 ```
 
-## 3. End-to-End Tests (Playwright)
+## 3. End-to-End Tests
+
+### Web E2E (Playwright)
 
 **Tools:** Playwright
 
@@ -135,7 +137,7 @@ Only for **high-risk, business-critical flows**:
 ### Structure
 
 ```txt
-e2e/
+apps/web/e2e/
 ├─ chat-realtime.test.ts
 ├─ billing-flow.test.ts
 └─ utils/
@@ -144,6 +146,44 @@ e2e/
    ├─ auth.ts
    └─ cleanup.ts
 ```
+
+### Native E2E (Maestro)
+
+
+**Tool:** Maestro
+
+Native E2E tests simulate **real device interaction flows**.
+
+Unlike web E2E, these tests are **run locally only** and are **not executed in CI**.
+
+### Location
+
+```txt
+apps/native/.maestro/
+├─ test1.yml
+└─ test2.yml
+```
+
+### Purpose
+
+These tests verify that **critical app flows work on a real device build**.
+
+Examples:
+
+- Launching the app
+- Signing in
+- Sending messages
+- Navigating between screens
+
+### Characteristics
+
+- Runs against a built native app
+- Executes UI actions on a device or emulator
+- Local development tool
+- Not used in CI
+
+> [!IMPORTANT]
+> Ensure the Expo Go app is open and the development server is running (`npm run dev:native`) before executing the tests.
 
 ## Test Coverage Philosophy
 
@@ -173,13 +213,19 @@ All test layers run in CI.
 - Fast feedback
 - Fails the build on regression
 
-### Playwright (E2E)
+### Playwright (Web E2E)
 
 - Runs in CI against a real browser
 - Uses isolated test data
 - Cleans up after itself
 
-Both test suites must pass before merge.
+### Maestro (Native E2E)
+
+- **Not executed in CI**
+- Run **manually during development**
+- Used for validating native user flows
+
+All test suites must pass before merge.
 
 ## Summary
 
