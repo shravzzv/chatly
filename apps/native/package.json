@@ -12,7 +12,8 @@
     "lint": "expo lint",
     "lint:fix": "expo lint --fix",
     "test": "jest",
-    "test:cov": "jest --coverage"
+    "test:cov": "jest --coverage",
+    "e2e": "cross-env APP_ID=host.exp.exponent maestro test .maestro"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
@@ -46,6 +47,7 @@
   "devDependencies": {
     "@testing-library/react-native": "^13.3.3",
     "@types/jest": "^29.5.14",
+    "cross-env": "^10.1.0",
     "eslint": "^9",
     "eslint-config-expo": "~10.0.0",
     "jest": "~29.7.0",
