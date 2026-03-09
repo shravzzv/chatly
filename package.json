@@ -8,20 +8,24 @@
     "dev:web": "npm run dev -w chatly-web",
     "dev:native": "npm run start -w chatly-native",
     "test:web": "npm test -w chatly-web",
-    "test:web:e2e": "npm run test:e2e -w chatly-web",
+    "e2e:web": "npm run e2e -w chatly-web",
+    "test:native": "npm test -w chatly-native",
+    "e2e:native": "npm run e2e -w chatly-native",
     "format": "prettier . --write",
     "format:ci": "prettier . --check",
     "lint:web": "npm run lint:fix -w chatly-web",
     "lint:web:ci": "npm run lint -w chatly-web",
     "lint:native": "npm run lint:fix -w chatly-native",
-    "lint:native:ci": "npm run lint -w chatly-native"
+    "lint:native:ci": "npm run lint -w chatly-native",
+    "build:native": "npm run build -w chatly-native",
+    "preview:native": "npm run preview -w chatly-native"
   },
   "devDependencies": {
+    "@types/react": "19.1.17",
+    "@types/react-dom": "19.1.7",
     "eslint-config-prettier": "^10.1.8",
     "prettier": "^3.8.1",
-    "prettier-plugin-tailwindcss": "^0.7.2",
-    "@types/react": "19.1.17",
-    "@types/react-dom": "19.1.7"
+    "prettier-plugin-tailwindcss": "^0.7.2"
   },
   "overrides": {
     "react": "19.1.0",

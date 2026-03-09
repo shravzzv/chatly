@@ -1,0 +1,5 @@
+# ! requires Chatly's home screen already open on Expo go
+
+appId: ${APP_ID}
+---
+- assertVisible: 'Hi from Chatly'

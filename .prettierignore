@@ -5,3 +5,5 @@ dist
 build
 coverage
 playwright-report
+.expo
+test-results
