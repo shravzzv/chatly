@@ -149,7 +149,6 @@ apps/web/e2e/
 
 ### Native E2E (Maestro)
 
-
 **Tool:** Maestro
 
 Native E2E tests simulate **real device interaction flows**.
