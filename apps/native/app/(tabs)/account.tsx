@@ -1,10 +1,10 @@
 import { ThemeToggle } from '@/components/theme-toggle'
-import { View } from 'react-native'
+import { Screen } from '@/components/ui/screen'
 
 export default function Account() {
   return (
-    <View>
+    <Screen>
       <ThemeToggle />
-    </View>
+    </Screen>
   )
 }
