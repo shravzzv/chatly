@@ -1,3 +1,4 @@
+// apps/native/components/ui/text.tsx
 import { cn } from '@/lib/utils'
 import * as Slot from '@rn-primitives/slot'
 import { cva, type VariantProps } from 'class-variance-authority'
@@ -6,7 +7,7 @@ import { Platform, Text as RNText, type Role } from 'react-native'
 
 const textVariants = cva(
   cn(
-    'text-foreground text-base',
+    'text-foreground text-base font-sans',
     Platform.select({
       web: 'select-text',
     }),
@@ -16,7 +17,7 @@ const textVariants = cva(
       variant: {
         default: '',
         h1: cn(
-          'text-center text-4xl font-extrabold tracking-tight',
+          'text-center text-4xl font-black tracking-tight',
           Platform.select({ web: 'scroll-m-20 text-balance' }),
         ),
         h2: cn(

@@ -1,3 +1,4 @@
+// apps/native/lib/theme.ts
 import { DarkTheme, DefaultTheme, type Theme } from '@react-navigation/native'
 
 export const THEME = {
@@ -66,6 +67,24 @@ export const NAV_THEME: Record<'light' | 'dark', Theme> = {
       primary: THEME.light.primary,
       text: THEME.light.foreground,
     },
+    fonts: {
+      regular: {
+        fontFamily: 'Inter_400Regular',
+        fontWeight: '400',
+      },
+      medium: {
+        fontFamily: 'Inter_500Medium',
+        fontWeight: '500',
+      },
+      bold: {
+        fontFamily: 'Inter_700Bold',
+        fontWeight: '700',
+      },
+      heavy: {
+        fontFamily: 'Inter_900Black',
+        fontWeight: '900',
+      },
+    },
   },
   dark: {
     ...DarkTheme,
@@ -76,6 +95,24 @@ export const NAV_THEME: Record<'light' | 'dark', Theme> = {
       notification: THEME.dark.destructive,
       primary: THEME.dark.primary,
       text: THEME.dark.foreground,
+    },
+    fonts: {
+      regular: {
+        fontFamily: 'Inter_400Regular',
+        fontWeight: '400',
+      },
+      medium: {
+        fontFamily: 'Inter_500Medium',
+        fontWeight: '500',
+      },
+      bold: {
+        fontFamily: 'Inter_700Bold',
+        fontWeight: '700',
+      },
+      heavy: {
+        fontFamily: 'Inter_900Black',
+        fontWeight: '900',
+      },
     },
   },
 }
