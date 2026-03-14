@@ -1,4 +1,6 @@
+// apps/native/app/_layout.tsx
 import '@/global.css'
+import { isAuthenticated } from '@/lib/auth'
 import { NAV_THEME } from '@/lib/theme'
 import ThemeProvider from '@/providers/theme-provider'
 import {
@@ -39,9 +41,7 @@ export default function RootLayout() {
     }
   }, [loaded, error])
 
-  if (!loaded && !error) {
-    return null
-  }
+  if (!loaded && !error) return null
 
   return (
     <NavThemeProvider value={NAV_THEME[colorScheme ?? 'light']}>
@@ -55,21 +55,19 @@ export default function RootLayout() {
            */
         >
           <StatusBar />
-          <Stack>
-            <Stack.Screen
-              name='(tabs)'
-              options={{
-                headerShown: false,
-              }}
-            />
 
-            <Stack.Screen
-              name='+not-found'
-              options={{
-                headerShown: false,
-              }}
-            />
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Protected guard={!isAuthenticated}>
+              <Stack.Screen name='(public)' />
+            </Stack.Protected>
+
+            <Stack.Protected guard={isAuthenticated}>
+              <Stack.Screen name='(private)' />
+            </Stack.Protected>
+
+            <Stack.Screen name='+not-found' />
           </Stack>
+
           <PortalHost />
         </View>
       </ThemeProvider>
