@@ -1,17 +1,18 @@
+// apps/native/app/(private)/_layout.tsx
 import { Tabs } from 'expo-router'
 import { CreditCard, LayoutDashboard, User } from 'lucide-react-native'
 
-export default function TabLayout() {
+export default function PrivateLayout() {
   return (
     <Tabs
+      initialRouteName='dashboard'
       screenOptions={{
-        headerShown: true,
         headerTitleAlign: 'center',
         headerShadowVisible: false,
       }}
     >
       <Tabs.Screen
-        name='index'
+        name='dashboard'
         options={{
           title: 'Dashboard',
           tabBarIcon: ({ color }) => (
