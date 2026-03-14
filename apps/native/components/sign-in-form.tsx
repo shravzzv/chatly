@@ -12,18 +12,22 @@ import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { Text } from '@/components/ui/text'
 import { Link } from 'expo-router'
-import * as React from 'react'
+import { useRef, useState } from 'react'
 import { type TextInput, View } from 'react-native'
+import PasswordInput from './password-input'
 
 export function SignInForm() {
-  const passwordInputRef = React.useRef<TextInput>(null)
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const passwordInputRef = useRef<TextInput>(null)
 
-  function onEmailSubmitEditing() {
+  const onEmailSubmitEditing = () => {
     passwordInputRef.current?.focus()
   }
 
-  function onSubmit() {
-    // TODO: Submit form and navigate to protected screen if successful
+  const onSubmit = () => {
+    console.log(email)
+    console.log(password)
   }
 
   return (
@@ -45,6 +49,8 @@ export function SignInForm() {
               autoComplete='email'
               autoCapitalize='none'
               onSubmitEditing={onEmailSubmitEditing}
+              value={email}
+              onChangeText={setEmail}
               returnKeyType='next'
               submitBehavior='submit'
             />
@@ -60,14 +66,14 @@ export function SignInForm() {
               </Link>
             </View>
 
-            <Input
+            <PasswordInput
+              value={password}
               ref={passwordInputRef}
-              id='password'
-              secureTextEntry
-              returnKeyType='send'
+              onChangeText={setPassword}
               onSubmitEditing={onSubmit}
             />
           </View>
+
           <Button className='w-full' onPress={onSubmit}>
             <Text>Continue</Text>
           </Button>
