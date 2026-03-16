@@ -29,7 +29,7 @@ const formSchema = z.object({
 
 type FormSchema = z.infer<typeof formSchema>
 
-export function SignInForm() {
+export function SignUpForm() {
   const passwordInputRef = useRef<TextInput>(null)
 
   const {
@@ -52,10 +52,12 @@ export function SignInForm() {
   return (
     <Card className='w-full max-w-md border-border shadow-none sm:shadow-md sm:shadow-black/5'>
       <CardHeader>
-        <CardTitle className='text-center text-xl'>Welcome back</CardTitle>
+        <CardTitle className='text-center text-xl'>
+          Create your account
+        </CardTitle>
 
         <CardDescription className='text-center'>
-          Sign in to your Chatly account
+          Enter your email below to create your account
         </CardDescription>
       </CardHeader>
 
@@ -114,15 +116,6 @@ export function SignInForm() {
                   >
                     Password
                   </Label>
-
-                  <Link href='/(public)/signup'>
-                    <Text
-                      variant='muted'
-                      className='underline underline-offset-4'
-                    >
-                      Forgot your password?
-                    </Text>
-                  </Link>
                 </View>
 
                 <PasswordInput
@@ -135,6 +128,13 @@ export function SignInForm() {
                     errors.password ? 'border-destructive text-destructive' : ''
                   }
                 />
+
+                {!errors.password && (
+                  <Text className='text-sm text-muted-foreground'>
+                    Use at least 8 characters ({field.value.length}
+                    /8)
+                  </Text>
+                )}
 
                 {errors.password && (
                   <Text
@@ -153,16 +153,16 @@ export function SignInForm() {
             onPress={handleSubmit(onSubmit)}
             disabled={isSubmitting}
           >
-            <Text>{isSubmitting ? 'Signing in...' : 'Continue'}</Text>
+            <Text>{isSubmitting ? 'Creating account...' : 'Continue'}</Text>
           </Button>
         </View>
 
         <View className='flex-row justify-center'>
-          <Text variant='muted'>Don&apos;t have an account? </Text>
+          <Text variant='muted'>Already have an account? </Text>
 
-          <Link href='/(public)/signup'>
+          <Link href='/(public)/signin'>
             <Text variant='muted' className='underline underline-offset-4'>
-              Sign up
+              Sign in
             </Text>
           </Link>
         </View>
