@@ -11,16 +11,23 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { Text } from '@/components/ui/text'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { Link } from 'expo-router'
 import { useRef } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { type TextInput, View } from 'react-native'
+import * as z from 'zod'
 import PasswordInput from './password-input'
 
-interface FormData {
-  email: string
-  password: string
-}
+const formSchema = z.object({
+  email: z.email('Email is required').trim(),
+  password: z
+    .string()
+    .min(1, 'Password is required')
+    .min(8, 'Password must be at least 8 characters long'),
+})
+
+type FormSchema = z.infer<typeof formSchema>
 
 export function SignInForm() {
   const passwordInputRef = useRef<TextInput>(null)
@@ -29,18 +36,16 @@ export function SignInForm() {
     handleSubmit,
     control,
     formState: { errors, isSubmitting },
-  } = useForm<FormData>({
-    defaultValues: {
-      email: '',
-      password: '',
-    },
+  } = useForm<FormSchema>({
+    resolver: zodResolver(formSchema),
+    defaultValues: { email: '', password: '' },
   })
 
   const onEmailSubmitEditing = () => {
     passwordInputRef.current?.focus()
   }
 
-  const onSubmit = (data: FormData) => {
+  const onSubmit = (data: FormSchema) => {
     console.log('form submitted')
   }
 
@@ -57,13 +62,6 @@ export function SignInForm() {
           <Controller
             name='email'
             control={control}
-            rules={{
-              required: 'Email is required',
-              pattern: {
-                value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                message: 'Invalid email address',
-              },
-            }}
             render={({ field }) => (
               <View className='gap-4'>
                 <Label
@@ -102,13 +100,6 @@ export function SignInForm() {
           <Controller
             name='password'
             control={control}
-            rules={{
-              required: 'Password is required',
-              minLength: {
-                value: 8,
-                message: 'Password must be at least 8 characters long',
-              },
-            }}
             render={({ field }) => (
               <View className='gap-4'>
                 <View className='flex-row items-center justify-between'>
