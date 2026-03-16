@@ -14,11 +14,13 @@ import { Text } from '@/components/ui/text'
 import { supabase } from '@/lib/supabase'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Link, router } from 'expo-router'
-import { useRef } from 'react'
+import { AlertCircle } from 'lucide-react-native'
+import { useRef, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { type TextInput, View } from 'react-native'
 import * as z from 'zod'
 import PasswordInput from './password-input'
+import { Alert, AlertDescription, AlertTitle } from './ui/alert'
 import { Spinner } from './ui/spinner'
 
 const formSchema = z.object({
@@ -33,6 +35,7 @@ type FormSchema = z.infer<typeof formSchema>
 
 export function SignInForm() {
   const passwordInputRef = useRef<TextInput>(null)
+  const [isAuthError, setIsAuthError] = useState<boolean>(false)
 
   const {
     handleSubmit,
@@ -49,6 +52,7 @@ export function SignInForm() {
 
   const onSubmit = async (data: FormSchema) => {
     if (!supabase) return
+    setIsAuthError(false)
 
     const { error } = await supabase.auth.signInWithPassword({
       email: data.email,
@@ -56,7 +60,7 @@ export function SignInForm() {
     })
 
     if (error) {
-      console.error(error)
+      setIsAuthError(true)
       return
     }
 
@@ -162,6 +166,15 @@ export function SignInForm() {
             )}
           />
 
+          {isAuthError && (
+            <Alert variant='destructive' icon={AlertCircle}>
+              <AlertTitle>Sign in failed</AlertTitle>
+              <AlertDescription>
+                Check your email and password and try again.
+              </AlertDescription>
+            </Alert>
+          )}
+
           <Button
             className='w-full'
             onPress={handleSubmit(onSubmit)}
@@ -178,16 +191,6 @@ export function SignInForm() {
           </Button>
         </View>
 
-        <View className='flex-row justify-center'>
-          <Text variant='muted'>Don&apos;t have an account? </Text>
-
-          <Link href='/(public)/signup'>
-            <Text variant='muted' className='underline underline-offset-4'>
-              Sign up
-            </Text>
-          </Link>
-        </View>
-
         <View className='flex-row items-center'>
           <Separator className='flex-1' />
           <Text className='px-4 text-sm text-muted-foreground'>or</Text>
@@ -195,6 +198,16 @@ export function SignInForm() {
         </View>
 
         <SocialConnections />
+
+        <View className='flex-row justify-center'>
+          <Text variant='muted'>Don&apos;t have an account? </Text>
+
+          <Link href='/signup'>
+            <Text variant='muted' className='underline underline-offset-4'>
+              Sign up
+            </Text>
+          </Link>
+        </View>
       </CardContent>
     </Card>
   )

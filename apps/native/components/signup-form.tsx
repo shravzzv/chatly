@@ -165,6 +165,14 @@ export function SignUpForm() {
           </Button>
         </View>
 
+        <View className='flex-row items-center'>
+          <Separator className='flex-1' />
+          <Text className='px-4 text-sm text-muted-foreground'>or</Text>
+          <Separator className='flex-1' />
+        </View>
+
+        <SocialConnections />
+
         <View className='flex-row justify-center'>
           <Text variant='muted'>Already have an account? </Text>
 
@@ -174,14 +182,6 @@ export function SignUpForm() {
             </Text>
           </Link>
         </View>
-
-        <View className='flex-row items-center'>
-          <Separator className='flex-1' />
-          <Text className='px-4 text-sm text-muted-foreground'>or</Text>
-          <Separator className='flex-1' />
-        </View>
-
-        <SocialConnections />
       </CardContent>
     </Card>
   )
