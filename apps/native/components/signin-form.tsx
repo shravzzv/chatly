@@ -19,6 +19,7 @@ import { Controller, useForm } from 'react-hook-form'
 import { type TextInput, View } from 'react-native'
 import * as z from 'zod'
 import PasswordInput from './password-input'
+import { Spinner } from './ui/spinner'
 
 const formSchema = z.object({
   email: z.email('A valid email is required').trim(),
@@ -166,7 +167,14 @@ export function SignInForm() {
             onPress={handleSubmit(onSubmit)}
             disabled={isSubmitting}
           >
-            <Text>{isSubmitting ? 'Signing in...' : 'Continue'}</Text>
+            {isSubmitting ? (
+              <>
+                <Spinner className='text-primary-foreground' />
+                <Text>Signing in...</Text>
+              </>
+            ) : (
+              <Text>Continue</Text>
+            )}
           </Button>
         </View>
 
