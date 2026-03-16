@@ -1,0 +1,180 @@
+import { SocialConnections } from '@/components/social-connections'
+import { Button } from '@/components/ui/button'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Separator } from '@/components/ui/separator'
+import { Text } from '@/components/ui/text'
+import { Link } from 'expo-router'
+import { useRef } from 'react'
+import { Controller, useForm } from 'react-hook-form'
+import { type TextInput, View } from 'react-native'
+import PasswordInput from './password-input'
+
+interface FormData {
+  email: string
+  password: string
+}
+
+export function SignInForm() {
+  const passwordInputRef = useRef<TextInput>(null)
+
+  const {
+    handleSubmit,
+    control,
+    formState: { errors, isSubmitting },
+  } = useForm<FormData>({
+    defaultValues: {
+      email: '',
+      password: '',
+    },
+  })
+
+  const onEmailSubmitEditing = () => {
+    passwordInputRef.current?.focus()
+  }
+
+  const onSubmit = (data: FormData) => {
+    console.log('form submitted')
+  }
+
+  return (
+    <Card className='w-full max-w-md border-border shadow-none sm:shadow-md sm:shadow-black/5'>
+      <CardHeader>
+        <CardTitle className='text-center text-xl'>Welcome back</CardTitle>
+        <CardDescription className='text-center'>
+          Sign in to your Chatly account
+        </CardDescription>
+      </CardHeader>
+      <CardContent className='gap-4'>
+        <View className='gap-6'>
+          <Controller
+            name='email'
+            control={control}
+            rules={{
+              required: 'Email is required',
+              pattern: {
+                value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                message: 'Invalid email address',
+              },
+            }}
+            render={({ field }) => (
+              <View className='gap-4'>
+                <Label
+                  htmlFor='email'
+                  className={errors.email ? 'text-destructive' : ''}
+                >
+                  Email
+                </Label>
+
+                <Input
+                  {...field}
+                  id='email'
+                  placeholder='m@example.com'
+                  keyboardType='email-address'
+                  autoComplete='email'
+                  autoCapitalize='none'
+                  returnKeyType='next'
+                  submitBehavior='submit'
+                  value={field.value}
+                  onChangeText={field.onChange}
+                  onSubmitEditing={onEmailSubmitEditing}
+                  className={
+                    errors.email ? 'border-destructive text-destructive' : ''
+                  }
+                />
+              </View>
+            )}
+          />
+
+          {errors.email && (
+            <Text variant='small' className='text-destructive'>
+              {errors.email.message}
+            </Text>
+          )}
+
+          <Controller
+            name='password'
+            control={control}
+            rules={{
+              required: 'Password is required',
+              minLength: {
+                value: 8,
+                message: 'Password must be at least 8 characters long',
+              },
+            }}
+            render={({ field }) => (
+              <View className='gap-4'>
+                <View className='flex-row items-center justify-between'>
+                  <Label
+                    htmlFor='password'
+                    className={errors.password ? 'text-destructive' : ''}
+                  >
+                    Password
+                  </Label>
+
+                  <Link href='/(public)/signup'>
+                    <Text
+                      variant='muted'
+                      className='underline underline-offset-4'
+                    >
+                      Forgot your password?
+                    </Text>
+                  </Link>
+                </View>
+
+                <PasswordInput
+                  {...field}
+                  value={field.value}
+                  inputRef={passwordInputRef}
+                  onChangeText={field.onChange}
+                  onSubmitEditing={handleSubmit(onSubmit)}
+                  className={
+                    errors.password ? 'border-destructive text-destructive' : ''
+                  }
+                />
+              </View>
+            )}
+          />
+
+          {errors.password && (
+            <Text variant='small' className='leading-relaxed text-destructive'>
+              {errors.password.message}
+            </Text>
+          )}
+
+          <Button
+            className='w-full'
+            onPress={handleSubmit(onSubmit)}
+            disabled={isSubmitting}
+          >
+            <Text>{isSubmitting ? 'Signing in...' : 'Continue'}</Text>
+          </Button>
+        </View>
+
+        <View className='flex-row justify-center'>
+          <Text variant='muted'>Don&apos;t have an account? </Text>
+
+          <Link href='/(public)/signup'>
+            <Text variant='muted' className='underline underline-offset-4'>
+              Sign up
+            </Text>
+          </Link>
+        </View>
+
+        <View className='flex-row items-center'>
+          <Separator className='flex-1' />
+          <Text className='px-4 text-sm text-muted-foreground'>or</Text>
+          <Separator className='flex-1' />
+        </View>
+        <SocialConnections />
+      </CardContent>
+    </Card>
+  )
+}

@@ -1,6 +1,6 @@
 // apps/native/app/(public)/signin.tsx
-import { SignInForm } from '@/components/sign-in-form'
 import { Screen } from '@/components/ui/screen'
+import { SignInForm } from '../../components/signin-form'
 
 export default function Page() {
   return (

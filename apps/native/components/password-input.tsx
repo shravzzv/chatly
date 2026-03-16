@@ -1,3 +1,4 @@
+import { cn } from '@/lib/utils'
 import { Eye, EyeClosed } from 'lucide-react-native'
 import { RefObject, useState } from 'react'
 import { TextInput, View } from 'react-native'
@@ -7,14 +8,16 @@ import { Input } from './ui/input'
 
 interface PasswordInputProps {
   value: string
-  ref?: RefObject<TextInput | null>
+  className?: string
+  inputRef?: RefObject<TextInput | null>
   onChangeText: (value: string) => void
   onSubmitEditing?: () => void
 }
 
 export default function PasswordInput({
-  ref,
   value,
+  inputRef,
+  className,
   onChangeText,
   onSubmitEditing,
 }: PasswordInputProps) {
@@ -24,14 +27,15 @@ export default function PasswordInput({
     <View className='relative'>
       <Input
         id='password'
-        value={value}
+        value={value ?? ''}
         onChangeText={onChangeText}
         returnKeyType='send'
         secureTextEntry={!visible}
         placeholder='password'
-        maxLength={16}
-        ref={ref}
+        ref={inputRef}
         onSubmitEditing={onSubmitEditing}
+        className={cn('pr-8', className)}
+        autoComplete='password'
       />
 
       <Button
