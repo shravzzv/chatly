@@ -11,8 +11,9 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { Text } from '@/components/ui/text'
+import { supabase } from '@/lib/supabase'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Link } from 'expo-router'
+import { Link, router } from 'expo-router'
 import { useRef } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { type TextInput, View } from 'react-native'
@@ -45,8 +46,20 @@ export function SignInForm() {
     passwordInputRef.current?.focus()
   }
 
-  const onSubmit = (data: FormSchema) => {
-    console.log('form submitted')
+  const onSubmit = async (data: FormSchema) => {
+    if (!supabase) return
+
+    const { error } = await supabase.auth.signInWithPassword({
+      email: data.email,
+      password: data.password,
+    })
+
+    if (error) {
+      console.error(error)
+      return
+    }
+
+    router.replace('/dashboard')
   }
 
   return (

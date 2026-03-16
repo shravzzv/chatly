@@ -1,7 +1,7 @@
 // apps/native/app/_layout.tsx
 import '@/global.css'
-import { isAuthenticated } from '@/lib/auth'
 import { NAV_THEME } from '@/lib/theme'
+import AuthProvider, { useAuthContext } from '@/providers/auth-provider'
 import ThemeProvider from '@/providers/theme-provider'
 import {
   Inter_400Regular,
@@ -25,8 +25,6 @@ SplashScreen.preventAutoHideAsync()
 export { ErrorBoundary } from 'expo-router'
 
 export default function RootLayout() {
-  const { colorScheme } = useColorScheme()
-
   const [loaded, error] = useFonts({
     Inter_400Regular,
     Inter_500Medium,
@@ -42,6 +40,17 @@ export default function RootLayout() {
   }, [loaded, error])
 
   if (!loaded && !error) return null
+
+  return (
+    <AuthProvider>
+      <InnerRootLayout />
+    </AuthProvider>
+  )
+}
+
+function InnerRootLayout() {
+  const { colorScheme } = useColorScheme()
+  const { isAuthenticated } = useAuthContext()
 
   return (
     <NavThemeProvider value={NAV_THEME[colorScheme ?? 'light']}>

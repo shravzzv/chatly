@@ -1,11 +1,13 @@
 // apps/native/app/index.tsx
-import { isAuthenticated } from '@/lib/auth'
+import { useAuthContext } from '@/providers/auth-provider'
 import { Redirect } from 'expo-router'
 
 export default function Index() {
+  const { isAuthenticated } = useAuthContext()
+
   if (isAuthenticated) {
-    return <Redirect href='/(private)/dashboard' />
+    return <Redirect href='/dashboard' />
   }
 
-  return <Redirect href='/(public)/signin' />
+  return <Redirect href='/signin' />
 }
