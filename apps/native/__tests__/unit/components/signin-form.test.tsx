@@ -4,6 +4,7 @@ import { fireEvent, render, waitFor } from '@testing-library/react-native'
 import { router } from 'expo-router'
 
 jest.mock('@react-native-async-storage/async-storage')
+jest.mock('@/lib/supabase')
 jest.mock('expo-router', () => ({
   ...jest.requireActual('expo-router'),
   router: {
@@ -11,15 +12,7 @@ jest.mock('expo-router', () => ({
   },
 }))
 
-jest.mock('@/lib/supabase', () => ({
-  supabase: {
-    auth: {
-      signInWithPassword: jest.fn(() =>
-        Promise.resolve({ data: {}, error: null }),
-      ),
-    },
-  },
-}))
+const signInWithPasswordMock = supabase?.auth.signInWithPassword as jest.Mock
 
 describe('SignInForm', () => {
   beforeEach(() => {
@@ -39,6 +32,7 @@ describe('SignInForm', () => {
   })
 
   it('calls signInWithPassword on submitting with valid credentials, and redirects to dashboard', async () => {
+    signInWithPasswordMock.mockResolvedValue({ data: {}, error: null })
     const { getByPlaceholderText, getByRole } = render(<SignInForm />)
 
     const emailInput = getByPlaceholderText('m@example.com')
@@ -52,7 +46,7 @@ describe('SignInForm', () => {
     fireEvent.press(submitBtn)
 
     await waitFor(() => {
-      expect(supabase?.auth.signInWithPassword).toHaveBeenCalledWith({
+      expect(signInWithPasswordMock).toHaveBeenCalledWith({
         email,
         password,
       })
@@ -70,7 +64,7 @@ describe('SignInForm', () => {
     await waitFor(() => {
       expect(getByText('A valid email is required')).toBeTruthy()
       expect(getByText('Password is required')).toBeTruthy()
-      expect(supabase?.auth.signInWithPassword).not.toHaveBeenCalled()
+      expect(signInWithPasswordMock).not.toHaveBeenCalled()
     })
   })
 
@@ -109,7 +103,7 @@ describe('SignInForm', () => {
   })
 
   it('shows authorization error on submitting with incorrect credentials', async () => {
-    ;(supabase?.auth.signInWithPassword as jest.Mock).mockResolvedValueOnce({
+    signInWithPasswordMock.mockResolvedValue({
       data: null,
       error: { message: 'Invalid credentials' },
     })

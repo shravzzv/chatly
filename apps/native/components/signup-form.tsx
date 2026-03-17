@@ -11,13 +11,18 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { Text } from '@/components/ui/text'
+import { mapSignupAuthErrors } from '@/lib/errors'
+import { supabase } from '@/lib/supabase'
 import { zodResolver } from '@hookform/resolvers/zod'
+import * as Linking from 'expo-linking'
 import { Link } from 'expo-router'
-import { useRef } from 'react'
+import { AlertCircle, BadgeCheck } from 'lucide-react-native'
+import { useRef, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { type TextInput, View } from 'react-native'
 import * as z from 'zod'
 import PasswordInput from './password-input'
+import { Alert, AlertDescription, AlertTitle } from './ui/alert'
 import { Spinner } from './ui/spinner'
 
 const formSchema = z.object({
@@ -32,10 +37,14 @@ type FormSchema = z.infer<typeof formSchema>
 
 export function SignUpForm() {
   const passwordInputRef = useRef<TextInput>(null)
+  const [showEmailAlert, setShowEmailAlert] = useState(false)
+  const [authGlobalError, setAuthGlobalError] = useState<string | null>(null)
 
   const {
     handleSubmit,
     control,
+    reset,
+    setError,
     formState: { errors, isSubmitting },
   } = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
@@ -46,8 +55,36 @@ export function SignUpForm() {
     passwordInputRef.current?.focus()
   }
 
-  const onSubmit = (data: FormSchema) => {
-    console.log('form submitted')
+  const onSubmit = async (data: FormSchema) => {
+    if (!supabase) return
+
+    setShowEmailAlert(false)
+    setAuthGlobalError(null)
+    const emailRedirectTo = Linking.createURL('/')
+
+    const { error } = await supabase.auth.signUp({
+      email: data.email,
+      password: data.password,
+      options: { emailRedirectTo },
+    })
+
+    if (error) {
+      const mappedError = mapSignupAuthErrors(error)
+
+      if (mappedError.field) {
+        setError(mappedError.field, {
+          type: 'server',
+          message: mappedError.message,
+        })
+        return
+      }
+
+      setAuthGlobalError(mappedError.message)
+      return
+    }
+
+    setShowEmailAlert(true)
+    reset({ email: data.email, password: '' })
   }
 
   return (
@@ -149,10 +186,26 @@ export function SignUpForm() {
             )}
           />
 
+          {showEmailAlert && (
+            <Alert icon={BadgeCheck}>
+              <AlertTitle>Verification email sent</AlertTitle>
+              <AlertDescription>
+                Please check your inbox to confirm your account.
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {authGlobalError && (
+            <Alert variant='destructive' icon={AlertCircle}>
+              <AlertTitle>Sign up failed</AlertTitle>
+              <AlertDescription>{authGlobalError}</AlertDescription>
+            </Alert>
+          )}
+
           <Button
             className='w-full'
             onPress={handleSubmit(onSubmit)}
-            disabled={isSubmitting}
+            disabled={isSubmitting || showEmailAlert}
           >
             {isSubmitting ? (
               <>
