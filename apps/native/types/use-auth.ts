@@ -15,4 +15,13 @@ export interface UseAuthResult {
    * (e.g. sign-in, sign-out, token refresh).
    */
   isAuthenticated: boolean
+
+  /**
+   * Indicates whether the initial authentication state is still being resolved.
+   *
+   * This is `true` during app startup while Supabase retrieves any existing
+   * session (e.g. from storage). It becomes `false` once the session is known,
+   * regardless of whether the user is authenticated or not.
+   */
+  isLoading: boolean
 }

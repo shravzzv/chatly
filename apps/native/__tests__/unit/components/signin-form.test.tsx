@@ -11,6 +11,9 @@ jest.mock('expo-router', () => ({
     replace: jest.fn(),
   },
 }))
+jest.mock('expo-linking', () => ({
+  createURL: jest.fn(() => 'chatly://'),
+}))
 
 const signInWithPasswordMock = supabase?.auth.signInWithPassword as jest.Mock
 
