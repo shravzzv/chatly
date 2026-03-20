@@ -143,6 +143,10 @@ describe('SignInForm', () => {
   })
 
   it('shows loading state while submitting', async () => {
+    signInWithPasswordMock.mockImplementation(
+      () => new Promise((resolve) => () => resolve({ data: {}, error: null })),
+    )
+
     const { getByPlaceholderText, getByRole, findByText } = render(
       <SignInForm />,
     )
