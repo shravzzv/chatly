@@ -1,7 +1,8 @@
+// apps/native/components/social-connections.tsx
 import { Button } from '@/components/ui/button'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
-import * as Linking from 'expo-linking'
+import * as WebBrowser from 'expo-web-browser'
 import { useColorScheme } from 'nativewind'
 import { Image, Platform, View } from 'react-native'
 
@@ -25,18 +26,43 @@ const SOCIAL_CONNECTION_STRATEGIES = [
   },
 ] as const
 
+WebBrowser.maybeCompleteAuthSession()
+
+const handlePress = async (provider: Provider) => {
+  if (!supabase) return
+
+  if (Platform.OS === 'web') {
+    const redirectToWeb = window.location.origin + '/'
+
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: { redirectTo: redirectToWeb },
+    })
+
+    if (error) console.error('OAuth web error', error)
+    return
+  }
+
+  const redirectToNative = 'chatly://'
+
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider,
+    options: {
+      redirectTo: redirectToNative,
+      skipBrowserRedirect: true,
+    },
+  })
+
+  if (error) {
+    console.error('SocialConnections auth error', error)
+    return
+  }
+
+  await WebBrowser.openAuthSessionAsync(data?.url ?? '', redirectToNative)
+}
+
 export function SocialConnections() {
   const { colorScheme } = useColorScheme()
-
-  const handlePress = async (provider: Provider) => {
-    if (!supabase) return
-    const redirectTo = Linking.createURL('/')
-
-    await supabase.auth.signInWithOAuth({
-      provider,
-      options: { redirectTo },
-    })
-  }
 
   return (
     <View className='flex-row gap-2'>
