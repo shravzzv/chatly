@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { Text } from '@/components/ui/text'
 import { supabase } from '@/lib/supabase'
+import type { AuthState } from '@/types/auth'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Link, router } from 'expo-router'
 import { AlertCircle } from 'lucide-react-native'
@@ -36,6 +37,10 @@ type FormSchema = z.infer<typeof formSchema>
 export function SignInForm() {
   const passwordInputRef = useRef<TextInput>(null)
   const [isAuthError, setIsAuthError] = useState<boolean>(false)
+  const [authState, setAuthState] = useState<AuthState>({
+    status: 'idle',
+    provider: null,
+  })
 
   const {
     handleSubmit,
@@ -52,19 +57,24 @@ export function SignInForm() {
 
   const onSubmit = async (data: FormSchema) => {
     if (!supabase) return
+    setAuthState({ status: 'loading', provider: 'email' })
     setIsAuthError(false)
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email: data.email,
-      password: data.password,
-    })
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: data.email,
+        password: data.password,
+      })
 
-    if (error) {
-      setIsAuthError(true)
-      return
+      if (error) {
+        setIsAuthError(true)
+        return
+      }
+
+      router.replace('/dashboard')
+    } finally {
+      setAuthState({ status: 'idle', provider: null })
     }
-
-    router.replace('/dashboard')
   }
 
   return (
@@ -178,9 +188,10 @@ export function SignInForm() {
           <Button
             className='w-full'
             onPress={handleSubmit(onSubmit)}
-            disabled={isSubmitting}
+            disabled={isSubmitting || authState.status === 'loading'}
           >
-            {isSubmitting ? (
+            {authState.status === 'loading' &&
+            authState.provider === 'email' ? (
               <>
                 <Spinner className='text-primary-foreground' />
                 <Text>Signing in...</Text>
@@ -197,7 +208,7 @@ export function SignInForm() {
           <Separator className='flex-1' />
         </View>
 
-        <SocialConnections />
+        <SocialConnections authState={authState} setAuthState={setAuthState} />
 
         <View className='flex-row justify-center'>
           <Text variant='muted'>Don&apos;t have an account? </Text>

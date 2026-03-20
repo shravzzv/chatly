@@ -2,9 +2,11 @@
 import { Button } from '@/components/ui/button'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
+import type { AuthState } from '@/types/auth'
 import * as WebBrowser from 'expo-web-browser'
 import { useColorScheme } from 'nativewind'
 import { Image, Platform, View } from 'react-native'
+import { Spinner } from './ui/spinner'
 
 type Provider = 'google' | 'github' | 'apple'
 
@@ -61,7 +63,15 @@ const handlePress = async (provider: Provider) => {
   await WebBrowser.openAuthSessionAsync(data?.url ?? '', redirectToNative)
 }
 
-export function SocialConnections() {
+interface SocialConnectionsProps {
+  authState: AuthState
+  setAuthState: React.Dispatch<React.SetStateAction<AuthState>>
+}
+
+export function SocialConnections({
+  authState,
+  setAuthState,
+}: SocialConnectionsProps) {
   const { colorScheme } = useColorScheme()
 
   return (
@@ -73,23 +83,39 @@ export function SocialConnections() {
             variant='outline'
             size='sm'
             className='flex-1 disabled:cursor-not-allowed'
-            disabled={strategy.provider === 'apple'}
-            onPress={() => handlePress(strategy.provider)}
+            disabled={
+              // apple auth disabled provisionally
+              strategy.provider === 'apple' || authState.status === 'loading'
+            }
+            onPress={async () => {
+              if (authState.status === 'loading') return
+              setAuthState({ status: 'loading', provider: strategy.provider })
+
+              try {
+                await handlePress(strategy.provider)
+              } finally {
+                setAuthState({ status: 'idle', provider: null })
+              }
+            }}
           >
-            <Image
-              className={cn(
-                'size-4',
-                strategy.useTint && Platform.select({ web: 'dark:invert' }),
-              )}
-              tintColor={Platform.select({
-                native: strategy.useTint
-                  ? colorScheme === 'dark'
-                    ? 'white'
-                    : 'black'
-                  : undefined,
-              })}
-              source={strategy.source}
-            />
+            {authState.provider === strategy.provider ? (
+              <Spinner />
+            ) : (
+              <Image
+                className={cn(
+                  'size-4',
+                  strategy.useTint && Platform.select({ web: 'dark:invert' }),
+                )}
+                tintColor={Platform.select({
+                  native: strategy.useTint
+                    ? colorScheme === 'dark'
+                      ? 'white'
+                      : 'black'
+                    : undefined,
+                })}
+                source={strategy.source}
+              />
+            )}
           </Button>
         )
       })}

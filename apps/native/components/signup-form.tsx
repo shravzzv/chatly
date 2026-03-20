@@ -13,6 +13,7 @@ import { Separator } from '@/components/ui/separator'
 import { Text } from '@/components/ui/text'
 import { mapSignupAuthErrors } from '@/lib/errors'
 import { supabase } from '@/lib/supabase'
+import type { AuthState } from '@/types/auth'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as Linking from 'expo-linking'
 import { Link } from 'expo-router'
@@ -39,6 +40,10 @@ export function SignUpForm() {
   const passwordInputRef = useRef<TextInput>(null)
   const [showEmailAlert, setShowEmailAlert] = useState(false)
   const [authGlobalError, setAuthGlobalError] = useState<string | null>(null)
+  const [authState, setAuthState] = useState<AuthState>({
+    status: 'idle',
+    provider: null,
+  })
 
   const {
     handleSubmit,
@@ -60,31 +65,36 @@ export function SignUpForm() {
 
     setShowEmailAlert(false)
     setAuthGlobalError(null)
+    setAuthState({ status: 'loading', provider: 'email' })
     const emailRedirectTo = Linking.createURL('/')
 
-    const { error } = await supabase.auth.signUp({
-      email: data.email,
-      password: data.password,
-      options: { emailRedirectTo },
-    })
+    try {
+      const { error } = await supabase.auth.signUp({
+        email: data.email,
+        password: data.password,
+        options: { emailRedirectTo },
+      })
 
-    if (error) {
-      const mappedError = mapSignupAuthErrors(error)
+      if (error) {
+        const mappedError = mapSignupAuthErrors(error)
 
-      if (mappedError.field) {
-        setError(mappedError.field, {
-          type: 'server',
-          message: mappedError.message,
-        })
+        if (mappedError.field) {
+          setError(mappedError.field, {
+            type: 'server',
+            message: mappedError.message,
+          })
+          return
+        }
+
+        setAuthGlobalError(mappedError.message)
         return
       }
 
-      setAuthGlobalError(mappedError.message)
-      return
+      setShowEmailAlert(true)
+      reset({ email: data.email, password: '' })
+    } finally {
+      setAuthState({ status: 'idle', provider: null })
     }
-
-    setShowEmailAlert(true)
-    reset({ email: data.email, password: '' })
   }
 
   return (
@@ -205,9 +215,12 @@ export function SignUpForm() {
           <Button
             className='w-full'
             onPress={handleSubmit(onSubmit)}
-            disabled={isSubmitting || showEmailAlert}
+            disabled={
+              isSubmitting || showEmailAlert || authState.status === 'loading'
+            }
           >
-            {isSubmitting ? (
+            {authState.status === 'loading' &&
+            authState.provider === 'email' ? (
               <>
                 <Spinner className='text-primary-foreground' />
                 <Text>Creating account...</Text>
@@ -224,7 +237,7 @@ export function SignUpForm() {
           <Separator className='flex-1' />
         </View>
 
-        <SocialConnections />
+        <SocialConnections authState={authState} setAuthState={setAuthState} />
 
         <View className='flex-row justify-center'>
           <Text variant='muted'>Already have an account? </Text>
