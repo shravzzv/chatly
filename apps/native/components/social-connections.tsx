@@ -13,17 +13,18 @@ type Provider = 'google' | 'github' | 'apple'
 const SOCIAL_CONNECTION_STRATEGIES = [
   {
     provider: 'google',
-    source: { uri: 'https://img.clerk.com/static/google.png?width=160' },
+    source: require('../assets/images/google.png'),
     useTint: false,
   },
   {
     provider: 'github',
-    source: { uri: 'https://img.clerk.com/static/github.png?width=160' },
+    source: require('../assets/images/github.png'),
+
     useTint: true,
   },
   {
     provider: 'apple',
-    source: { uri: 'https://img.clerk.com/static/apple.png?width=160' },
+    source: require('../assets/images/apple.png'),
     useTint: true,
   },
 ] as const
@@ -102,10 +103,12 @@ export function SocialConnections({
               <Spinner />
             ) : (
               <Image
+                source={strategy.source}
                 className={cn(
                   'size-4',
                   strategy.useTint && Platform.select({ web: 'dark:invert' }),
                 )}
+                style={{ width: 16, height: 16 }}
                 tintColor={Platform.select({
                   native: strategy.useTint
                     ? colorScheme === 'dark'
@@ -113,7 +116,6 @@ export function SocialConnections({
                       : 'black'
                     : undefined,
                 })}
-                source={strategy.source}
               />
             )}
           </Button>

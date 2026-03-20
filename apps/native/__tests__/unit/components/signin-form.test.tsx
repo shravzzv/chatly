@@ -14,6 +14,9 @@ jest.mock('expo-router', () => ({
 jest.mock('expo-linking', () => ({
   createURL: jest.fn(() => 'chatly://'),
 }))
+jest.mock('@/assets/images/google.png')
+jest.mock('@/assets/images/github.png')
+jest.mock('@/assets/images/apple.png')
 
 const signInWithPasswordMock = supabase?.auth.signInWithPassword as jest.Mock
 

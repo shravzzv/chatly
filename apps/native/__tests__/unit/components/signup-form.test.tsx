@@ -7,6 +7,9 @@ jest.mock('@/lib/supabase')
 jest.mock('expo-linking', () => ({
   createURL: jest.fn(() => 'chatly://'),
 }))
+jest.mock('@/assets/images/google.png')
+jest.mock('@/assets/images/github.png')
+jest.mock('@/assets/images/apple.png')
 
 const signUpMock = supabase?.auth.signUp as jest.Mock
 signUpMock.mockResolvedValue({ data: null, error: {} })
