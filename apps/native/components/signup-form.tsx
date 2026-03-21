@@ -140,6 +140,13 @@ export function SignUpForm() {
                   }
                 />
 
+                {!errors.email && (
+                  <Text className='text-sm text-muted-foreground'>
+                    We&apos;ll use this to contact you. We will not share your
+                    email with anyone else.
+                  </Text>
+                )}
+
                 {errors.email && (
                   <Text
                     variant='small'
