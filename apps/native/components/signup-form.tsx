@@ -233,14 +233,16 @@ export function SignUpForm() {
                 <Text>Creating account...</Text>
               </>
             ) : (
-              <Text>Continue</Text>
+              <Text>Create account</Text>
             )}
           </Button>
         </View>
 
         <View className='flex-row items-center'>
           <Separator className='flex-1' />
-          <Text className='px-4 text-sm text-muted-foreground'>or</Text>
+          <Text className='px-4 text-sm text-muted-foreground'>
+            or continue with
+          </Text>
           <Separator className='flex-1' />
         </View>
 

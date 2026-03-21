@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { Text } from '@/components/ui/text'
+import { mapSigninAuthErrors } from '@/lib/errors'
 import { supabase } from '@/lib/supabase'
 import type { AuthState } from '@/types/auth'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -36,7 +37,7 @@ type FormSchema = z.infer<typeof formSchema>
 
 export function SignInForm() {
   const passwordInputRef = useRef<TextInput>(null)
-  const [isAuthError, setIsAuthError] = useState<boolean>(false)
+  const [authGlobalError, setAuthGlobalError] = useState<string | null>(null)
   const [authState, setAuthState] = useState<AuthState>({
     status: 'idle',
     provider: null,
@@ -58,7 +59,7 @@ export function SignInForm() {
   const onSubmit = async (data: FormSchema) => {
     if (!supabase) return
     setAuthState({ status: 'loading', provider: 'email' })
-    setIsAuthError(false)
+    setAuthGlobalError(null)
 
     try {
       const { error } = await supabase.auth.signInWithPassword({
@@ -67,7 +68,7 @@ export function SignInForm() {
       })
 
       if (error) {
-        setIsAuthError(true)
+        setAuthGlobalError(mapSigninAuthErrors(error))
         return
       }
 
@@ -176,12 +177,10 @@ export function SignInForm() {
             )}
           />
 
-          {isAuthError && (
+          {authGlobalError && (
             <Alert variant='destructive' icon={AlertCircle}>
               <AlertTitle>Sign in failed</AlertTitle>
-              <AlertDescription>
-                Check your email and password and try again.
-              </AlertDescription>
+              <AlertDescription>{authGlobalError}</AlertDescription>
             </Alert>
           )}
 
@@ -197,14 +196,16 @@ export function SignInForm() {
                 <Text>Signing in...</Text>
               </>
             ) : (
-              <Text>Continue</Text>
+              <Text>Sign in</Text>
             )}
           </Button>
         </View>
 
         <View className='flex-row items-center'>
           <Separator className='flex-1' />
-          <Text className='px-4 text-sm text-muted-foreground'>or</Text>
+          <Text className='px-4 text-sm text-muted-foreground'>
+            or continue with
+          </Text>
           <Separator className='flex-1' />
         </View>
 

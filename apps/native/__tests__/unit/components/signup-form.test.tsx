@@ -13,6 +13,7 @@ jest.mock('@/assets/images/apple.png')
 
 const signUpMock = supabase?.auth.signUp as jest.Mock
 signUpMock.mockResolvedValue({ data: null, error: {} })
+const submitBtnName = 'Create account'
 
 describe('SignUpForm', () => {
   beforeEach(() => {
@@ -24,7 +25,7 @@ describe('SignUpForm', () => {
 
     const emailInput = getByPlaceholderText('m@example.com')
     const passwordInput = getByPlaceholderText('password')
-    const submitBtn = getByRole('button', { name: 'Continue' })
+    const submitBtn = getByRole('button', { name: submitBtnName })
 
     expect(emailInput).toBeTruthy()
     expect(passwordInput).toBeTruthy()
@@ -37,7 +38,7 @@ describe('SignUpForm', () => {
 
     const emailInput = getByPlaceholderText('m@example.com')
     const passwordInput = getByPlaceholderText('password')
-    const submitBtn = getByRole('button', { name: 'Continue' })
+    const submitBtn = getByRole('button', { name: submitBtnName })
     const email = 'asdf@asfd.com'
     const password = '12345678'
 
@@ -58,7 +59,7 @@ describe('SignUpForm', () => {
   it('shows validation errors on submitting with empty email and password', async () => {
     const { getByRole, getByText } = render(<SignUpForm />)
 
-    const submitBtn = getByRole('button', { name: 'Continue' })
+    const submitBtn = getByRole('button', { name: submitBtnName })
     fireEvent.press(submitBtn)
 
     await waitFor(() => {
@@ -80,7 +81,7 @@ describe('SignUpForm', () => {
 
     const emailInput = getByPlaceholderText('m@example.com')
     const passwordInput = getByPlaceholderText('password')
-    const submitBtn = getByRole('button', { name: 'Continue' })
+    const submitBtn = getByRole('button', { name: submitBtnName })
 
     fireEvent.changeText(emailInput, 'asdfasfd@asasdf.com')
     fireEvent.changeText(passwordInput, '123456789')
@@ -100,7 +101,7 @@ describe('SignUpForm', () => {
 
     fireEvent.changeText(getByPlaceholderText('m@example.com'), 'a@b.com')
     fireEvent.changeText(getByPlaceholderText('password'), '12345678')
-    fireEvent.press(getByRole('button', { name: 'Continue' }))
+    fireEvent.press(getByRole('button', { name: submitBtnName }))
 
     expect(await findByText('Verification email sent')).toBeTruthy()
   })
@@ -117,7 +118,7 @@ describe('SignUpForm', () => {
 
     fireEvent.changeText(getByPlaceholderText('m@example.com'), 'a@b.com')
     fireEvent.changeText(getByPlaceholderText('password'), '12345678')
-    fireEvent.press(getByRole('button', { name: 'Continue' }))
+    fireEvent.press(getByRole('button', { name: submitBtnName }))
 
     expect(
       await findByText('Something went wrong. Please try again.'),
@@ -138,7 +139,7 @@ describe('SignUpForm', () => {
 
     fireEvent.changeText(getByPlaceholderText('m@example.com'), 'a@b.com')
     fireEvent.changeText(getByPlaceholderText('password'), '12345678')
-    fireEvent.press(getByRole('button', { name: 'Continue' }))
+    fireEvent.press(getByRole('button', { name: submitBtnName }))
 
     expect(await findByText('Creating account...')).toBeTruthy()
   })
@@ -155,7 +156,7 @@ describe('SignUpForm', () => {
 
     fireEvent.changeText(emailInput, 'a@b.com')
     fireEvent.changeText(passwordInput, '12345678')
-    fireEvent.press(getByRole('button', { name: 'Continue' }))
+    fireEvent.press(getByRole('button', { name: submitBtnName }))
 
     await findByText('Verification email sent')
 

@@ -49,3 +49,27 @@ export const mapSignupAuthErrors = (
     message: 'Something went wrong. Please try again.',
   }
 }
+
+/**
+ * Maps auth errors from db into succinct user facing semantic messages.
+ *
+ * @param error - The AuthError returned from Supabase `auth.signInWithPassword`
+ * @returns A string containing the mapped error message.
+ */
+export const mapSigninAuthErrors = (error: AuthError) => {
+  const msg = error.message.toLowerCase() ?? ''
+
+  if (msg.includes('invalid') && msg.includes('credentials')) {
+    return 'Check your email and password and try again.'
+  }
+
+  if (msg.includes('rate') && msg.includes('limit')) {
+    return 'Too many attempts. Please try again later.'
+  }
+
+  if (msg.includes('network') || msg.includes('fetch')) {
+    return 'Network error. Please check your connection.'
+  }
+
+  return 'Something went wrong. Please try again.'
+}

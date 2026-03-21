@@ -19,6 +19,7 @@ jest.mock('@/assets/images/github.png')
 jest.mock('@/assets/images/apple.png')
 
 const signInWithPasswordMock = supabase?.auth.signInWithPassword as jest.Mock
+const submitBtnName = 'Sign in'
 
 describe('SignInForm', () => {
   beforeEach(() => {
@@ -30,7 +31,7 @@ describe('SignInForm', () => {
 
     const emailInput = getByPlaceholderText('m@example.com')
     const passwordInput = getByPlaceholderText('password')
-    const submitBtn = getByRole('button', { name: 'Continue' })
+    const submitBtn = getByRole('button', { name: submitBtnName })
 
     expect(emailInput).toBeTruthy()
     expect(passwordInput).toBeTruthy()
@@ -43,7 +44,7 @@ describe('SignInForm', () => {
 
     const emailInput = getByPlaceholderText('m@example.com')
     const passwordInput = getByPlaceholderText('password')
-    const submitBtn = getByRole('button', { name: 'Continue' })
+    const submitBtn = getByRole('button', { name: submitBtnName })
     const email = 'asdf@asfd.com'
     const password = '12345678'
 
@@ -64,7 +65,7 @@ describe('SignInForm', () => {
   it('shows validation errors on submitting with empty email and password', async () => {
     const { getByRole, getByText } = render(<SignInForm />)
 
-    const submitBtn = getByRole('button', { name: 'Continue' })
+    const submitBtn = getByRole('button', { name: submitBtnName })
     fireEvent.press(submitBtn)
 
     await waitFor(() => {
@@ -80,7 +81,7 @@ describe('SignInForm', () => {
     )
 
     const emailInput = getByPlaceholderText('m@example.com')
-    const submitBtn = getByRole('button', { name: 'Continue' })
+    const submitBtn = getByRole('button', { name: submitBtnName })
 
     fireEvent.changeText(emailInput, 'invalid@email')
     fireEvent.press(submitBtn)
@@ -96,7 +97,7 @@ describe('SignInForm', () => {
     )
 
     const passwordInput = getByPlaceholderText('password')
-    const submitBtn = getByRole('button', { name: 'Continue' })
+    const submitBtn = getByRole('button', { name: submitBtnName })
 
     fireEvent.changeText(passwordInput, '12345')
     fireEvent.press(submitBtn)
@@ -120,7 +121,7 @@ describe('SignInForm', () => {
 
     const emailInput = getByPlaceholderText('m@example.com')
     const passwordInput = getByPlaceholderText('password')
-    const submitBtn = getByRole('button', { name: 'Continue' })
+    const submitBtn = getByRole('button', { name: submitBtnName })
 
     fireEvent.changeText(emailInput, 'asdfasfd@asasdf.com')
     fireEvent.changeText(passwordInput, '123456789')
@@ -156,7 +157,7 @@ describe('SignInForm', () => {
 
     const emailInput = getByPlaceholderText('m@example.com')
     const passwordInput = getByPlaceholderText('password')
-    const submitBtn = getByRole('button', { name: 'Continue' })
+    const submitBtn = getByRole('button', { name: submitBtnName })
 
     fireEvent.changeText(emailInput, 'asdf@asdf.com')
     fireEvent.changeText(passwordInput, '123456789')
