@@ -2,9 +2,12 @@
 import { supabase } from '@/lib/supabase'
 
 /**
- * ?
+ * Extracts auth tokens from a redirect URL and restores the Supabase session.
  *
- * @param url - ?
+ * Supports both hash (#) and query (?) based OAuth redirects.
+ * No-op if tokens are missing or Supabase is unavailable.
+ *
+ * @param url - The redirect URL containing auth tokens
  */
 export async function handleAuthRedirect(url: string) {
   if (!url || !supabase) return
@@ -14,7 +17,6 @@ export async function handleAuthRedirect(url: string) {
   if (!queryString) return
 
   const params = new URLSearchParams(queryString)
-  console.log(params)
   const access_token = params.get('access_token')
   const refresh_token = params.get('refresh_token')
 
