@@ -25,6 +25,7 @@ import { useColorScheme } from 'nativewind'
 import { useEffect } from 'react'
 import { View } from 'react-native'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
+import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { Toaster } from 'sonner-native'
 
 SplashScreen.preventAutoHideAsync()
@@ -76,7 +77,7 @@ function InnerRootLayout() {
               'bg-surface flex-1 items-center justify-center gap-2 font-sans text-base text-foreground',
             )}
           >
-            <StatusBar />
+            <StatusBar translucent={false} />
             <Spinner />
             <Text className='text-muted-foreground'>Checking session...</Text>
           </View>
@@ -88,38 +89,40 @@ function InnerRootLayout() {
   return (
     <NavThemeProvider value={NAV_THEME[colorScheme ?? 'light']}>
       <ThemeProvider>
-        <GestureHandlerRootView>
-          <View
-            className={cn(colorScheme === 'dark' && 'dark', 'flex-1')}
-            /**
-             * class 'dark' is required to keep the app's 'system' theme in
-             * sync with OS in real time (edge case)
-             */
-          >
-            <StatusBar />
+        <SafeAreaProvider>
+          <GestureHandlerRootView className='flex-1'>
+            <View
+              className={cn(colorScheme === 'dark' && 'dark', 'flex-1')}
+              /**
+               * class 'dark' is required to keep the app's 'system' theme in
+               * sync with OS in real time (edge case)
+               */
+            >
+              <StatusBar translucent={false} />
 
-            <Stack screenOptions={{ headerShown: false }}>
-              <Stack.Protected guard={!isAuthenticated}>
-                <Stack.Screen name='(public)' />
-              </Stack.Protected>
+              <Stack screenOptions={{ headerShown: false }}>
+                <Stack.Protected guard={!isAuthenticated}>
+                  <Stack.Screen name='(public)' />
+                </Stack.Protected>
 
-              <Stack.Protected guard={isAuthenticated}>
-                <Stack.Screen name='(private)' />
-              </Stack.Protected>
+                <Stack.Protected guard={isAuthenticated}>
+                  <Stack.Screen name='(private)' />
+                </Stack.Protected>
 
-              <Stack.Screen name='+not-found' />
-            </Stack>
+                <Stack.Screen name='+not-found' />
+              </Stack>
 
-            <PortalHost />
+              <PortalHost />
 
-            <Toaster
-              richColors
-              closeButton
-              position='top-center'
-              swipeToDismissDirection='left'
-            />
-          </View>
-        </GestureHandlerRootView>
+              <Toaster
+                richColors
+                closeButton
+                position='top-center'
+                swipeToDismissDirection='left'
+              />
+            </View>
+          </GestureHandlerRootView>
+        </SafeAreaProvider>
       </ThemeProvider>
     </NavThemeProvider>
   )
