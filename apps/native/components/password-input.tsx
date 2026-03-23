@@ -12,12 +12,16 @@ interface PasswordInputProps {
   inputRef?: RefObject<TextInput | null>
   onChangeText: (value: string) => void
   onSubmitEditing?: () => void
+  editable?: boolean
+  placeholder?: string
 }
 
 export default function PasswordInput({
   value,
   inputRef,
+  editable,
   className,
+  placeholder = 'password',
   onChangeText,
   onSubmitEditing,
 }: PasswordInputProps) {
@@ -27,14 +31,15 @@ export default function PasswordInput({
     <View className='relative'>
       <Input
         id='password'
-        value={value ?? ''}
-        onChangeText={onChangeText}
-        returnKeyType='send'
-        secureTextEntry={!visible}
-        placeholder='password'
         ref={inputRef}
-        onSubmitEditing={onSubmitEditing}
+        value={value ?? ''}
+        editable={editable}
+        placeholder={placeholder}
+        secureTextEntry={!visible}
         className={cn('pr-8', className)}
+        onChangeText={onChangeText}
+        onSubmitEditing={onSubmitEditing}
+        returnKeyType='send'
         autoComplete='password'
       />
 

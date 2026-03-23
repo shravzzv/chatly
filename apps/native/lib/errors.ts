@@ -73,3 +73,35 @@ export const mapSigninAuthErrors = (error: AuthError) => {
 
   return 'Something went wrong. Please try again.'
 }
+
+export const mapForgotPasswordErrors = (error: AuthError) => {
+  const msg = error.message.toLowerCase() ?? ''
+
+  if (msg.includes('rate') && msg.includes('limit')) {
+    return 'Too many attempts. Please try again later.'
+  }
+
+  if (msg.includes('network') || msg.includes('fetch')) {
+    return 'Network error. Please check your connection.'
+  }
+
+  return 'Something went wrong. Please try again.'
+}
+
+export const mapResetPasswordErrors = (error: AuthError) => {
+  const msg = error.message?.toLowerCase() ?? ''
+
+  return getCommonAuthError(msg) ?? 'Something went wrong. Please try again.'
+}
+
+const getCommonAuthError = (msg: string): string | null => {
+  if (msg.includes('rate') && msg.includes('limit')) {
+    return 'Too many attempts. Please try again later.'
+  }
+
+  if (msg.includes('network') || msg.includes('fetch')) {
+    return 'Network error. Please check your connection.'
+  }
+
+  return null
+}

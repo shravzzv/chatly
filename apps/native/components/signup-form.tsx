@@ -179,6 +179,7 @@ export function SignUpForm() {
                   inputRef={passwordInputRef}
                   onChangeText={field.onChange}
                   onSubmitEditing={handleSubmit(onSubmit)}
+                  editable={!isSubmitting}
                   className={
                     errors.password ? 'border-destructive text-destructive' : ''
                   }

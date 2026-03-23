@@ -71,7 +71,7 @@ function InnerRootLayout() {
           <View
             className={cn(
               colorScheme === 'dark' && 'dark',
-              'flex-1 items-center justify-center gap-2',
+              'bg-surface flex-1 items-center justify-center gap-2 font-sans text-base text-foreground',
             )}
           >
             <StatusBar />

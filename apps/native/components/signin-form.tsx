@@ -58,8 +58,9 @@ export function SignInForm() {
 
   const onSubmit = async (data: FormSchema) => {
     if (!supabase) return
-    setAuthState({ status: 'loading', provider: 'email' })
+
     setAuthGlobalError(null)
+    setAuthState({ status: 'loading', provider: 'email' })
 
     try {
       const { error } = await supabase.auth.signInWithPassword({
@@ -144,7 +145,7 @@ export function SignInForm() {
                     Password
                   </Label>
 
-                  <Link href='/(public)/signup'>
+                  <Link href='/forgot-password'>
                     <Text
                       variant='muted'
                       className='underline underline-offset-4'
@@ -160,6 +161,7 @@ export function SignInForm() {
                   inputRef={passwordInputRef}
                   onChangeText={field.onChange}
                   onSubmitEditing={handleSubmit(onSubmit)}
+                  editable={!isSubmitting}
                   className={
                     errors.password ? 'border-destructive text-destructive' : ''
                   }
