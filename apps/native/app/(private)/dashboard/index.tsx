@@ -1,9 +1,9 @@
-// apps/native/app/(private)/dashboard.tsx
+// apps/native/app/(private)/dashboard/index.tsx
 import { Button } from '@/components/ui/button'
 import { Screen } from '@/components/ui/screen'
 import { Text } from '@/components/ui/text'
 import { supabase } from '@/lib/supabase'
-import { router } from 'expo-router'
+import { Link, router } from 'expo-router'
 import { toast } from 'sonner-native'
 
 export default function Page() {
@@ -23,16 +23,21 @@ export default function Page() {
 
   return (
     <Screen>
-      <Text>
-        Lorem ipsum dolor sit amet consectetur adipisicing elit. Numquam
-        laboriosam doloremque veniam iure! Atque eligendi iste odio sunt eos
-        ducimus iusto ut! Autem ducimus quos fugiat debitis quasi aliquid
-        dolore! Hello
-      </Text>
-
-      <Button onPress={handleLogout} className='w-fit'>
+      <Button onPress={handleLogout} className='mb-5 w-fit'>
         <Text>Log out</Text>
       </Button>
+
+      <Link href='/dashboard/johndoe'>
+        <Text className='underline'>John doe</Text>
+      </Link>
+
+      <Link href='/dashboard/janedoe'>
+        <Text className='underline'>Jane doe</Text>
+      </Link>
+
+      <Link href='/dashboard/emma'>
+        <Text className='underline'>Emma</Text>
+      </Link>
     </Screen>
   )
 }

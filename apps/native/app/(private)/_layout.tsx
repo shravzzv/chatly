@@ -18,6 +18,7 @@ export default function PrivateLayout() {
           tabBarIcon: ({ color }) => (
             <LayoutDashboard size={28} color={color} />
           ),
+          headerShown: false,
         }}
       />
 
