@@ -24,6 +24,8 @@ import { StatusBar } from 'expo-status-bar'
 import { useColorScheme } from 'nativewind'
 import { useEffect } from 'react'
 import { View } from 'react-native'
+import { GestureHandlerRootView } from 'react-native-gesture-handler'
+import { Toaster } from 'sonner-native'
 
 SplashScreen.preventAutoHideAsync()
 
@@ -86,29 +88,38 @@ function InnerRootLayout() {
   return (
     <NavThemeProvider value={NAV_THEME[colorScheme ?? 'light']}>
       <ThemeProvider>
-        <View
-          className={cn(colorScheme === 'dark' && 'dark', 'flex-1')}
-          /**
-           * class 'dark' is required to keep the app's 'system' theme in
-           * sync with OS in real time (edge case)
-           */
-        >
-          <StatusBar />
+        <GestureHandlerRootView>
+          <View
+            className={cn(colorScheme === 'dark' && 'dark', 'flex-1')}
+            /**
+             * class 'dark' is required to keep the app's 'system' theme in
+             * sync with OS in real time (edge case)
+             */
+          >
+            <StatusBar />
 
-          <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Protected guard={!isAuthenticated}>
-              <Stack.Screen name='(public)' />
-            </Stack.Protected>
+            <Stack screenOptions={{ headerShown: false }}>
+              <Stack.Protected guard={!isAuthenticated}>
+                <Stack.Screen name='(public)' />
+              </Stack.Protected>
 
-            <Stack.Protected guard={isAuthenticated}>
-              <Stack.Screen name='(private)' />
-            </Stack.Protected>
+              <Stack.Protected guard={isAuthenticated}>
+                <Stack.Screen name='(private)' />
+              </Stack.Protected>
 
-            <Stack.Screen name='+not-found' />
-          </Stack>
+              <Stack.Screen name='+not-found' />
+            </Stack>
 
-          <PortalHost />
-        </View>
+            <PortalHost />
+
+            <Toaster
+              richColors
+              closeButton
+              position='top-center'
+              swipeToDismissDirection='left'
+            />
+          </View>
+        </GestureHandlerRootView>
       </ThemeProvider>
     </NavThemeProvider>
   )

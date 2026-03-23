@@ -4,6 +4,7 @@ import { Screen } from '@/components/ui/screen'
 import { Text } from '@/components/ui/text'
 import { supabase } from '@/lib/supabase'
 import { router } from 'expo-router'
+import { toast } from 'sonner-native'
 
 export default function Page() {
   const handleLogout = async () => {
@@ -17,6 +18,7 @@ export default function Page() {
     }
 
     router.replace('/signin')
+    toast.success('Signed out')
   }
 
   return (

@@ -15,6 +15,11 @@ jest.mock('expo-router', () => ({
     replace: jest.fn(),
   },
 }))
+jest.mock('sonner-native', () => ({
+  toast: {
+    success: jest.fn(),
+  },
+}))
 
 const getSessionMock = supabase?.auth.getSession as jest.Mock
 const updateUserMock = supabase?.auth.updateUser as jest.Mock

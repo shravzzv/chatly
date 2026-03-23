@@ -17,6 +17,7 @@ import { AlertCircle } from 'lucide-react-native'
 import { useEffect, useRef, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { TextInput, View } from 'react-native'
+import { toast } from 'sonner-native'
 import * as z from 'zod'
 import PasswordInput from './password-input'
 import { Alert, AlertDescription, AlertTitle } from './ui/alert'
@@ -94,6 +95,7 @@ export function ResetPasswordForm() {
     }
 
     router.replace('/dashboard')
+    toast.success('Password updated')
   }
 
   if (isLoading) {
