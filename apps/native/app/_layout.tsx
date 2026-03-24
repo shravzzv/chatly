@@ -77,7 +77,10 @@ function InnerRootLayout() {
               'bg-surface flex-1 items-center justify-center gap-2 font-sans text-base text-foreground',
             )}
           >
-            <StatusBar translucent={false} />
+            <StatusBar
+              translucent={false}
+              backgroundColor={colorScheme === 'dark' ? 'black' : 'white'}
+            />
             <Spinner />
             <Text className='text-muted-foreground'>Checking session...</Text>
           </View>
@@ -98,7 +101,10 @@ function InnerRootLayout() {
                * sync with OS in real time (edge case)
                */
             >
-              <StatusBar translucent={false} />
+              <StatusBar
+                translucent={false}
+                backgroundColor={colorScheme === 'dark' ? 'black' : 'white'}
+              />
 
               <Stack screenOptions={{ headerShown: false }}>
                 <Stack.Protected guard={!isAuthenticated}>
