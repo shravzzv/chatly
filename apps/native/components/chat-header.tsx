@@ -17,7 +17,7 @@ export default function ChatHeader({ chatId }: ChatHeaderProps) {
       />
 
       <View>
-        <Text>{chatId}</Text>
+        <Text>user</Text>
         <Text className='text-xs text-muted-foreground'>@username</Text>
       </View>
     </View>
