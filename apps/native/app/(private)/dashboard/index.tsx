@@ -34,10 +34,6 @@ export default function Page() {
       <Link href='/dashboard/janedoe'>
         <Text className='underline'>Jane doe</Text>
       </Link>
-
-      <Link href='/dashboard/emma'>
-        <Text className='underline'>Emma</Text>
-      </Link>
     </Screen>
   )
 }
