@@ -20,6 +20,7 @@ export default function PrivateLayout() {
           ),
           headerShown: false,
           href: '/dashboard',
+          tabBarHideOnKeyboard: true,
         }}
       />
 
