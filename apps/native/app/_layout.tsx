@@ -23,7 +23,7 @@ import * as SplashScreen from 'expo-splash-screen'
 import { StatusBar } from 'expo-status-bar'
 import { useColorScheme } from 'nativewind'
 import { useEffect } from 'react'
-import { View } from 'react-native'
+import { Platform, View } from 'react-native'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { Toaster } from 'sonner-native'
@@ -66,6 +66,18 @@ export default function RootLayout() {
 function InnerRootLayout() {
   const { colorScheme } = useColorScheme()
   const { isAuthenticated, isLoading } = useAuthContext()
+
+  useEffect(() => {
+    if (Platform.OS === 'web') {
+      const root = document.documentElement
+
+      if (colorScheme === 'dark') {
+        root.classList.add('dark')
+      } else {
+        root.classList.remove('dark')
+      }
+    }
+  }, [colorScheme])
 
   if (isLoading) {
     return (
