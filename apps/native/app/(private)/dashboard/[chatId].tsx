@@ -1,22 +1,15 @@
 // apps/native/app/(private)/dashboard/[chatId].tsx
 import ChatHeader from '@/components/chat-header'
+import ChatInput from '@/components/chat-input'
 import { Button } from '@/components/ui/button'
 import { Icon } from '@/components/ui/icon'
 import { Screen } from '@/components/ui/screen'
 import { Text } from '@/components/ui/text'
-import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
 import { router, useLocalSearchParams, useNavigation } from 'expo-router'
-import {
-  ArrowLeft,
-  Pen,
-  Plus,
-  Send,
-  Sparkles,
-  Trash,
-} from 'lucide-react-native'
+import { ArrowLeft, Pen, Trash } from 'lucide-react-native'
 import { useLayoutEffect } from 'react'
-import { Platform, ScrollView, View } from 'react-native'
+import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native'
 
 export interface Message {
   id: string
@@ -214,88 +207,70 @@ export default function Page() {
   }, [chatId, navigation])
 
   return (
-    <Screen className='gap-2 px-0 py-0 md:py-0'>
-      <ScrollView className='mx-auto w-full max-w-2xl flex-1 px-4'>
-        {messages.map((message, idx) => {
-          const isOwn = message.receiver_id === 'user_1'
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      style={{ flex: 1 }}
+      contentContainerStyle={{}}
+    >
+      <Screen className='gap-2 px-0 py-0 md:py-0'>
+        <ScrollView
+          className='mx-auto w-full max-w-2xl flex-1 px-4'
+          keyboardShouldPersistTaps='handled'
+        >
+          {messages.map((message, idx) => {
+            const isOwn = message.receiver_id === 'user_1'
 
-          return (
-            <View
-              key={idx}
-              className={cn(isOwn ? 'self-end' : 'self-start', 'gap-2 py-1')}
-            >
-              <Text
-                className={cn(
-                  isOwn ? 'bg-primary text-primary-foreground' : 'bg-muted',
-                  'max-w-[85%] rounded-3xl px-4 py-2.5 text-sm sm:max-w-xs',
-                )}
+            return (
+              <View
+                key={idx}
+                className={cn(isOwn ? 'self-end' : 'self-start', 'gap-2 py-1')}
               >
-                {message.text}
-              </Text>
-
-              <Text
-                className={cn(
-                  isOwn ? 'self-end' : 'self-start',
-                  'text-[10px] text-muted-foreground',
-                )}
-              >
-                {new Date(message.updated_at).toLocaleTimeString(undefined, {
-                  timeStyle: 'short',
-                })}
-              </Text>
-
-              {Platform.OS === 'web' && (
-                <View
+                <Text
                   className={cn(
-                    isOwn ? 'justify-end' : 'justify-start',
-                    'flex-row items-center',
+                    isOwn ? 'bg-primary text-primary-foreground' : 'bg-muted',
+                    'max-w-[85%] rounded-3xl px-4 py-2.5 text-sm sm:max-w-xs',
                   )}
                 >
-                  <Button variant='ghost' size='icon' className='p-0'>
-                    <Icon as={Pen} className='size-4 text-muted-foreground' />
-                  </Button>
+                  {message.text}
+                </Text>
 
-                  <Button variant='ghost' size='icon'>
-                    <Icon as={Trash} className='size-4 text-muted-foreground' />
-                  </Button>
-                </View>
-              )}
-            </View>
-          )
-        })}
-      </ScrollView>
+                <Text
+                  className={cn(
+                    isOwn ? 'self-end' : 'self-start',
+                    'text-[10px] text-muted-foreground',
+                  )}
+                >
+                  {new Date(message.updated_at).toLocaleTimeString(undefined, {
+                    timeStyle: 'short',
+                  })}
+                </Text>
 
-      <View className='mx-auto w-full max-w-sm shrink-0 flex-row items-end gap-2 rounded-full px-4 pb-2 sm:max-w-2xl sm:px-0'>
-        <Button
-          variant='secondary'
-          size='icon'
-          className='mb-1 size-8 shrink-0 rounded-full'
-        >
-          <Icon as={Plus} className='size-4' />
-        </Button>
+                {Platform.OS === 'web' && (
+                  <View
+                    className={cn(
+                      isOwn ? 'justify-end' : 'justify-start',
+                      'flex-row items-center',
+                    )}
+                  >
+                    <Button variant='ghost' size='icon' className='p-0'>
+                      <Icon as={Pen} className='size-4 text-muted-foreground' />
+                    </Button>
 
-        <View className='flex-1 flex-row items-end gap-2 rounded-3xl border border-border px-1.5 py-0.5 pl-1'>
-          <Textarea
-            numberOfLines={Platform.select({ web: 1, native: 5 })}
-            placeholder='Type a message...'
-            className='min-h-10 flex-1 resize-none rounded-xl border-0 border-none text-sm shadow-none outline-none placeholder:text-muted-foreground focus-visible:ring-0 active:outline-none dark:bg-transparent'
-          />
+                    <Button variant='ghost' size='icon'>
+                      <Icon
+                        as={Trash}
+                        className='size-4 text-muted-foreground'
+                      />
+                    </Button>
+                  </View>
+                )}
+              </View>
+            )
+          })}
+        </ScrollView>
 
-          <View className='flex-row items-center gap-1.5 py-1 pb-1'>
-            <Button
-              variant='secondary'
-              size='icon'
-              className='size-8 shrink-0 rounded-full'
-            >
-              <Icon as={Sparkles} className='size-4' />
-            </Button>
-
-            <Button size='icon' className='size-8 shrink-0 rounded-full'>
-              <Icon as={Send} className='size-4 text-primary-foreground' />
-            </Button>
-          </View>
-        </View>
-      </View>
-    </Screen>
+        <ChatInput />
+      </Screen>
+    </KeyboardAvoidingView>
   )
 }
