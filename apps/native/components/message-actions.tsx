@@ -1,5 +1,3 @@
-'use client'
-
 import { Message } from '@/types/message'
 import { Download, Pen, Trash } from 'lucide-react-native'
 import { View } from 'react-native'
