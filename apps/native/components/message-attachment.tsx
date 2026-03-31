@@ -2,6 +2,7 @@ import type {
   MessageAttachmentKind,
   MessageAttachment as MessageAttachmentType,
 } from '@/types/message-attachment'
+import AudioAttachment from './audio-attachment'
 import ImageAttachment from './image-attachment'
 import VideoAttachment from './video-attachment'
 
@@ -27,8 +28,8 @@ export default function MessageAttachment({
       return <ImageAttachment attachment={attachment} signedUrl={signedUrl} />
     case 'video':
       return <VideoAttachment signedUrl={signedUrl} />
-    // case 'audio':
-    //   return <AudioAttachment signedUrl={signedUrl} />
+    case 'audio':
+      return <AudioAttachment signedUrl={signedUrl} />
     // default:
     //   return <FileAttachment attachment={attachment} signedUrl={signedUrl} />
     default:
