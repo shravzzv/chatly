@@ -77,5 +77,16 @@ module.exports = {
   future: {
     hoverOnlyWhenSupported: true,
   },
-  plugins: [require('tailwindcss-animate')],
+  plugins: [
+    require('tailwindcss-animate'),
+
+    function ({ addUtilities }) {
+      addUtilities({
+        '.debug': {
+          borderWidth: 1,
+          borderColor: 'hsl(var(--border))',
+        },
+      })
+    },
+  ],
 }

@@ -19,6 +19,8 @@ export default function PrivateLayout() {
             <LayoutDashboard size={28} color={color} />
           ),
           headerShown: false,
+          href: '/dashboard',
+          tabBarHideOnKeyboard: true,
         }}
       />
 

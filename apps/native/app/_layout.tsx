@@ -23,7 +23,7 @@ import * as SplashScreen from 'expo-splash-screen'
 import { StatusBar } from 'expo-status-bar'
 import { useColorScheme } from 'nativewind'
 import { useEffect } from 'react'
-import { View } from 'react-native'
+import { Platform, View } from 'react-native'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { Toaster } from 'sonner-native'
@@ -67,6 +67,18 @@ function InnerRootLayout() {
   const { colorScheme } = useColorScheme()
   const { isAuthenticated, isLoading } = useAuthContext()
 
+  useEffect(() => {
+    if (Platform.OS === 'web') {
+      const root = document.documentElement
+
+      if (colorScheme === 'dark') {
+        root.classList.add('dark')
+      } else {
+        root.classList.remove('dark')
+      }
+    }
+  }, [colorScheme])
+
   if (isLoading) {
     return (
       <NavThemeProvider value={NAV_THEME[colorScheme ?? 'light']}>
@@ -77,7 +89,10 @@ function InnerRootLayout() {
               'bg-surface flex-1 items-center justify-center gap-2 font-sans text-base text-foreground',
             )}
           >
-            <StatusBar translucent={false} />
+            <StatusBar
+              translucent={false}
+              backgroundColor={colorScheme === 'dark' ? 'black' : 'white'}
+            />
             <Spinner />
             <Text className='text-muted-foreground'>Checking session...</Text>
           </View>
@@ -98,7 +113,10 @@ function InnerRootLayout() {
                * sync with OS in real time (edge case)
                */
             >
-              <StatusBar translucent={false} />
+              <StatusBar
+                translucent={false}
+                backgroundColor={colorScheme === 'dark' ? 'black' : 'white'}
+              />
 
               <Stack screenOptions={{ headerShown: false }}>
                 <Stack.Protected guard={!isAuthenticated}>
