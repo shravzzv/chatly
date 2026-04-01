@@ -1,6 +1,7 @@
 import { Message } from '@/types/message'
-import { Download, Pen, Trash } from 'lucide-react-native'
+import { Download, Pen } from 'lucide-react-native'
 import { View } from 'react-native'
+import DeleteMessageAction from './delete-message-action'
 import { Button } from './ui/button'
 import { Icon } from './ui/icon'
 
@@ -27,11 +28,7 @@ export default function MessageActions({
         </Button>
       )}
 
-      {showDelete && (
-        <Button variant='ghost' size='icon'>
-          <Icon as={Trash} className='size-4 text-muted-foreground' />
-        </Button>
-      )}
+      {showDelete && <DeleteMessageAction id={message.id} />}
 
       {showDownload && (
         <Button variant='ghost' size='icon'>
