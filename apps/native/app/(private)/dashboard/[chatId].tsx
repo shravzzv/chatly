@@ -1,6 +1,7 @@
 import ChatHeader from '@/components/chat-header'
 import ChatInput from '@/components/chat-input'
 import { Message } from '@/components/message'
+import TypingIndicator from '@/components/typing-indicator'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Icon } from '@/components/ui/icon'
@@ -12,7 +13,13 @@ import { cn } from '@/lib/utils'
 import type { Message as MessageType } from '@/types/message'
 import { router, useLocalSearchParams, useNavigation } from 'expo-router'
 import { ArrowDown, ArrowLeft } from 'lucide-react-native'
-import { useLayoutEffect, useRef, useState } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react'
 import {
   KeyboardAvoidingView,
   NativeScrollEvent,
@@ -252,10 +259,14 @@ export default function Page() {
   const timeoutId = useRef<ReturnType<typeof setTimeout> | null>(null)
   const navigation = useNavigation()
   const sections = groupMessagesByDate(messages)
+  const isTyping = true
 
-  const scrollToBottom = ({ animated = true }: { animated?: boolean } = {}) => {
-    listRef.current?.getScrollResponder()?.scrollToEnd({ animated })
-  }
+  const scrollToBottom = useCallback(
+    ({ animated = true }: { animated?: boolean } = {}) => {
+      listRef.current?.getScrollResponder()?.scrollToEnd({ animated })
+    },
+    [],
+  )
 
   const handleScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
     const { layoutMeasurement, contentOffset, contentSize } = e.nativeEvent
@@ -267,6 +278,19 @@ export default function Page() {
       contentSize.height - threshold
 
     setShowScrollToBottomBtn(!isNearBottom)
+  }
+
+  const onContentSizeChange = () => {
+    if (hasScrolledInitially.current || sections.length === 0) return
+    if (timeoutId.current) clearTimeout(timeoutId.current)
+
+    // wait for content to stop changing
+    timeoutId.current = setTimeout(() => {
+      requestAnimationFrame(() => {
+        scrollToBottom({ animated: false })
+        hasScrolledInitially.current = true
+      })
+    }, 60)
   }
 
   useLayoutEffect(() => {
@@ -288,18 +312,9 @@ export default function Page() {
     })
   }, [chatId, navigation])
 
-  const onContentSizeChange = () => {
-    if (hasScrolledInitially.current || sections.length === 0) return
-    if (timeoutId.current) clearTimeout(timeoutId.current)
-
-    // wait for content to stop changing
-    timeoutId.current = setTimeout(() => {
-      requestAnimationFrame(() => {
-        scrollToBottom({ animated: false })
-        hasScrolledInitially.current = true
-      })
-    }, 60)
-  }
+  useEffect(() => {
+    if (isTyping) scrollToBottom()
+  }, [isTyping, scrollToBottom])
 
   return (
     <KeyboardAvoidingView
@@ -318,6 +333,11 @@ export default function Page() {
               <Badge variant='secondary'>
                 <Text>{formatDateHeader(new Date(date))}</Text>
               </Badge>
+            </View>
+          )}
+          ListFooterComponent={() => (
+            <View className={cn(isTyping && 'pb-4')}>
+              {isTyping && <TypingIndicator />}
             </View>
           )}
           ListEmptyComponent={() => (
