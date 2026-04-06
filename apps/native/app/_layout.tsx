@@ -15,6 +15,7 @@ import {
   Inter_900Black,
   useFonts,
 } from '@expo-google-fonts/inter'
+import { ActionSheetProvider } from '@expo/react-native-action-sheet'
 import { ThemeProvider as NavThemeProvider } from '@react-navigation/native'
 import { PortalHost } from '@rn-primitives/portal'
 import * as Linking from 'expo-linking'
@@ -106,39 +107,41 @@ function InnerRootLayout() {
       <ThemeProvider>
         <SafeAreaProvider>
           <GestureHandlerRootView className='flex-1'>
-            <View
-              className={cn(colorScheme === 'dark' && 'dark', 'flex-1')}
-              /**
-               * class 'dark' is required to keep the app's 'system' theme in
-               * sync with OS in real time (edge case)
-               */
-            >
-              <StatusBar
-                translucent={false}
-                backgroundColor={colorScheme === 'dark' ? 'black' : 'white'}
-              />
+            <ActionSheetProvider>
+              <View
+                className={cn(colorScheme === 'dark' && 'dark', 'flex-1')}
+                /**
+                 * class 'dark' is required to keep the app's 'system' theme in
+                 * sync with OS in real time (edge case)
+                 */
+              >
+                <StatusBar
+                  translucent={false}
+                  backgroundColor={colorScheme === 'dark' ? 'black' : 'white'}
+                />
 
-              <Stack screenOptions={{ headerShown: false }}>
-                <Stack.Protected guard={!isAuthenticated}>
-                  <Stack.Screen name='(public)' />
-                </Stack.Protected>
+                <Stack screenOptions={{ headerShown: false }}>
+                  <Stack.Protected guard={!isAuthenticated}>
+                    <Stack.Screen name='(public)' />
+                  </Stack.Protected>
 
-                <Stack.Protected guard={isAuthenticated}>
-                  <Stack.Screen name='(private)' />
-                </Stack.Protected>
+                  <Stack.Protected guard={isAuthenticated}>
+                    <Stack.Screen name='(private)' />
+                  </Stack.Protected>
 
-                <Stack.Screen name='+not-found' />
-              </Stack>
+                  <Stack.Screen name='+not-found' />
+                </Stack>
 
-              <PortalHost />
+                <PortalHost />
 
-              <Toaster
-                richColors
-                closeButton
-                position='top-center'
-                swipeToDismissDirection='left'
-              />
-            </View>
+                <Toaster
+                  richColors
+                  closeButton
+                  position='top-center'
+                  swipeToDismissDirection='left'
+                />
+              </View>
+            </ActionSheetProvider>
           </GestureHandlerRootView>
         </SafeAreaProvider>
       </ThemeProvider>

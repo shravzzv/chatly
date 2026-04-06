@@ -1,5 +1,3 @@
-import { Trash } from 'lucide-react-native'
-import { useState } from 'react'
 import { Button } from './ui/button'
 import {
   Dialog,
@@ -9,31 +7,27 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from './ui/dialog'
-import { Icon } from './ui/icon'
 import { Text } from './ui/text'
 
 interface DeleteMessageActionProps {
   id: string
+  open: boolean
+  setOpen: (value: boolean) => void
 }
 
-export default function DeleteMessageAction({ id }: DeleteMessageActionProps) {
-  const [open, setOpen] = useState(false)
-
+export default function DeleteMessageAction({
+  id,
+  open,
+  setOpen,
+}: DeleteMessageActionProps) {
   const handleDelete = () => {
-    console.log(`delete message with id ${id}`)
+    console.log(`deleted message with id ${id}`)
     setOpen(false)
   }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant='ghost' size='icon'>
-          <Icon as={Trash} className='size-4 text-muted-foreground' />
-        </Button>
-      </DialogTrigger>
-
       <DialogContent onInteractOutside={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle>Delete message?</DialogTitle>

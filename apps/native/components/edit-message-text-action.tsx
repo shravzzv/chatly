@@ -1,7 +1,6 @@
 import { cn } from '@/lib/utils'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Pen, Sparkles } from 'lucide-react-native'
-import { useState } from 'react'
+import { Sparkles } from 'lucide-react-native'
 import { Controller, useForm } from 'react-hook-form'
 import { Platform, View } from 'react-native'
 import * as z from 'zod'
@@ -14,7 +13,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from './ui/dialog'
 import { Icon } from './ui/icon'
 import { Spinner } from './ui/spinner'
@@ -24,6 +22,8 @@ import { Textarea } from './ui/textarea'
 interface EditMessageTextActionProps {
   id: string
   text: string
+  open: boolean
+  setOpen: (value: boolean) => void
 }
 
 const formSchema = z.object({
@@ -35,31 +35,27 @@ type FormSchema = z.infer<typeof formSchema>
 export default function EditMessageTextAction({
   id,
   text,
+  open,
+  setOpen,
 }: EditMessageTextActionProps) {
-  const [open, setOpen] = useState(false)
-
   const {
     control,
     handleSubmit,
     formState: { errors, isSubmitting, isDirty },
+    reset,
   } = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
     defaultValues: { text },
   })
 
   const onSubmit = (data: FormSchema) => {
-    console.log(data.text)
+    console.log(`Edited message with id ${id} and test ${data.text}`)
     setOpen(false)
+    reset()
   }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant='ghost' size='icon' className='p-0'>
-          <Icon as={Pen} className='size-4 text-muted-foreground' />
-        </Button>
-      </DialogTrigger>
-
       <DialogContent onInteractOutside={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle>Edit message</DialogTitle>
