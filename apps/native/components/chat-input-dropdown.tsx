@@ -2,10 +2,12 @@ import * as DocumentPicker from 'expo-document-picker'
 import * as ImagePicker from 'expo-image-picker'
 import {
   AudioLines,
+  BookAudio,
   Camera,
   FilePlay,
   Image,
   ImagePlus,
+  Mic,
   Paperclip,
   Plus,
   Video,
@@ -26,7 +28,13 @@ import {
 import { Icon } from './ui/icon'
 import { Text } from './ui/text'
 
-export default function ChatInputDropdown() {
+interface ChatInputDropdownProps {
+  startRecordingVoice: () => void
+}
+
+export default function ChatInputDropdown({
+  startRecordingVoice,
+}: ChatInputDropdownProps) {
   const takePhoto = async () => {
     const permission = await ImagePicker.requestCameraPermissionsAsync()
     if (!permission.granted) {
@@ -101,6 +109,10 @@ export default function ChatInputDropdown() {
       console.log(video)
       toast.success('Video picked')
     }
+  }
+
+  const recordAudio = () => {
+    startRecordingVoice()
   }
 
   const pickAudio = async () => {
@@ -195,13 +207,30 @@ export default function ChatInputDropdown() {
           </DropdownMenuSubContent>
         </DropdownMenuSub>
 
-        <DropdownMenuItem
-          className='flex cursor-pointer items-center gap-2'
-          onPress={pickAudio}
-        >
-          <Icon as={AudioLines} className='size-4 text-muted-foreground' />
-          <Text>Audio</Text>
-        </DropdownMenuItem>
+        <DropdownMenuSub>
+          <DropdownMenuSubTrigger className='flex cursor-pointer items-center gap-2'>
+            <Icon as={AudioLines} className='size-4 text-muted-foreground' />
+            <Text>Audio</Text>
+          </DropdownMenuSubTrigger>
+
+          <DropdownMenuSubContent>
+            <DropdownMenuItem
+              className='flex cursor-pointer items-center gap-2'
+              onPress={recordAudio}
+            >
+              <Icon as={Mic} className='size-4 text-muted-foreground' />
+              <Text>Record</Text>
+            </DropdownMenuItem>
+
+            <DropdownMenuItem
+              className='flex cursor-pointer items-center gap-2'
+              onPress={pickAudio}
+            >
+              <Icon as={BookAudio} className='size-4 text-muted-foreground' />
+              <Text>File</Text>
+            </DropdownMenuItem>
+          </DropdownMenuSubContent>
+        </DropdownMenuSub>
 
         <DropdownMenuItem
           className='flex cursor-pointer items-center gap-2'

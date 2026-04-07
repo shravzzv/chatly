@@ -20,3 +20,25 @@ export const formatDateHeader = (date: Date): string => {
     })
   }
 }
+
+/**
+ * Formats a number of seconds into a hh:mm:ss format.
+ * Numbers are padded to ensure double digits and hours are added only if present.
+ *
+ * @param seconds the number of seconds to format.
+ * @returns a formatted time string as 'hh:mm:ss', for example `'01:03:56'` or `'01:56'`.
+ */
+export const getFormattedSeconds = (seconds: number) => {
+  if (seconds < 0) return '00:00'
+  const totalSeconds = Math.floor(seconds)
+
+  const hours = Math.floor(totalSeconds / 3600)
+  const minutes = Math.floor((totalSeconds % 3600) / 60)
+  const secs = totalSeconds % 60
+
+  const hh = String(hours).padStart(2, '0')
+  const mm = String(minutes).padStart(2, '0')
+  const ss = String(secs).padStart(2, '0')
+
+  return hours > 0 ? `${hh}:${mm}:${ss}` : `${mm}:${ss}`
+}
