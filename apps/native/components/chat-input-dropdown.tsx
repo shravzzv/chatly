@@ -2,10 +2,13 @@ import * as DocumentPicker from 'expo-document-picker'
 import * as ImagePicker from 'expo-image-picker'
 import {
   AudioLines,
-  Clapperboard,
+  Camera,
+  FilePlay,
+  Image,
   ImagePlus,
   Paperclip,
   Plus,
+  Video,
 } from 'lucide-react-native'
 import { toast } from 'sonner-native'
 import { Button } from './ui/button'
@@ -15,12 +18,55 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from './ui/dropdown-menu'
 import { Icon } from './ui/icon'
 import { Text } from './ui/text'
 
 export default function ChatInputDropdown() {
+  const takePhoto = async () => {
+    const permission = await ImagePicker.requestCameraPermissionsAsync()
+    if (!permission.granted) {
+      toast.info('Camera permission is required')
+      return
+    }
+
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: 'images',
+      allowsEditing: false,
+      quality: 1,
+    })
+
+    if (!result.canceled) {
+      const image = result.assets[0]
+      console.log(image)
+      toast.success('Photo taken')
+    }
+  }
+
+  const takeVideo = async () => {
+    const permission = await ImagePicker.requestCameraPermissionsAsync()
+    if (!permission.granted) {
+      toast.info('Video permission is required')
+      return
+    }
+
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: 'videos',
+      allowsEditing: false,
+      quality: 1,
+    })
+
+    if (!result.canceled) {
+      const video = result.assets[0]
+      console.log(video)
+      toast.success('Video taken')
+    }
+  }
+
   const pickImage = async () => {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync()
     if (!permission.granted) {
@@ -99,21 +145,55 @@ export default function ChatInputDropdown() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
 
-        <DropdownMenuItem
-          className='flex cursor-pointer items-center gap-2'
-          onPress={pickImage}
-        >
-          <Icon as={ImagePlus} className='size-4 text-muted-foreground' />
-          <Text>Image</Text>
-        </DropdownMenuItem>
+        <DropdownMenuSub>
+          <DropdownMenuSubTrigger className='flex cursor-pointer items-center gap-2'>
+            <Icon as={ImagePlus} className='size-4 text-muted-foreground' />
+            <Text>Image</Text>
+          </DropdownMenuSubTrigger>
 
-        <DropdownMenuItem
-          className='flex cursor-pointer items-center gap-2'
-          onPress={pickVideo}
-        >
-          <Icon as={Clapperboard} className='size-4 text-muted-foreground' />
-          <Text>Video</Text>
-        </DropdownMenuItem>
+          <DropdownMenuSubContent>
+            <DropdownMenuItem
+              className='flex cursor-pointer items-center gap-2'
+              onPress={takePhoto}
+            >
+              <Icon as={Camera} className='size-4 text-muted-foreground' />
+              <Text>Camera</Text>
+            </DropdownMenuItem>
+
+            <DropdownMenuItem
+              className='flex cursor-pointer items-center gap-2'
+              onPress={pickImage}
+            >
+              <Icon as={Image} className='size-4 text-muted-foreground' />
+              <Text>File</Text>
+            </DropdownMenuItem>
+          </DropdownMenuSubContent>
+        </DropdownMenuSub>
+
+        <DropdownMenuSub>
+          <DropdownMenuSubTrigger className='flex cursor-pointer items-center gap-2'>
+            <Icon as={Video} className='size-4 text-muted-foreground' />
+            <Text>Video</Text>
+          </DropdownMenuSubTrigger>
+
+          <DropdownMenuSubContent>
+            <DropdownMenuItem
+              className='flex cursor-pointer items-center gap-2'
+              onPress={takeVideo}
+            >
+              <Icon as={Video} className='size-4 text-muted-foreground' />
+              <Text>Record</Text>
+            </DropdownMenuItem>
+
+            <DropdownMenuItem
+              className='flex cursor-pointer items-center gap-2'
+              onPress={pickVideo}
+            >
+              <Icon as={FilePlay} className='size-4 text-muted-foreground' />
+              <Text>File</Text>
+            </DropdownMenuItem>
+          </DropdownMenuSubContent>
+        </DropdownMenuSub>
 
         <DropdownMenuItem
           className='flex cursor-pointer items-center gap-2'
