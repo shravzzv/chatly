@@ -8,19 +8,16 @@ import { Textarea } from './ui/textarea'
 import VoiceRecorder from './voice-recorder'
 
 export default function ChatInput() {
-  const [isRecordingVoice, setIsRecordingVoice] = useState(false)
+  const [isVoiceRecorderOpen, setIsVoiceRecorderOpen] = useState(false)
 
   return (
     <View className='mx-auto w-full max-w-sm shrink-0 flex-row items-end gap-2 rounded-full px-4 pb-2 sm:max-w-2xl sm:px-0'>
-      {isRecordingVoice ? (
-        <VoiceRecorder
-          isRecording={isRecordingVoice}
-          stopRecording={() => setIsRecordingVoice(false)}
-        />
+      {isVoiceRecorderOpen ? (
+        <VoiceRecorder closeRecorder={() => setIsVoiceRecorderOpen(false)} />
       ) : (
         <>
           <ChatInputDropdown
-            startRecordingVoice={() => setIsRecordingVoice(true)}
+            openVoiceRecorder={() => setIsVoiceRecorderOpen(true)}
           />
 
           <View className='flex-1 flex-row items-end gap-2 rounded-3xl border border-border px-1.5 py-0.5 pl-1'>

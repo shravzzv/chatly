@@ -1,3 +1,4 @@
+import { getFormattedSeconds } from '@/lib/date'
 import { useAudioPlayer, useAudioPlayerStatus } from 'expo-audio'
 import { Pause, Play, RotateCcw } from 'lucide-react-native'
 import { View } from 'react-native'
@@ -49,7 +50,8 @@ export default function AudioAttachment({ signedUrl }: AudioAttachmentProps) {
       )}
 
       <Text className='min-w-[60px] text-center text-xs text-muted-foreground'>
-        {status.currentTime.toFixed(1)} / {status.duration.toFixed(1)} s
+        {getFormattedSeconds(status.currentTime)} /{' '}
+        {getFormattedSeconds(status.duration)} s
       </Text>
 
       <Progress

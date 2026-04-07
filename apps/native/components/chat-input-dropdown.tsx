@@ -29,11 +29,11 @@ import { Icon } from './ui/icon'
 import { Text } from './ui/text'
 
 interface ChatInputDropdownProps {
-  startRecordingVoice: () => void
+  openVoiceRecorder: () => void
 }
 
 export default function ChatInputDropdown({
-  startRecordingVoice,
+  openVoiceRecorder,
 }: ChatInputDropdownProps) {
   const takePhoto = async () => {
     const permission = await ImagePicker.requestCameraPermissionsAsync()
@@ -112,7 +112,7 @@ export default function ChatInputDropdown({
   }
 
   const recordAudio = () => {
-    startRecordingVoice()
+    openVoiceRecorder()
   }
 
   const pickAudio = async () => {
