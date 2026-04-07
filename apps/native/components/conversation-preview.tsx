@@ -1,4 +1,4 @@
-import { type Profile } from '@/app/(private)/dashboard'
+import { Profile } from '@/app/(private)/(tabs)/dashboard'
 import { Image, Pressable, View } from 'react-native'
 import { Text } from './ui/text'
 

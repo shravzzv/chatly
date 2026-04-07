@@ -254,7 +254,7 @@ export default function Page() {
         renderItem={({ item: profile }) => (
           <ConversationPreview
             profile={profile}
-            onPress={() => router.push(`/dashboard/${profile.id}`)}
+            onPress={() => router.push(`/chat/${profile.id}`)}
           />
         )}
       />

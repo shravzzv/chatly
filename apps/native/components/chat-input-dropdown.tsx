@@ -83,7 +83,7 @@ export default function ChatInputDropdown() {
         <Button
           variant='secondary'
           size='icon'
-          className='mb-1 size-8 shrink-0 rounded-full'
+          className='mb-1 shrink-0 rounded-full'
         >
           <Icon as={Plus} className='size-4' />
         </Button>
