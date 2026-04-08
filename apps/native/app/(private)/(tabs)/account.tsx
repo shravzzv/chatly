@@ -1,12 +1,12 @@
-// apps/native/app/(private)/dashboard/index.tsx
+import { ThemeToggle } from '@/components/theme-toggle'
 import { Button } from '@/components/ui/button'
 import { Screen } from '@/components/ui/screen'
 import { Text } from '@/components/ui/text'
 import { supabase } from '@/lib/supabase'
-import { Link, router } from 'expo-router'
+import { router } from 'expo-router'
 import { toast } from 'sonner-native'
 
-export default function Page() {
+export default function Account() {
   const handleLogout = async () => {
     if (!supabase) return
 
@@ -22,22 +22,12 @@ export default function Page() {
   }
 
   return (
-    <Screen>
-      <Button onPress={handleLogout} className='mb-5 w-fit'>
+    <Screen className='items-center gap-4'>
+      <ThemeToggle />
+
+      <Button onPress={handleLogout} className='w-fit'>
         <Text>Log out</Text>
       </Button>
-
-      <Link href='/dashboard/johndoe'>
-        <Text className='underline'>John doe</Text>
-      </Link>
-
-      <Link href='/dashboard/janedoe'>
-        <Text className='underline'>Jane doe</Text>
-      </Link>
-
-      <Link href='/dashboard/emma'>
-        <Text className='underline'>Emma</Text>
-      </Link>
     </Screen>
   )
 }
