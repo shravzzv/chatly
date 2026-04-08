@@ -2,6 +2,7 @@ import { getFormattedSeconds } from '@/lib/date'
 import { useAudioPlayer, useAudioPlayerStatus } from 'expo-audio'
 import { Pause, Play, RotateCcw } from 'lucide-react-native'
 import { View } from 'react-native'
+import AudioAttachmentSkeleton from './skeletons/audio-attachment-skeleton'
 import { Button } from './ui/button'
 import { Icon } from './ui/icon'
 import { Progress } from './ui/progress'
@@ -24,6 +25,8 @@ export default function AudioAttachment({ signedUrl }: AudioAttachmentProps) {
     status.duration > 0
       ? Math.min((status.currentTime / status.duration) * 100, 100)
       : 0
+
+  if (!status.isLoaded) return <AudioAttachmentSkeleton />
 
   return (
     <View className='flex-row items-center gap-2 rounded-full border border-border p-1 pr-2'>
@@ -49,9 +52,9 @@ export default function AudioAttachment({ signedUrl }: AudioAttachmentProps) {
         </Button>
       )}
 
-      <Text className='min-w-[60px] text-center text-xs text-muted-foreground'>
+      <Text className='min-w-[100px] text-center text-xs text-muted-foreground'>
         {getFormattedSeconds(status.currentTime)} /{' '}
-        {getFormattedSeconds(status.duration)} s
+        {getFormattedSeconds(status.duration)}
       </Text>
 
       <Progress
