@@ -1,5 +1,5 @@
+import type { Message } from '@chatly/types/message'
 import { type PostgrestError } from '@supabase/supabase-js'
-import { type Message } from './message'
 
 /**
  * Input payload for sending a message.
