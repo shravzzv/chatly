@@ -1,7 +1,7 @@
 import { buildMessageActions } from '@/lib/messages'
 import { THEME } from '@/lib/theme'
 import { cn } from '@/lib/utils'
-import type { Message as MessageType } from '@/types/message'
+import type { Message as MessageType } from '@chatly/types/message'
 import { useActionSheet } from '@expo/react-native-action-sheet'
 import { Download, Pen, Trash } from 'lucide-react-native'
 import { useColorScheme } from 'nativewind'

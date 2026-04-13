@@ -10,7 +10,7 @@ import { Text } from '@/components/ui/text'
 import { formatDateHeader } from '@/lib/date'
 import { groupMessagesByDate } from '@/lib/messages'
 import { cn } from '@/lib/utils'
-import type { Message as MessageType } from '@/types/message'
+import type { Message as MessageType } from '@chatly/types/message'
 import { router, useLocalSearchParams, useNavigation } from 'expo-router'
 import { ArrowDown, ArrowLeft } from 'lucide-react-native'
 import {

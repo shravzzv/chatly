@@ -1,7 +1,7 @@
 import type {
   MessageAttachmentKind,
   MessageAttachment as MessageAttachmentType,
-} from '@/types/message-attachment'
+} from '@chatly/types/message-attachment'
 import AudioAttachment from './audio-attachment'
 import FileAttachment from './file-attachment'
 import ImageAttachment from './image-attachment'

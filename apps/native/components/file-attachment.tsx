@@ -1,4 +1,4 @@
-import type { MessageAttachment } from '@/types/message-attachment'
+import type { MessageAttachment } from '@chatly/types/message-attachment'
 import { Link } from 'expo-router'
 import { Download } from 'lucide-react-native'
 import { View } from 'react-native'

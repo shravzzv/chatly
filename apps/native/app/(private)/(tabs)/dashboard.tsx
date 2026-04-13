@@ -4,26 +4,13 @@ import { Input } from '@/components/ui/input'
 import { Screen } from '@/components/ui/screen'
 import { Text } from '@/components/ui/text'
 import { cn } from '@/lib/utils'
+import type { Profile } from '@chatly/types/profile'
 import { router } from 'expo-router'
 import { useState } from 'react'
 import { FlatList, View } from 'react-native'
 
-export interface Profile {
-  id: string
-  user_id: string
-  name: string | null
-  username: string | null
-  avatar_url: string | null
-  bio: string | null
-  status: string
-  theme: string
-  last_seen_at: string | null
-  created_at: string
-  updated_at: string
-}
-
 export default function Page() {
-  const data = [
+  const data: Profile[] = [
     {
       id: 'f58ffbdd-c005-40ad-b7c0-75de04c708b1',
       user_id: 'be32178a-4f54-48a9-9b3b-233628ac3640',

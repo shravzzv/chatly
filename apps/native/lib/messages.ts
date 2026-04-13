@@ -1,4 +1,4 @@
-import type { Message } from '@/types/message'
+import type { Message } from '@chatly/types/message'
 import { Download, Pen, Trash, X, type LucideIcon } from 'lucide-react-native'
 
 interface Action {
