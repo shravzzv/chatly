@@ -1,5 +1,5 @@
+import type { Profile } from '@chatly/types/profile'
 import { type PostgrestError } from '@supabase/supabase-js'
-import { type Profile } from './profile'
 
 /**
  * Public return shape of the `useProfiles` hook.

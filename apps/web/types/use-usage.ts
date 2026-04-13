@@ -1,5 +1,5 @@
+import type { ChatlyPlan, UsageKind } from '@chatly/types/plan'
 import { type PostgrestError } from '@supabase/supabase-js'
-import type { UsageKind, ChatlyPlan } from './plan'
 
 /**
  * Result shape returned by `useUsage`.
