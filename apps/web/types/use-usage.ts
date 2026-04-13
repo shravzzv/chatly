@@ -8,8 +8,8 @@ import { type PostgrestError } from '@supabase/supabase-js'
  * current plan and usage state, intended exclusively for client-side UI.
  *
  * All values are derived from:
- * - The user's active subscription plan
- * - Today's usage window (UTC)
+ * - The user's active subscription plan.
+ * - Today's usage window (UTC).
  *
  * None of these fields should be relied on for security or billing.
  */
