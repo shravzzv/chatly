@@ -1,13 +1,13 @@
 'use server'
 
-import type { PushSubscription } from 'web-push'
-import type { Profile } from '@/types/profile'
-import type { UsageKind } from '@/types/plan'
-import { redirect } from 'next/navigation'
-import { createClient } from '@/utils/supabase/server'
-import { createAdminClient } from '@/utils/supabase/admin'
 import { getSiteURL } from '@/lib/url'
+import { createAdminClient } from '@/utils/supabase/admin'
+import { createClient } from '@/utils/supabase/server'
+import type { UsageKind } from '@chatly/types/plan'
+import type { Profile } from '@chatly/types/profile'
 import { generateText } from 'ai'
+import { redirect } from 'next/navigation'
+import type { PushSubscription } from 'web-push'
 
 /**
  * OAuth providers supported by the application.

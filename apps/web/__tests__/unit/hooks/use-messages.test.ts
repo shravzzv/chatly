@@ -1,8 +1,8 @@
-import { renderHook, act, waitFor } from '@testing-library/react'
-import { useMessages } from '@/hooks/use-messages'
-import type { Message } from '@/types/message'
-import type { SendMessageInput, UseMessagesArgs } from '@/types/use-messages'
 import { checkAndIncrementUsage } from '@/app/actions'
+import { useMessages } from '@/hooks/use-messages'
+import type { SendMessageInput, UseMessagesArgs } from '@/types/use-messages'
+import type { Message } from '@chatly/types/message'
+import { act, renderHook, waitFor } from '@testing-library/react'
 
 jest.mock('uuid', () => ({
   v4: () => 'temp-id',

@@ -1,8 +1,8 @@
-import type { MessageAttachment } from '@/types/message-attachment'
-import { Download } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import Link from 'next/link'
 import { formatFileSize, formatMimeType } from '@/lib/messages'
+import type { MessageAttachment } from '@chatly/types/message-attachment'
+import { Download } from 'lucide-react'
+import Link from 'next/link'
 import FileAttachmentIcon from './file-attachment-icon'
 
 interface FileAttachmentProps {

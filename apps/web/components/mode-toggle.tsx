@@ -1,7 +1,6 @@
 'use client'
 
-import { Moon, Sun, Check } from 'lucide-react'
-import { useTheme } from 'next-themes'
+import { updateProfile } from '@/app/actions'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -10,8 +9,9 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { useChatlyStore } from '@/providers/chatly-store-provider'
-import { updateProfile } from '@/app/actions'
-import { type Theme } from '@/types/profile'
+import type { Theme } from '@chatly/types/profile'
+import { Check, Moon, Sun } from 'lucide-react'
+import { useTheme } from 'next-themes'
 import { toast } from 'sonner'
 
 export function ModeToggle() {

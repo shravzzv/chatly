@@ -1,4 +1,4 @@
-import { MessageAttachment } from '@/types/message-attachment'
+import type { MessageAttachment } from '@chatly/types/message-attachment'
 import Image from 'next/image'
 
 interface ImageAttachmentProps {

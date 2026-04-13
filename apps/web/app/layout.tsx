@@ -1,13 +1,13 @@
+import { CrossDeviceThemeSync } from '@/components/cross-device-theme-sync'
+import { ThemeProvider } from '@/components/theme-provider'
+import { Toaster } from '@/components/ui/sonner'
+import { ChatlyStoreProvider } from '@/providers/chatly-store-provider'
+import { createClient } from '@/utils/supabase/server'
+import { type Profile } from '@chatly/types/profile'
+import { Analytics } from '@vercel/analytics/next'
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
-import { Analytics } from '@vercel/analytics/next'
-import { ThemeProvider } from '@/components/theme-provider'
-import { Toaster } from '@/components/ui/sonner'
-import { createClient } from '@/utils/supabase/server'
-import { ChatlyStoreProvider } from '@/providers/chatly-store-provider'
-import { type Profile } from '@/types/profile'
-import { CrossDeviceThemeSync } from '@/components/cross-device-theme-sync'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' })
 

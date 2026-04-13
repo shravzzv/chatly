@@ -1,8 +1,8 @@
 import { useMessages } from '@/hooks/use-messages'
-import type { Message } from '@/types/message'
-import type { Profile } from '@/types/profile'
 import type { Previews } from '@/types/use-previews'
-import type { ChatlyPlan, UsageKind } from './plan'
+import type { Message } from '@chatly/types/message'
+import type { ChatlyPlan, UsageKind } from '@chatly/types/plan'
+import type { Profile } from '@chatly/types/profile'
 
 export interface DashboardContextValue {
   // profiles

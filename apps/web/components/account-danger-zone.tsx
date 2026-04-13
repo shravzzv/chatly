@@ -1,7 +1,6 @@
 'use client'
 
 import { deleteUser, getSubscriptions } from '@/app/actions'
-import { Button } from './ui/button'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,14 +12,15 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
-import { useChatlyStore } from '@/providers/chatly-store-provider'
-import { useState } from 'react'
-import { Spinner } from './ui/spinner'
-import { toast } from 'sonner'
-import Link from 'next/link'
 import { LS_CUSTOMER_PORTAL_URL } from '@/data/constants'
 import { getEffectiveSubscription } from '@/lib/billing'
-import { Subscription } from '@/types/subscription'
+import { useChatlyStore } from '@/providers/chatly-store-provider'
+import { Subscription } from '@chatly/types/subscription'
+import Link from 'next/link'
+import { useState } from 'react'
+import { toast } from 'sonner'
+import { Button } from './ui/button'
+import { Spinner } from './ui/spinner'
 
 export default function AccountDangerZone() {
   const user = useChatlyStore((state) => state.user)

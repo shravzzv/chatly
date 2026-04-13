@@ -1,4 +1,4 @@
-import { Profile } from '@/types/profile'
+import type { Profile } from '@chatly/types/profile'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
 
 type TailwindRounded =
