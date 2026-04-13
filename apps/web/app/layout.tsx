@@ -5,6 +5,7 @@ import { ChatlyStoreProvider } from '@/providers/chatly-store-provider'
 import { createClient } from '@/utils/supabase/server'
 import { type Profile } from '@chatly/types/profile'
 import { Analytics } from '@vercel/analytics/next'
+import { SpeedInsights } from '@vercel/speed-insights/next'
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
@@ -124,6 +125,7 @@ export default async function RootLayout({
             <CrossDeviceThemeSync />
           </ThemeProvider>
         </ChatlyStoreProvider>
+        <SpeedInsights />
         <Analytics />
       </body>
     </html>
