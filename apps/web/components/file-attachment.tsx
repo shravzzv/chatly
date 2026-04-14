@@ -15,7 +15,7 @@ export default function FileAttachment({
   signedUrl,
 }: FileAttachmentProps) {
   return (
-    <div className='flex max-w-2xs items-center gap-2 rounded-2xl bg-transparent px-3 py-2 shadow-sm'>
+    <div className='border-border flex max-w-2xs items-center gap-2 rounded-2xl border bg-transparent px-3 py-2 shadow-sm'>
       <div className='bg-background flex h-10 w-10 items-center justify-center rounded-lg'>
         <FileAttachmentIcon mimeType={attachment.mime_type} />
       </div>
