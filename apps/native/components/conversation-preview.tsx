@@ -36,7 +36,9 @@ export default function ConversationPreview({
 
       <View className='flex min-w-0 flex-1 flex-col'>
         <Text className='font-medium' numberOfLines={1}>
-          {profile.name ?? profile.username ?? 'Unnamed user'}
+          {profile.name ??
+            profile.username ??
+            `User ${profile.user_id.slice(0, 4).toUpperCase()}`}
         </Text>
 
         <Text className='text-xs text-muted-foreground' numberOfLines={2}>
