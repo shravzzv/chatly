@@ -1,3 +1,4 @@
+import useAuth from '@/hooks/use-auth'
 import { buildMessageActions } from '@/lib/messages'
 import { THEME } from '@/lib/theme'
 import { cn } from '@/lib/utils'
@@ -24,8 +25,9 @@ export function Message({ message }: MessageProps) {
   const { showActionSheetWithOptions } = useActionSheet()
   const { colorScheme } = useColorScheme()
   const { id, text, attachment } = message
+  const { userId, isLoading: isAuthLoading } = useAuth()
 
-  const isOwn = message.receiver_id === 'user_1'
+  const isOwn = message.sender_id === userId
   const hasAttachment = !!attachment
   const hasText = typeof text === 'string' && text.trim().length > 0
   const denySheet = !isOwn && hasText
@@ -100,6 +102,7 @@ export function Message({ message }: MessageProps) {
     )
   }
 
+  if (isAuthLoading) return null
   if (!hasText && !hasAttachment) return null
 
   return (

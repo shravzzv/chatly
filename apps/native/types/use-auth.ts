@@ -1,4 +1,3 @@
-// apps/native/types/use-auth.ts
 /**
  * Result returned by {@link useAuth} and exposed via {@link useAuthContext}.
  *
@@ -7,6 +6,12 @@
  * components without leaking Supabase implementation details.
  */
 export interface UseAuthResult {
+  /**
+   * The id of the current user.
+   * This value is `null` if unauthenticated.
+   */
+  userId: string | null
+
   /**
    * Indicates whether the current user is authenticated.
    *
