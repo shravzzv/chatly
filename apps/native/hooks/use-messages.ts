@@ -5,6 +5,7 @@ import type {
   UseMessagesArgs,
   UseMessagesResult,
 } from '@/types/use-messages'
+import { getPartnerId } from '@chatly/lib/messages'
 import type { Message } from '@chatly/types/message'
 import type { MessageAttachment } from '@chatly/types/message-attachment'
 import type { UsageKind } from '@chatly/types/plan'
@@ -76,22 +77,6 @@ export async function checkAndIncrementUsage(usageKind: UsageKind) {
   }
 
   return data
-}
-
-/**
- * Determines the partner ID from a message based on the current user's ID.
- *
- * @param msg - The message object containing sender and receiver information
- * @param currentUserId - The ID of the current user
- * @returns The ID of the message partner (the other user in the conversation)
- *
- * @remarks
- * - If the current user sent a message to themselves, returns their own ID, otherwise:
- * - If the current user is the sender, returns the receiver's ID.
- * - If the current user is the receiver, returns the sender's ID.
- */
-export const getPartnerId = (msg: Message, currentUserId: string) => {
-  return currentUserId === msg.sender_id ? msg.receiver_id : msg.sender_id
 }
 
 /**
