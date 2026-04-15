@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input'
 import { Screen } from '@/components/ui/screen'
 import { Spinner } from '@/components/ui/spinner'
 import { Text } from '@/components/ui/text'
+import { usePreviews } from '@/hooks/use-previews'
 import { useProfiles } from '@/hooks/use-profiles'
 import { cn } from '@/lib/utils'
 import { router } from 'expo-router'
@@ -19,6 +20,8 @@ export default function Page() {
     loading: profilesLoading,
     error: profilesError,
   } = useProfiles(searchQuery)
+
+  const { previews, loading: previewsLoading } = usePreviews()
 
   if (profilesLoading) {
     return (
@@ -73,6 +76,8 @@ export default function Page() {
           <ConversationPreview
             profile={profile}
             onPress={() => router.push(`/chat/${profile.user_id}`)}
+            preview={previews[profile.user_id]}
+            isPreviewLoading={previewsLoading}
           />
         )}
       />

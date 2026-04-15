@@ -1,16 +1,23 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import useAuth from '@/hooks/use-auth'
+import { Preview } from '@chatly/types/preview'
 import { Profile } from '@chatly/types/profile'
 import { Pressable, View } from 'react-native'
+import { Skeleton } from './ui/skeleton'
 import { Text } from './ui/text'
 
 interface ConversationPreviewProps {
   profile: Profile
+  preview: Preview
+  isPreviewLoading: boolean
   onPress: () => void
 }
 
 export default function ConversationPreview({
   profile,
   onPress,
+  preview,
+  isPreviewLoading,
 }: ConversationPreviewProps) {
   const avatarFallback =
     profile.name
@@ -21,6 +28,8 @@ export default function ConversationPreview({
       .slice(0, 2) ||
     profile.username?.slice(0, 2).toUpperCase() ||
     '??'
+
+  const { userId } = useAuth()
 
   return (
     <Pressable
@@ -39,13 +48,18 @@ export default function ConversationPreview({
           {profile.name ??
             profile.username ??
             `User ${profile.user_id.slice(0, 4).toUpperCase()}`}
+          {profile.user_id === userId && ' (You)'}
         </Text>
 
-        <Text className='text-xs text-muted-foreground' numberOfLines={2}>
-          {Math.round(Math.random()) > 0
-            ? 'You: Lorem ipsum dolor sit amet.'
-            : 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Placeat fugit et delectus quam natus quidem, hic excepturi, aliquid id totam distinctio. Ab soluta amet doloribus quod sit quam laborum doloremque?'}
-        </Text>
+        {isPreviewLoading ? (
+          <Skeleton className='h-4 w-24 rounded-md' />
+        ) : (
+          <Text className='text-xs text-muted-foreground' numberOfLines={2}>
+            {preview
+              ? `${preview.isOwnMsg ? 'You: ' : ''}${preview.text}`
+              : 'No messages yet'}
+          </Text>
+        )}
       </View>
     </Pressable>
   )

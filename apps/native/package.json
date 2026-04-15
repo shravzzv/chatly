@@ -74,6 +74,7 @@
   },
   "devDependencies": {
     "@chatly/types": "*",
+    "@chatly/lib": "*",
     "@testing-library/react-native": "^13.3.3",
     "@types/jest": "^29.5.14",
     "cross-env": "^10.1.0",
