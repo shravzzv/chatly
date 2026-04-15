@@ -1,6 +1,7 @@
 import { useMessages } from '@/hooks/use-messages'
 import { usePreviews } from '@/hooks/use-previews'
 import { useProfiles } from '@/hooks/use-profiles'
+import { useTyping } from '@/hooks/use-typing'
 import type { Message } from '@chatly/types/message'
 import type { Previews } from '@chatly/types/preview'
 import type { Profile } from '@chatly/types/profile'
@@ -40,6 +41,10 @@ interface PrivateContextValue {
   // selection & UI
   readonly selectedProfileId: string | null
   setSelectedProfileId: (id: string | null) => void
+
+  // typing
+  readonly isTyping: boolean
+  updateTypingStatus: (isTyping: boolean) => Promise<void>
 }
 
 const PrivateContext = createContext<PrivateContextValue | null>(null)
@@ -128,6 +133,8 @@ export function PrivateProvider({ children }: PropsWithChildren) {
     if (messagesError) toast.error('Failed to load messages')
   }, [messagesError])
 
+  const { isTyping, updateTypingStatus } = useTyping(selectedProfileId)
+
   const value: PrivateContextValue = {
     // profiles
     profiles,
@@ -154,6 +161,10 @@ export function PrivateProvider({ children }: PropsWithChildren) {
     // selection
     selectedProfileId,
     setSelectedProfileId,
+
+    // typing
+    isTyping,
+    updateTypingStatus,
   }
 
   return <PrivateContext value={value}>{children}</PrivateContext>

@@ -33,15 +33,19 @@ import {
 } from 'react-native'
 
 export default function Page() {
-  const { messages, messagesLoading, messagesError, setSelectedProfileId } =
-    usePrivateContext()
+  const {
+    messages,
+    messagesLoading,
+    messagesError,
+    setSelectedProfileId,
+    isTyping,
+  } = usePrivateContext()
   const [showScrollToBottomBtn, setShowScrollToBottomBtn] = useState(false)
   const { chatId } = useLocalSearchParams<{ chatId?: string }>()
   const listRef = useRef<SectionList<MessageType>>(null)
   const hasScrolledInitially = useRef<boolean>(false)
   const timeoutId = useRef<ReturnType<typeof setTimeout> | null>(null)
   const navigation = useNavigation()
-  const isTyping = false
   const sections = groupMessagesByDate(messages)
 
   const scrollToBottom = useCallback(
