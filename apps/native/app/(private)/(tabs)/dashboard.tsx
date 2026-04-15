@@ -17,6 +17,7 @@ export default function Page() {
     profilesLoading,
     previewsLoading,
     filteredProfiles,
+    searchQuery,
     setSearchQuery,
   } = usePrivateContext()
 
@@ -51,6 +52,7 @@ export default function Page() {
         className='mx-auto max-w-xl'
         placeholder='name or username...'
         returnKeyType='search'
+        value={searchQuery}
         onChangeText={(v) => setSearchQuery(v)}
       />
 
