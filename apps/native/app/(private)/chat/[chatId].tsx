@@ -9,10 +9,10 @@ import { Button } from '@/components/ui/button'
 import { Icon } from '@/components/ui/icon'
 import { Screen } from '@/components/ui/screen'
 import { Text } from '@/components/ui/text'
-import { useMessages } from '@/hooks/use-messages'
 import { formatDateHeader } from '@/lib/date'
 import { groupMessagesByDate } from '@/lib/messages'
 import { cn } from '@/lib/utils'
+import { usePrivateContext } from '@/providers/private-provider'
 import type { Message as MessageType } from '@chatly/types/message'
 import { router, useLocalSearchParams, useNavigation } from 'expo-router'
 import { ArrowDown, ArrowLeft, Info } from 'lucide-react-native'
@@ -33,6 +33,8 @@ import {
 } from 'react-native'
 
 export default function Page() {
+  const { messages, messagesLoading, messagesError, setSelectedProfileId } =
+    usePrivateContext()
   const [showScrollToBottomBtn, setShowScrollToBottomBtn] = useState(false)
   const { chatId } = useLocalSearchParams<{ chatId?: string }>()
   const listRef = useRef<SectionList<MessageType>>(null)
@@ -40,23 +42,6 @@ export default function Page() {
   const timeoutId = useRef<ReturnType<typeof setTimeout> | null>(null)
   const navigation = useNavigation()
   const isTyping = false
-
-  const updatePreview = useCallback(() => {}, [])
-  const deletePreview = useCallback(async () => {}, [])
-
-  const {
-    messages,
-    loading: messagesLoading,
-    error: messagesError,
-    sendMessage,
-    deleteMessage,
-    editMessage,
-  } = useMessages({
-    selectedProfileId: chatId ?? null,
-    updatePreview,
-    deletePreview,
-  })
-
   const sections = groupMessagesByDate(messages)
 
   const scrollToBottom = useCallback(
@@ -113,6 +98,11 @@ export default function Page() {
   useEffect(() => {
     if (isTyping) scrollToBottom()
   }, [isTyping, scrollToBottom])
+
+  useEffect(() => {
+    if (!chatId) return
+    setSelectedProfileId(chatId)
+  }, [chatId, setSelectedProfileId])
 
   if (messagesLoading) return <MessageListSkeleton />
 

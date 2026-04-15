@@ -4,24 +4,21 @@ import { Input } from '@/components/ui/input'
 import { Screen } from '@/components/ui/screen'
 import { Spinner } from '@/components/ui/spinner'
 import { Text } from '@/components/ui/text'
-import { usePreviews } from '@/hooks/use-previews'
-import { useProfiles } from '@/hooks/use-profiles'
 import { cn } from '@/lib/utils'
+import { usePrivateContext } from '@/providers/private-provider'
 import { router } from 'expo-router'
 import { Info } from 'lucide-react-native'
-import { useState } from 'react'
 import { FlatList, View } from 'react-native'
 
 export default function Page() {
-  const [searchQuery, setSearchQuery] = useState('')
-
   const {
+    previews,
+    profilesError,
+    profilesLoading,
+    previewsLoading,
     filteredProfiles,
-    loading: profilesLoading,
-    error: profilesError,
-  } = useProfiles(searchQuery)
-
-  const { previews, loading: previewsLoading } = usePreviews()
+    setSearchQuery,
+  } = usePrivateContext()
 
   if (profilesLoading) {
     return (
