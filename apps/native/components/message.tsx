@@ -1,7 +1,7 @@
-import useAuth from '@/hooks/use-auth'
 import { buildMessageActions } from '@/lib/messages'
 import { THEME } from '@/lib/theme'
 import { cn } from '@/lib/utils'
+import { useAuthContext } from '@/providers/auth-provider'
 import type { Message as MessageType } from '@chatly/types/message'
 import { useActionSheet } from '@expo/react-native-action-sheet'
 import { Download, Pen, Trash } from 'lucide-react-native'
@@ -25,7 +25,7 @@ export function Message({ message }: MessageProps) {
   const { showActionSheetWithOptions } = useActionSheet()
   const { colorScheme } = useColorScheme()
   const { id, text, attachment } = message
-  const { userId, isLoading: isAuthLoading } = useAuth()
+  const { userId, isLoading: isAuthLoading } = useAuthContext()
 
   const isOwn = message.sender_id === userId
   const hasAttachment = !!attachment

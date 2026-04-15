@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase'
+import { useAuthContext } from '@/providers/auth-provider'
 import type {
   SendMessageInput,
   UseMessagesArgs,
@@ -10,7 +11,6 @@ import type { UsageKind } from '@chatly/types/plan'
 import { type PostgrestError } from '@supabase/supabase-js'
 import { useCallback, useEffect, useState } from 'react'
 import { v4 as uuidv4 } from 'uuid'
-import useAuth from './use-auth'
 
 /**
  * Checks whether the authenticated user is allowed to use a paid feature
@@ -124,7 +124,7 @@ export function useMessages({
   const [messages, setMessages] = useState<Message[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<PostgrestError | null>(null)
-  const { userId: currentUserId, isLoading: isAuthLoading } = useAuth()
+  const { userId: currentUserId, isLoading: isAuthLoading } = useAuthContext()
 
   /**
    * Fetch messages when the selected conversation changes.

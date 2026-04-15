@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase'
+import { useAuthContext } from '@/providers/auth-provider'
 import type { UsePreviewsResult } from '@/types/use-previews'
 import { getPartnerId } from '@chatly/lib/messages'
 import { derivePreview, derivePreviews } from '@chatly/lib/previews'
@@ -6,7 +7,6 @@ import type { Message } from '@chatly/types/message'
 import type { Previews } from '@chatly/types/preview'
 import { type PostgrestError } from '@supabase/supabase-js'
 import { useCallback, useEffect, useState } from 'react'
-import useAuth from './use-auth'
 
 /**
  * `usePreviews`
@@ -37,7 +37,7 @@ export function usePreviews(): UsePreviewsResult {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<PostgrestError | null>(null)
 
-  const { userId: currentUserId, isLoading: isAuthLoading } = useAuth()
+  const { userId: currentUserId, isLoading: isAuthLoading } = useAuthContext()
 
   /**
    * Populate previews from the db.
