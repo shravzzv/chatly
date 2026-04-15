@@ -25,9 +25,9 @@ export function Message({ message }: MessageProps) {
   const { showActionSheetWithOptions } = useActionSheet()
   const { colorScheme } = useColorScheme()
   const { id, text, attachment } = message
-  const { userId, isLoading: isAuthLoading } = useAuthContext()
+  const { userId: currentUserId, isLoading: isAuthLoading } = useAuthContext()
 
-  const isOwn = message.sender_id === userId
+  const isOwn = message.sender_id === currentUserId
   const hasAttachment = !!attachment
   const hasText = typeof text === 'string' && text.trim().length > 0
   const denySheet = !isOwn && hasText
