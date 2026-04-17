@@ -1,13 +1,18 @@
 import { buildMessageActions } from '@/lib/messages'
+import { supabase } from '@/lib/supabase'
 import { THEME } from '@/lib/theme'
 import { cn } from '@/lib/utils'
 import { useAuthContext } from '@/providers/auth-provider'
+import { downloadBlob, getAttachmentKind } from '@chatly/lib/messages'
 import type { Message as MessageType } from '@chatly/types/message'
 import { useActionSheet } from '@expo/react-native-action-sheet'
+import { Directory, File, Paths } from 'expo-file-system'
+import * as MediaLibrary from 'expo-media-library'
 import { Download, Pen, Trash } from 'lucide-react-native'
 import { useColorScheme } from 'nativewind'
 import { useState } from 'react'
 import { Platform, Pressable, View } from 'react-native'
+import { toast } from 'sonner-native'
 import DeleteMessageAction from './delete-message-action'
 import EditMessageTextAction from './edit-message-text-action'
 import MessageContent from './message-content'
@@ -20,23 +25,84 @@ interface MessageProps {
 }
 
 export function Message({ message }: MessageProps) {
+  const { userId: currentUserId, isLoading: isAuthLoading } = useAuthContext()
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const { showActionSheetWithOptions } = useActionSheet()
   const { colorScheme } = useColorScheme()
   const { id, text, attachment } = message
-  const { userId: currentUserId, isLoading: isAuthLoading } = useAuthContext()
 
-  const isOwn = message.sender_id === currentUserId
-  const hasAttachment = !!attachment
+  // derived booleans
   const hasText = typeof text === 'string' && text.trim().length > 0
+  const hasAttachment = !!attachment
+  const isOwn = message.sender_id === currentUserId
   const denySheet = !isOwn && hasText
   const allowDelete = isOwn
   const allowEdit = isOwn && hasText && !hasAttachment
   const allowDownload = !hasText && hasAttachment
 
   const handleDownload = () => {
-    console.log(`Download message with id ${message.id}`)
+    if (Platform.OS === 'web') handleWebDownload()
+    else handleNativeDownload()
+  }
+
+  const handleWebDownload = async () => {
+    if (!attachment || !supabase) return
+
+    const { data: blob, error } = await supabase.storage
+      .from('message_attachments')
+      .download(attachment.path)
+
+    if (error || !blob) {
+      toast.error('Download failed')
+      return
+    }
+
+    await downloadBlob(blob, attachment.file_name)
+    toast.success('Attachment downloaded')
+  }
+
+  const handleNativeDownload = async () => {
+    if (!attachment || !supabase) return
+    const URL_EXPIRY_SEC = 600 // 10 min.
+
+    const { data, error } = await supabase.storage
+      .from('message_attachments')
+      .createSignedUrl(attachment.path, URL_EXPIRY_SEC)
+
+    const url = data?.signedUrl
+
+    if (error || !url) {
+      toast.error('Download failed')
+      return
+    }
+
+    try {
+      // Download to app storage
+      const dir = new Directory(Paths.document, 'chatly')
+      await dir.create({ idempotent: true })
+      const file = await File.downloadFileAsync(url, dir, { idempotent: true })
+
+      const kind = getAttachmentKind(file.type)
+      if (kind === 'image' || kind === 'video') {
+        // Ask permission
+        const permission = await MediaLibrary.requestPermissionsAsync()
+        if (!permission.granted) {
+          toast.error('Permission required')
+          return
+        }
+
+        // Save to gallery (ONLY for supported types)
+        await MediaLibrary.saveToLibraryAsync(file.uri)
+        toast.success('Attachment saved to gallery')
+        return
+      }
+
+      toast.success('Attachment downloaded in app')
+    } catch (error) {
+      console.error('native download error', error)
+      toast.error('Download failed')
+    }
   }
 
   const actions = buildMessageActions({
@@ -45,7 +111,7 @@ export function Message({ message }: MessageProps) {
     allowDownload,
     onEdit: () => setIsEditDialogOpen(true),
     onDelete: () => setIsDeleteDialogOpen(true),
-    onDownload: () => handleDownload(),
+    onDownload: handleDownload,
   })
 
   const openActionSheet = () => {
@@ -148,7 +214,7 @@ export function Message({ message }: MessageProps) {
           )}
 
           {allowDownload && (
-            <Button variant='ghost' size='icon'>
+            <Button variant='ghost' size='icon' onPress={handleDownload}>
               <Icon as={Download} className='size-4 text-muted-foreground' />
             </Button>
           )}
