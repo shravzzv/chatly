@@ -1,13 +1,13 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
-import { createClient } from '@/utils/supabase/client'
 import { getPartnerId } from '@/lib/dashboard'
-import type { Message } from '@/types/message'
-import { type PostgrestError } from '@supabase/supabase-js'
+import { derivePreview, derivePreviews } from '@/lib/previews'
 import { useChatlyStore } from '@/providers/chatly-store-provider'
 import type { Previews, UsePreviewsResult } from '@/types/use-previews'
-import { derivePreview, derivePreviews } from '@/lib/previews'
+import { createClient } from '@/utils/supabase/client'
+import type { Message } from '@chatly/types/message'
+import { type PostgrestError } from '@supabase/supabase-js'
+import { useCallback, useEffect, useState } from 'react'
 
 /**
  * `usePreviews`

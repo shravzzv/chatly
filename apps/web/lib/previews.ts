@@ -1,7 +1,7 @@
-import { Message } from '@/types/message'
-import { Preview, Previews } from '@/types/use-previews'
+import type { Preview, Previews } from '@/types/use-previews'
+import type { Message } from '@chatly/types/message'
+import type { MessageAttachment } from '@chatly/types/message-attachment'
 import { getPartnerId } from './dashboard'
-import { MessageAttachment } from '@/types/message-attachment'
 
 /**
  * Derives a conversation-level preview map from a list of messages.
