@@ -24,7 +24,7 @@ export default function ImageAttachment({
       source={{ uri: signedUrl }}
       alt={attachment.file_name}
       style={{ aspectRatio }}
-      className='max-h-[70vh] w-full rounded-2xl bg-transparent shadow-sm md:max-w-xs'
+      className='max-h-[70vh] w-full rounded-2xl bg-transparent md:max-w-xs'
     />
   )
 }
