@@ -2,6 +2,7 @@ import { useAuthContext } from '@/providers/auth-provider'
 import { usePrivateContext } from '@/providers/private-provider'
 import { View } from 'react-native'
 import ProfileAvatar from './profile-avatar'
+import ChatHeaderSkeleton from './skeletons/chat-header-skeleton'
 import { Text } from './ui/text'
 
 interface ChatHeaderProps {
@@ -9,9 +10,11 @@ interface ChatHeaderProps {
 }
 
 export default function ChatHeader({ chatId }: ChatHeaderProps) {
-  const { profiles } = usePrivateContext()
-  const { userId } = useAuthContext()
+  const { profiles, profilesLoading } = usePrivateContext()
+  const { userId, isLoading: isAuthLoading } = useAuthContext()
   const profile = profiles.find((p) => p.user_id === chatId)
+
+  if (profilesLoading || isAuthLoading) return <ChatHeaderSkeleton />
 
   return (
     <View className='max-w-2xl flex-row items-center gap-2'>
