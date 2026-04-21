@@ -49,3 +49,6 @@ LICENSE
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# supabase
+supabase
