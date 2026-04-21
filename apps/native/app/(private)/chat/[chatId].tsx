@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Icon } from '@/components/ui/icon'
 import { Screen } from '@/components/ui/screen'
 import { Text } from '@/components/ui/text'
+import UpgradeAlertDialog from '@/components/upgrade-alert-dialog'
 import { formatDateHeader } from '@/lib/date'
 import { groupMessagesByDate } from '@/lib/messages'
 import { cn } from '@/lib/utils'
@@ -186,6 +187,7 @@ export default function Page() {
         )}
 
         <ChatInput />
+        <UpgradeAlertDialog />
       </Screen>
     </KeyboardAvoidingView>
   )

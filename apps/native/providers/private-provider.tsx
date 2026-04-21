@@ -2,7 +2,9 @@ import { useMessages } from '@/hooks/use-messages'
 import { usePreviews } from '@/hooks/use-previews'
 import { useProfiles } from '@/hooks/use-profiles'
 import { useTyping } from '@/hooks/use-typing'
+import { useUsage } from '@/hooks/use-usage'
 import type { Message } from '@chatly/types/message'
+import type { ChatlyPlan, UsageKind } from '@chatly/types/plan'
 import type { Previews } from '@chatly/types/preview'
 import type { Profile } from '@chatly/types/profile'
 import { type PostgrestError } from '@supabase/supabase-js'
@@ -45,6 +47,22 @@ interface PrivateContextValue {
   // typing
   readonly isTyping: boolean
   updateTypingStatus: (isTyping: boolean) => Promise<void>
+
+  // usage
+  readonly plan: ChatlyPlan
+  readonly usageLoading: boolean
+  readonly aiUsed: number
+  readonly canUseAi: boolean
+  readonly aiRemaining: number
+  readonly mediaUsed: number
+  readonly canUseMedia: boolean
+  readonly mediaRemaining: number
+  reflectUsageIncrement: (kind: UsageKind) => void
+
+  // upgrade
+  readonly upgradeReason: UsageKind | null
+  openUpgradeAlertDialog: (reason: UsageKind) => void
+  closeUpgradeAlertDialog: () => void
 }
 
 const PrivateContext = createContext<PrivateContextValue | null>(null)
@@ -89,6 +107,7 @@ const PrivateContext = createContext<PrivateContextValue | null>(null)
  */
 export function PrivateProvider({ children }: PropsWithChildren) {
   const [searchQuery, setSearchQuery] = useState('')
+  const [upgradeReason, setUpgradeReason] = useState<UsageKind | null>(null)
   const [selectedProfileId, setSelectedProfileId] = useState<string | null>(
     null,
   )
@@ -135,6 +154,26 @@ export function PrivateProvider({ children }: PropsWithChildren) {
 
   const { isTyping, updateTypingStatus } = useTyping(selectedProfileId)
 
+  const {
+    loading: usageLoading,
+    error: usageError,
+    plan,
+    aiRemaining,
+    aiUsed,
+    canUseAi,
+    canUseMedia,
+    mediaRemaining,
+    mediaUsed,
+    reflectUsageIncrement,
+  } = useUsage()
+
+  useEffect(() => {
+    if (usageError) console.warn('Failed to load usage')
+  }, [usageError])
+
+  const openUpgradeAlertDialog = (reason: UsageKind) => setUpgradeReason(reason)
+  const closeUpgradeAlertDialog = () => setUpgradeReason(null)
+
   const value: PrivateContextValue = {
     // profiles
     profiles,
@@ -165,6 +204,22 @@ export function PrivateProvider({ children }: PropsWithChildren) {
     // typing
     isTyping,
     updateTypingStatus,
+
+    // usage
+    usageLoading,
+    plan,
+    aiRemaining,
+    aiUsed,
+    canUseAi,
+    canUseMedia,
+    mediaRemaining,
+    mediaUsed,
+    reflectUsageIncrement,
+
+    // upgrade
+    upgradeReason,
+    openUpgradeAlertDialog,
+    closeUpgradeAlertDialog,
   }
 
   return <PrivateContext value={value}>{children}</PrivateContext>
