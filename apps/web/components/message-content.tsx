@@ -1,8 +1,8 @@
-import type { Message } from '@/types/message'
+import { getAttachmentKind } from '@/lib/messages'
 import { useChatlyStore } from '@/providers/chatly-store-provider'
+import type { Message } from '@chatly/types/message'
 import MessageAttachment from './message-attachment'
 import MessageAttachmentSkeleton from './skeletons/message-attachment-skeleton'
-import { getAttachmentKind } from '@/lib/messages'
 
 interface MessageContentProps {
   message: Message

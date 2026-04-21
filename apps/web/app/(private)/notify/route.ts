@@ -1,8 +1,8 @@
-import webpush from 'web-push'
-import { NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
-import type { Message } from '@/types/message'
 import { getMessagePreview } from '@/lib/previews'
+import type { Message } from '@chatly/types/message'
+import { createClient } from '@supabase/supabase-js'
+import { NextResponse } from 'next/server'
+import webpush from 'web-push'
 
 // Admin client using the service role key (bypasses all RLS). This is safe because the route is server-side only.
 const supabaseAdmin = createClient(

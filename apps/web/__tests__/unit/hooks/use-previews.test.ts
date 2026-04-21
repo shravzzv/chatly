@@ -1,7 +1,7 @@
 import { usePreviews } from '@/hooks/use-previews'
 import { derivePreview } from '@/lib/previews'
-import type { Message } from '@/types/message'
 import { createClient } from '@/utils/supabase/client'
+import type { Message } from '@chatly/types/message'
 import { act, renderHook, waitFor } from '@testing-library/react'
 
 jest.mock('@/providers/chatly-store-provider', () => ({

@@ -1,9 +1,9 @@
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
-import { upload } from './upload.ts'
-import { updateProfile } from './update-profile.ts'
 import { getBlob } from './get-blob.ts'
+import { updateProfile } from './update-profile.ts'
+import { upload } from './upload.ts'
 
-serve(async (req) => {
+serve(async (req: Request) => {
   try {
     if (req.method !== 'POST') {
       return new Response('Method Not Allowed', { status: 405 })

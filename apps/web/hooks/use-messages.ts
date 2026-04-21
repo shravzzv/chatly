@@ -1,19 +1,19 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
-import { createClient } from '@/utils/supabase/client'
-import { v4 as uuidv4 } from 'uuid'
-import { type Message } from '@/types/message'
-import { useChatlyStore } from '@/providers/chatly-store-provider'
-import { type PostgrestError } from '@supabase/supabase-js'
+import { checkAndIncrementUsage } from '@/app/actions'
 import { getPartnerId } from '@/lib/dashboard'
+import { useChatlyStore } from '@/providers/chatly-store-provider'
 import type {
   SendMessageInput,
   UseMessagesArgs,
   UseMessagesResult,
 } from '@/types/use-messages'
-import type { MessageAttachment } from '@/types/message-attachment'
-import { checkAndIncrementUsage } from '@/app/actions'
+import { createClient } from '@/utils/supabase/client'
+import type { Message } from '@chatly/types/message'
+import type { MessageAttachment } from '@chatly/types/message-attachment'
+import { type PostgrestError } from '@supabase/supabase-js'
+import { useCallback, useEffect, useState } from 'react'
+import { v4 as uuidv4 } from 'uuid'
 
 /**
  * useMessages

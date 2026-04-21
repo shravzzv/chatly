@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils'
-import type { Message } from '@/types/message'
+import type { Message } from '@chatly/types/message'
 import MessageAttachment from './message-attachment'
 import { Text } from './ui/text'
 

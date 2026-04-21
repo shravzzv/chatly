@@ -1,4 +1,7 @@
-import type { Subscription, SubscriptionStatus } from '@/types/subscription'
+import type {
+  Subscription,
+  SubscriptionStatus,
+} from '@chatly/types/subscription'
 
 /**
  * Lightweight feature highlights shown in the UI for paid plans.

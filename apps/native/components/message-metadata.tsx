@@ -1,4 +1,4 @@
-import { Message } from '@/types/message'
+import { Message } from '@chatly/types/message'
 import { View } from 'react-native'
 import { Text } from './ui/text'
 

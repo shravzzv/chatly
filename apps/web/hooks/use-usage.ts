@@ -1,14 +1,14 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { useChatlyStore } from '@/providers/chatly-store-provider'
-import { createClient } from '@/utils/supabase/client'
 import { getSubscriptions } from '@/app/actions'
-import { getCurrentPlan } from '@/lib/billing'
 import { PLAN_LIMITS } from '@/data/plans'
-import { type PostgrestError } from '@supabase/supabase-js'
-import type { ChatlyPlan, UsageKind } from '@/types/plan'
+import { getCurrentPlan } from '@/lib/billing'
+import { useChatlyStore } from '@/providers/chatly-store-provider'
 import type { UseUsageResult } from '@/types/use-usage'
+import { createClient } from '@/utils/supabase/client'
+import type { ChatlyPlan, UsageKind } from '@chatly/types/plan'
+import { type PostgrestError } from '@supabase/supabase-js'
+import { useEffect, useState } from 'react'
 
 /**
  * `useUsage`

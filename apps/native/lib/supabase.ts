@@ -18,3 +18,6 @@ export const supabase =
           },
         },
       )
+
+// Works in Expo also because RN provides a window object.
+// But will be null in server environments such as node, deno, etc.

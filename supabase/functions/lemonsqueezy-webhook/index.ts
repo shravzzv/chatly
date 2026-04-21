@@ -1,12 +1,12 @@
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
-import { verifySignature } from './verify-signature.ts'
 import { handleSubscriptionCreated } from './handle-sub-created.ts'
 import { handleSubscriptionUpdated } from './handle-sub-updated.ts'
+import { verifySignature } from './verify-signature.ts'
 const WEBHOOK_SECRET = Deno.env.get('LS_WEBHOOK_SIGNING_SECRET')
 if (!WEBHOOK_SECRET) {
   throw new Error('LS_WEBHOOK_SIGNING_SECRET environment variable not set.')
 }
-serve(async (req) => {
+serve(async (req: Request) => {
   console.log('invocated')
   try {
     if (req.method !== 'POST') {

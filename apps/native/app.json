@@ -53,7 +53,16 @@
         }
       ],
       "expo-video",
-      "expo-audio"
+      "expo-audio",
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "Allow Chatly to access your photos.",
+          "savePhotosPermission": "Allow Chatly to save photos.",
+          "isAccessMediaLocationEnabled": true,
+          "granularPermissions": ["audio", "photo", "video"]
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

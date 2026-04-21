@@ -1,11 +1,11 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
-import { createClient } from '@/utils/supabase/client'
-import { type Profile } from '@/types/profile'
-import { type PostgrestError } from '@supabase/supabase-js'
-import type { UseProfilesResult } from '@/types/use-profiles'
 import { useChatlyStore } from '@/providers/chatly-store-provider'
+import type { UseProfilesResult } from '@/types/use-profiles'
+import { createClient } from '@/utils/supabase/client'
+import type { Profile } from '@chatly/types/profile'
+import { type PostgrestError } from '@supabase/supabase-js'
+import { useEffect, useMemo, useState } from 'react'
 
 /**
  * `useProfiles`

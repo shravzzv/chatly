@@ -1,4 +1,7 @@
+import { PricingPlan } from '@/data/plans'
+import type { Billing } from '@chatly/types/subscription'
 import Link from 'next/link'
+import { Badge } from './ui/badge'
 import { Button } from './ui/button'
 import {
   Card,
@@ -8,9 +11,6 @@ import {
   CardHeader,
   CardTitle,
 } from './ui/card'
-import { Badge } from './ui/badge'
-import { Billing } from '@/types/subscription'
-import { PricingPlan } from '@/data/plans'
 
 interface PricingCardProps {
   plan: PricingPlan

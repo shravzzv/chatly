@@ -1,10 +1,10 @@
 'use client'
 
 import { formatDateHeader } from '@/lib/date'
-import { Badge } from './ui/badge'
-import { Message } from './message'
-import { type Message as MessageType } from '@/types/message'
+import type { Message as MessageType } from '@chatly/types/message'
 import { useRef } from 'react'
+import { Message } from './message'
+import { Badge } from './ui/badge'
 
 interface MessageDateGroupProps {
   date: string
