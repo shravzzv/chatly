@@ -25,8 +25,35 @@ export type SendMessageInput =
  *
  * Errors are thrown and must be handled by the caller.
  */
-type SendMessage = (input: SendMessageInput) => Promise<void>
-export default SendMessage
+export type SendMessage = (input: SendMessageInput) => Promise<void>
+
+/**
+ * A native file type enclosing an array buffer.
+ */
+export type NativeFile = {
+  arrayBuffer: ArrayBuffer
+  name: string
+  mimeType: string
+  size: number
+}
+
+/**
+ *
+ */
+export type SendMessageNativeInput =
+  | {
+      text: string
+      file?: never
+    }
+  | {
+      file: NativeFile
+      text?: never
+    }
+
+/**
+ *
+ */
+export type SendMessageNative = (input: SendMessageNativeInput) => Promise<void>
 
 /**
  * Public API returned by `useMessages`.
@@ -73,6 +100,21 @@ export interface UseMessagesResult {
    * - The error is thrown to the caller
    */
   sendMessage: SendMessage
+
+  /**
+   * Sends a new message in the active conversation for native devices.
+   *
+   * Behavior:
+   * - Inserts an optimistic message into `messages`
+   * - Persists the message to the database
+   * - Uploads and attaches a file if provided
+   * - Reconciles optimistic state with authoritative data
+   *
+   * On failure:
+   * - The optimistic message is removed
+   * - The error is thrown to the caller
+   */
+  sendMessageNative: SendMessageNative
 
   /**
    * Deletes a message by id.
