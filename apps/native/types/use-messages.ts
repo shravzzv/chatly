@@ -2,6 +2,17 @@ import type { Message } from '@chatly/types/message'
 import { type PostgrestError } from '@supabase/supabase-js'
 
 /**
+ * A native file type enclosing an array buffer.
+ * To be used for uploading files via an `ArrayBuffer`.
+ */
+export type NativeFile = {
+  arrayBuffer: ArrayBuffer
+  name: string
+  mimeType: string
+  size: number
+}
+
+/**
  * Input payload for sending a message.
  *
  * A message may contain:
@@ -13,7 +24,7 @@ import { type PostgrestError } from '@supabase/supabase-js'
  */
 export type SendMessageInput =
   | { text: string; file?: never }
-  | { file: File; text?: never }
+  | { file: File | NativeFile; text?: never }
 
 /**
  * Command for sending a message.
@@ -26,34 +37,6 @@ export type SendMessageInput =
  * Errors are thrown and must be handled by the caller.
  */
 export type SendMessage = (input: SendMessageInput) => Promise<void>
-
-/**
- * A native file type enclosing an array buffer.
- */
-export type NativeFile = {
-  arrayBuffer: ArrayBuffer
-  name: string
-  mimeType: string
-  size: number
-}
-
-/**
- *
- */
-export type SendMessageNativeInput =
-  | {
-      text: string
-      file?: never
-    }
-  | {
-      file: NativeFile
-      text?: never
-    }
-
-/**
- *
- */
-export type SendMessageNative = (input: SendMessageNativeInput) => Promise<void>
 
 /**
  * Public API returned by `useMessages`.
@@ -100,21 +83,6 @@ export interface UseMessagesResult {
    * - The error is thrown to the caller
    */
   sendMessage: SendMessage
-
-  /**
-   * Sends a new message in the active conversation for native devices.
-   *
-   * Behavior:
-   * - Inserts an optimistic message into `messages`
-   * - Persists the message to the database
-   * - Uploads and attaches a file if provided
-   * - Reconciles optimistic state with authoritative data
-   *
-   * On failure:
-   * - The optimistic message is removed
-   * - The error is thrown to the caller
-   */
-  sendMessageNative: SendMessageNative
 
   /**
    * Deletes a message by id.

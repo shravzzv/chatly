@@ -33,7 +33,6 @@ interface PrivateContextValue {
   readonly messagesLoading: boolean
   readonly messagesError: PostgrestError | null
   sendMessage: ReturnType<typeof useMessages>['sendMessage']
-  sendMessageNative: ReturnType<typeof useMessages>['sendMessageNative']
   editMessage: ReturnType<typeof useMessages>['editMessage']
   deleteMessage: ReturnType<typeof useMessages>['deleteMessage']
 
@@ -141,7 +140,6 @@ export function PrivateProvider({ children }: PropsWithChildren) {
     loading: messagesLoading,
     error: messagesError,
     sendMessage,
-    sendMessageNative,
     deleteMessage,
     editMessage,
   } = useMessages({
@@ -192,7 +190,6 @@ export function PrivateProvider({ children }: PropsWithChildren) {
     messagesLoading,
     messagesError,
     sendMessage,
-    sendMessageNative,
     editMessage,
     deleteMessage,
 

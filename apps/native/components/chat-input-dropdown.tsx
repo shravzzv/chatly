@@ -1,5 +1,5 @@
 import { usePrivateContext } from '@/providers/private-provider'
-import { NativeFile } from '@/types/use-messages'
+import type { NativeFile } from '@/types/use-messages'
 import { PLAN_LIMITS } from '@chatly/lib/billing'
 import type { MessageAttachmentKind } from '@chatly/types/message-attachment'
 import * as DocumentPicker from 'expo-document-picker'
@@ -43,41 +43,76 @@ export default function ChatInputDropdown({
   openVoiceRecorder,
 }: ChatInputDropdownProps) {
   const [isUploading, setIsUploading] = useState(false)
-  const {
-    canUseMedia,
-    mediaUsed,
-    plan,
-    sendMessage,
-    sendMessageNative,
-    reflectUsageIncrement,
-  } = usePrivateContext()
+  const { canUseMedia, mediaUsed, plan, sendMessage, reflectUsageIncrement } =
+    usePrivateContext()
 
-  const handleSubmit = async (
+  type Asset =
+    | File
+    | ImagePicker.ImagePickerAsset
+    | DocumentPicker.DocumentPickerAsset
+
+  const getUploadableFile = async (
+    asset: Asset,
+    kind: MessageAttachmentKind,
+  ): Promise<File | NativeFile> => {
+    // Web cases
+    if (asset instanceof File) return asset
+    if ('file' in asset && asset.file) return asset.file
+
+    // Native case
+    const arrayBuffer = await fetch(asset.uri).then((res) => res.arrayBuffer())
+
+    const mimeType =
+      'mimeType' in asset && asset.mimeType
+        ? asset.mimeType
+        : kind === 'video'
+          ? 'video/mp4'
+          : kind === 'audio'
+            ? 'audio/mpeg'
+            : kind === 'image'
+              ? 'image/jpeg'
+              : 'application/octet-stream'
+
+    const name =
+      'fileName' in asset && asset.fileName
+        ? asset.fileName
+        : 'name' in asset && asset.name
+          ? asset.name
+          : `${kind}_${Date.now()}.${mimeType.split('/')[1]}`
+
+    return {
+      arrayBuffer,
+      mimeType,
+      name,
+      size: arrayBuffer.byteLength,
+    }
+  }
+
+  const validateFile = (
     file: File | NativeFile,
     kind: MessageAttachmentKind,
   ) => {
+    const size = file instanceof File ? file.size : file.arrayBuffer.byteLength
+    const mime = file instanceof File ? file.type : file.mimeType
+
+    if (kind !== 'file' && !mime.startsWith(kind)) {
+      throw Error('INVALID_FILE_TYPE')
+    }
+
+    if (size > MAX_MESSAGE_ATTACHMENT_SIZE) {
+      throw Error('FILE_TOO_LARGE')
+    }
+  }
+
+  const handleSubmit = async (asset: Asset, kind: MessageAttachmentKind) => {
     if (isUploading) return
 
     try {
+      const file = await getUploadableFile(asset, kind)
+      validateFile(file, kind)
       setIsUploading(true)
 
-      if (file instanceof File) {
-        if (kind !== 'file' && !file.type.startsWith(kind)) {
-          throw Error(`INVALID_FILE_TYPE`)
-        }
-
-        if (file.size > MAX_MESSAGE_ATTACHMENT_SIZE) {
-          throw Error('FILE_TOO_LARGE')
-        }
-
-        await sendMessage({ file })
-      } else {
-        if (file.arrayBuffer.byteLength > MAX_MESSAGE_ATTACHMENT_SIZE) {
-          throw Error('FILE_TOO_LARGE')
-        }
-        await sendMessageNative({ file })
-      }
-
+      await sendMessage({ file })
       reflectUsageIncrement('media')
     } catch (error) {
       console.error(error)
@@ -109,61 +144,6 @@ export default function ChatInputDropdown({
     }
   }
 
-  const handleImgOrVideoAsset = async (
-    asset: ImagePicker.ImagePickerAsset,
-    kind: MessageAttachmentKind,
-  ) => {
-    if (asset.file) {
-      // `asset.file` is web only
-      await handleSubmit(asset.file, kind)
-    } else {
-      const arrayBuffer = await fetch(asset.uri).then((res) =>
-        res.arrayBuffer(),
-      )
-
-      const name =
-        asset.fileName ||
-        `${kind}_${Date.now()}.${asset.mimeType?.split('/')[1] || (kind === 'video' ? 'mp4' : 'jpg')}`
-      const mimeType =
-        asset.mimeType || (kind === 'video' ? 'video/mp4' : 'image/jpeg')
-
-      const nativeFile: NativeFile = {
-        arrayBuffer,
-        name,
-        mimeType,
-        size: arrayBuffer.byteLength,
-      }
-
-      await handleSubmit(nativeFile, kind)
-    }
-  }
-
-  const handleAudioOrFileAsset = async (
-    asset: DocumentPicker.DocumentPickerAsset,
-    kind: MessageAttachmentKind,
-  ) => {
-    if (asset.file) {
-      // `asset.file` is web only
-      await handleSubmit(asset.file, kind)
-    } else {
-      const arrayBuffer = await fetch(asset.uri).then((res) =>
-        res.arrayBuffer(),
-      )
-
-      const mimeType =
-        asset.mimeType || (kind === 'video' ? 'video/mp4' : 'image/jpeg')
-
-      const nativeFile: NativeFile = {
-        arrayBuffer,
-        mimeType,
-        name: asset.name,
-        size: arrayBuffer.byteLength,
-      }
-
-      await handleSubmit(nativeFile, kind)
-    }
-  }
-
   const takePhoto = async () => {
     const permission = await ImagePicker.requestCameraPermissionsAsync()
     if (!permission.granted) {
@@ -176,7 +156,7 @@ export default function ChatInputDropdown({
     })
 
     if (!result.canceled) {
-      await handleImgOrVideoAsset(result.assets[0], 'image')
+      await handleSubmit(result.assets[0], 'image')
     }
   }
 
@@ -192,7 +172,7 @@ export default function ChatInputDropdown({
     })
 
     if (!result.canceled) {
-      await handleImgOrVideoAsset(result.assets[0], 'image')
+      await handleSubmit(result.assets[0], 'image')
     }
   }
 
@@ -210,7 +190,7 @@ export default function ChatInputDropdown({
     })
 
     if (!result.canceled) {
-      await handleImgOrVideoAsset(result.assets[0], 'video')
+      await handleSubmit(result.assets[0], 'video')
     }
   }
 
@@ -226,7 +206,7 @@ export default function ChatInputDropdown({
     })
 
     if (!result.canceled) {
-      await handleImgOrVideoAsset(result.assets[0], 'video')
+      await handleSubmit(result.assets[0], 'video')
     }
   }
 
@@ -234,7 +214,7 @@ export default function ChatInputDropdown({
     const result = await DocumentPicker.getDocumentAsync({ type: 'audio/*' })
 
     if (!result.canceled) {
-      await handleAudioOrFileAsset(result.assets[0], 'audio')
+      await handleSubmit(result.assets[0], 'audio')
     }
   }
 
@@ -242,7 +222,7 @@ export default function ChatInputDropdown({
     const result = await DocumentPicker.getDocumentAsync()
 
     if (!result.canceled) {
-      await handleAudioOrFileAsset(result.assets[0], 'file')
+      await handleSubmit(result.assets[0], 'file')
     }
   }
 

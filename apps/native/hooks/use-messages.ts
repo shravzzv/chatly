@@ -3,7 +3,6 @@ import { useAuthContext } from '@/providers/auth-provider'
 import type {
   NativeFile,
   SendMessageInput,
-  SendMessageNativeInput,
   UseMessagesArgs,
   UseMessagesResult,
 } from '@/types/use-messages'
@@ -348,18 +347,25 @@ export function useMessages({
    * 2. Inserts a row into the `message_attachments` table
    *
    * The attachment will later be reconciled via realtime for other clients.
+   * Handles differences between uploaded file types as well.
    *
    * @throws PostgrestError if either upload or DB insert fails
    */
   const createMessageAttachment = useCallback(
-    async (messageId: string, file: File): Promise<MessageAttachment> => {
+    async (
+      messageId: string,
+      file: File | NativeFile,
+    ): Promise<MessageAttachment> => {
       if (!supabase) throw Error('Supabase client unavailable')
 
       const path = `${messageId}/${uuidv4()}`
+      const isNativeFileUpload = !(file instanceof File)
 
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('message_attachments')
-        .upload(path, file)
+        .upload(path, isNativeFileUpload ? file.arrayBuffer : file, {
+          contentType: isNativeFileUpload ? file.mimeType : file.type,
+        })
 
       if (uploadError) throw uploadError
 
@@ -369,8 +375,8 @@ export function useMessages({
           message_id: messageId,
           path: uploadData.path,
           file_name: file.name,
-          mime_type: file.type,
           size: file.size,
+          mime_type: isNativeFileUpload ? file.mimeType : file.type,
         })
         .select()
         .single()
@@ -449,6 +455,7 @@ export function useMessages({
 
       const tempId = uuidv4()
       const now = new Date().toISOString()
+      const isNativeFileUpload = !(file instanceof File)
 
       const optimisticMessage: Message = {
         id: tempId,
@@ -463,9 +470,9 @@ export function useMessages({
               message_id: tempId,
               path: '',
               file_name: file.name,
-              mime_type: file.type,
               size: file.size,
               created_at: now,
+              mime_type: isNativeFileUpload ? file.mimeType : file.type,
             }
           : undefined,
       }
@@ -546,131 +553,6 @@ export function useMessages({
     },
     [
       createMessageAttachment,
-      currentUserId,
-      deleteAttachmentFile,
-      reconcileOptimisticMessage,
-      selectedProfileId,
-    ],
-  )
-
-  const createMessageAttachmentNative = useCallback(
-    async (messageId: string, file: NativeFile): Promise<MessageAttachment> => {
-      if (!supabase) throw Error('Supabase client unavailable')
-
-      const path = `${messageId}/${uuidv4()}`
-
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('message_attachments')
-        .upload(path, file.arrayBuffer, { contentType: file.mimeType })
-
-      if (uploadError) throw uploadError
-
-      const { data: attachment, error: insertError } = await supabase
-        .from('message_attachments')
-        .insert({
-          message_id: messageId,
-          path: uploadData.path,
-          file_name: file.name,
-          mime_type: file.mimeType,
-          size: file.size,
-        })
-        .select()
-        .single()
-
-      if (insertError) {
-        const { error } = await supabase.storage
-          .from('message_attachments')
-          .remove([path])
-
-        if (error) throw error
-        throw insertError
-      }
-
-      return attachment
-    },
-    [],
-  )
-
-  const sendMessageNative = useCallback(
-    async ({ text, file }: SendMessageNativeInput) => {
-      if (!currentUserId || !selectedProfileId || !supabase) return
-
-      const hasText = typeof text === 'string' && text.trim().length > 0
-      const hasFile = !!file
-      if (!hasText && !hasFile) return
-
-      const tempId = uuidv4()
-      const now = new Date().toISOString()
-
-      const optimisticMessage: Message = {
-        id: tempId,
-        text: text ?? null,
-        sender_id: currentUserId,
-        receiver_id: selectedProfileId,
-        created_at: now,
-        updated_at: now,
-        attachment: file
-          ? {
-              id: 'optimistic',
-              message_id: tempId,
-              path: '',
-              file_name: file.name,
-              mime_type: file.mimeType,
-              size: file.size,
-              created_at: now,
-            }
-          : undefined,
-      }
-
-      // 1. Optimistic UI update
-      setMessages((prev) => [...prev, optimisticMessage])
-
-      // 2. Authoritative DB insert
-      const { data: message, error } = await supabase
-        .from('messages')
-        .insert({
-          text: text ?? null,
-          sender_id: currentUserId,
-          receiver_id: selectedProfileId,
-        })
-        .select()
-        .single()
-
-      // 3. DB failure → rollback and exit
-      if (error) {
-        setMessages((prev) => prev.filter((m) => m.id !== tempId))
-        console.error('Error sending message:', error)
-        throw error
-      }
-
-      // 4. Upload attachment only if db insert succeeds
-      if (file) {
-        let attachment: MessageAttachment | null = null
-
-        try {
-          attachment = await createMessageAttachmentNative(message.id, file)
-
-          await checkAndIncrementUsage('media')
-          reconcileOptimisticMessage(tempId, { ...message, attachment })
-        } catch (error) {
-          console.error(error)
-          setMessages((prev) => prev.filter((m) => m.id !== tempId))
-
-          // delete everything regarding the message
-          await supabase.from('messages').delete().eq('id', message.id) // deletes message_attachment on cascade
-          if (attachment) deleteAttachmentFile(attachment)
-
-          throw error
-        }
-
-        return
-      }
-
-      // 5. Update previews after confirmed success
-      reconcileOptimisticMessage(tempId, message)
-    },
-    [
-      createMessageAttachmentNative,
       currentUserId,
       deleteAttachmentFile,
       reconcileOptimisticMessage,
@@ -783,7 +665,6 @@ export function useMessages({
     loading,
     error,
     sendMessage,
-    sendMessageNative,
     editMessage,
     deleteMessage,
   }

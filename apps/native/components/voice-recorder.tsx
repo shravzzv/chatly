@@ -24,7 +24,7 @@ interface VoiceRecorderProps {
 export default function VoiceRecorder({ closeRecorder }: VoiceRecorderProps) {
   const audioRecorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY)
   const audioRecorderState = useAudioRecorderState(audioRecorder)
-  const { sendMessageNative, reflectUsageIncrement } = usePrivateContext()
+  const { sendMessage, reflectUsageIncrement } = usePrivateContext()
 
   const record = useCallback(async () => {
     await audioRecorder.prepareToRecordAsync()
@@ -76,7 +76,7 @@ export default function VoiceRecorder({ closeRecorder }: VoiceRecorderProps) {
     }
 
     const mimeType = 'audio/mp4'
-    const name = `${Date.now()}.${mimeType?.split('/')[1]}`
+    const name = `recording_${Date.now()}.${mimeType?.split('/')[1]}`
 
     const file: NativeFile = {
       arrayBuffer,
@@ -85,7 +85,7 @@ export default function VoiceRecorder({ closeRecorder }: VoiceRecorderProps) {
       size: arrayBuffer.byteLength,
     }
 
-    await sendMessageNative({ file })
+    await sendMessage({ file })
     reflectUsageIncrement('media')
     toast.success('Audio recording sent')
     closeRecorder()
