@@ -1,6 +1,9 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
+import {
+  createClient,
+  type SupabaseClient,
+} from 'https://esm.sh/@supabase/supabase-js@2.39.3'
 
-export function createUserClient(req: Request) {
+export function createUserClient(req: Request): SupabaseClient {
   const authHeader = req.headers.get('Authorization')
   if (!authHeader) throw Error('Missing Authorization header')
 
