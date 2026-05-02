@@ -1,11 +1,11 @@
+import { updateProfile } from '@/app/actions'
+import { ModeToggle } from '@/components/mode-toggle'
+import { ChatlyStoreProvider } from '@/providers/chatly-store-provider'
+import type { Profile } from '@chatly/types/profile'
+import { User } from '@supabase/supabase-js'
 import '@testing-library/jest-dom'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { ModeToggle } from '@/components/mode-toggle'
-import { ChatlyStoreProvider } from '@/providers/chatly-store-provider'
-import { updateProfile } from '@/app/actions'
-import { User } from '@supabase/supabase-js'
-import { Profile } from '@/types/profile'
 
 jest.mock('next/navigation')
 

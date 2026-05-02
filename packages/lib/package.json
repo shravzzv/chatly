@@ -1,0 +1,9 @@
+{
+  "name": "@chatly/lib",
+  "exports": {
+    "./*": {
+      "types": "./src/*.ts",
+      "import": "./src/*.ts"
+    }
+  }
+}

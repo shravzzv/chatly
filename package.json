@@ -2,7 +2,8 @@
   "name": "chatly",
   "private": true,
   "workspaces": [
-    "apps/*"
+    "apps/*",
+    "packages/*"
   ],
   "scripts": {
     "dev:web": "npm run dev -w chatly-web",
@@ -20,6 +21,13 @@
     "build:native": "npm run build -w chatly-native",
     "preview:native": "npm run preview -w chatly-native"
   },
+  "dependencies": {
+    "@ai-sdk/react": "^3.0.170",
+    "@hookform/resolvers": "^5.2.2",
+    "ai": "^6.0.168",
+    "react-hook-form": "^7.71.2",
+    "zod": "^4.3.6"
+  },
   "devDependencies": {
     "@types/react": "19.1.17",
     "@types/react-dom": "19.1.7",
@@ -33,10 +41,5 @@
     "@types/react": "19.1.17",
     "@types/react-dom": "19.1.7",
     "react-native-svg": "15.12.1"
-  },
-  "dependencies": {
-    "@hookform/resolvers": "^5.2.2",
-    "react-hook-form": "^7.71.2",
-    "zod": "^4.3.6"
   }
 }

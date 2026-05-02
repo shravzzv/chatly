@@ -47,6 +47,7 @@ export default function useAuth(): UseAuthResult {
   }, [])
 
   return {
+    userId: session?.user.id ?? null,
     isAuthenticated: !!session,
     isLoading,
   }

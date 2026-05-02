@@ -1,10 +1,6 @@
-import type { MessageAttachment } from '@/types/message-attachment'
-import { Link } from 'expo-router'
-import { Download } from 'lucide-react-native'
+import type { MessageAttachment } from '@chatly/types/message-attachment'
 import { View } from 'react-native'
 import FileAttachmentIcon from './file-attachment-icon'
-import { Button } from './ui/button'
-import { Icon } from './ui/icon'
 import { Text } from './ui/text'
 
 interface FileAttachmentProps {
@@ -48,16 +44,6 @@ export default function FileAttachment({
           </Text>
         </View>
       </View>
-
-      <Link href={'/'} download={attachment.file_name} asChild>
-        <Button
-          size='icon'
-          variant='outline'
-          className='shrink-0 cursor-pointer'
-        >
-          <Icon as={Download} />
-        </Button>
-      </Link>
     </View>
   )
 }

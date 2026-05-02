@@ -1,11 +1,11 @@
 'use client'
 
-import { Download } from 'lucide-react'
-import { Button } from './ui/button'
-import { Message } from '@/types/message'
-import { createClient } from '@/utils/supabase/client'
-import { toast } from 'sonner'
 import { downloadBlob } from '@/lib/messages'
+import { createClient } from '@/utils/supabase/client'
+import type { Message } from '@chatly/types/message'
+import { Download } from 'lucide-react'
+import { toast } from 'sonner'
+import { Button } from './ui/button'
 
 interface DownloadAttachmentActionProps {
   message: Message

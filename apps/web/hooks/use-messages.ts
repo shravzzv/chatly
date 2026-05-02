@@ -1,19 +1,18 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
-import { createClient } from '@/utils/supabase/client'
-import { v4 as uuidv4 } from 'uuid'
-import { type Message } from '@/types/message'
-import { useChatlyStore } from '@/providers/chatly-store-provider'
-import { type PostgrestError } from '@supabase/supabase-js'
 import { getPartnerId } from '@/lib/dashboard'
+import { useChatlyStore } from '@/providers/chatly-store-provider'
 import type {
   SendMessageInput,
   UseMessagesArgs,
   UseMessagesResult,
 } from '@/types/use-messages'
-import type { MessageAttachment } from '@/types/message-attachment'
-import { checkAndIncrementUsage } from '@/app/actions'
+import { createClient } from '@/utils/supabase/client'
+import type { Message } from '@chatly/types/message'
+import type { MessageAttachment } from '@chatly/types/message-attachment'
+import { type PostgrestError } from '@supabase/supabase-js'
+import { useCallback, useEffect, useState } from 'react'
+import { v4 as uuidv4 } from 'uuid'
 
 /**
  * useMessages
@@ -268,70 +267,26 @@ export function useMessages({
     }
   }, [currentUserId, messages, updatePreview])
 
-  /**
-   * Creates an attachment for an existing message.
-   *
-   * This performs two operations:
-   * 1. Uploads the file to object storage
-   * 2. Inserts a row into the `message_attachments` table
-   *
-   * The attachment will later be reconciled via realtime for other clients.
-   *
-   * @throws PostgrestError if either upload or DB insert fails
-   */
-  const createMessageAttachment = useCallback(
-    async (messageId: string, file: File): Promise<MessageAttachment> => {
-      const supabase = createClient()
-      const path = `${messageId}/${uuidv4()}`
+  const uploadAttachmentFile = useCallback(async (path: string, file: File) => {
+    const supabase = createClient()
 
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('message_attachments')
-        .upload(path, file)
+    const { data, error } = await supabase.storage
+      .from('message_attachments')
+      .upload(path, file)
 
-      if (uploadError) throw uploadError
+    if (error) throw error
+    return data
+  }, [])
 
-      const { data: attachment, error: insertError } = await supabase
-        .from('message_attachments')
-        .insert({
-          message_id: messageId,
-          path: uploadData.path,
-          file_name: file.name,
-          mime_type: file.type,
-          size: file.size,
-        })
-        .select()
-        .single()
+  const deleteAttachmentFile = useCallback(async (path: string) => {
+    const supabase = createClient()
 
-      if (insertError) {
-        const { error } = await supabase.storage
-          .from('message_attachments')
-          .remove([path])
+    const { error } = await supabase.storage
+      .from('message_attachments')
+      .remove([path])
 
-        if (error) throw error
-        throw insertError
-      }
-
-      return attachment
-    },
-    [],
-  )
-
-  /**
-   * Only removes the attachment file from the bucket.
-   * The row in the message_attachments table is deleted via cascade on the messages table.
-   */
-  const deleteAttachmentFile = useCallback(
-    async (attachment: MessageAttachment) => {
-      const supabase = createClient()
-
-      const { error } = await supabase.storage
-        .from('message_attachments')
-        .remove([attachment.path])
-
-      if (error) throw error
-    },
-    [],
-  )
+    if (error) throw error
+  }, [])
 
   /**
    * Reconciles an optimistic message with its authoritative database version.
@@ -422,31 +377,42 @@ export function useMessages({
 
       // 4. Upload attachment only if db insert succeeds
       if (file) {
-        let attachment: MessageAttachment | null = null
+        const path = `${message.id}/${uuidv4()}`
 
         try {
-          attachment = await createMessageAttachment(message.id, file)
+          // RLS ensures that only authenticated users can insert attachments only for messages they own
+          const uploadedFileData = await uploadAttachmentFile(path, file)
+          if (!uploadedFileData) throw Error('File upload failed')
 
-          /**
-           * Media usage is incremented **after** a successful upload.
-           *
-           * Unlike AI calls, failed storage uploads do not incur cost.
-           * By checking usage only after the file is safely stored, we ensure:
-           * - Only successful uploads count toward the usage limit
-           * - Failed or rolled-back uploads are never charged
-           *
-           * This avoids overcounting while keeping rollback simple.
-           */
-          await checkAndIncrementUsage('media')
+          const fileData = {
+            path: uploadedFileData.path,
+            name: file.name,
+            size: file.size,
+            mimeType: file.type,
+          }
 
+          // Server side authoritative because this is a paid feature.
+          const { data, error } = await supabase.functions.invoke(
+            'create-msg-attachment',
+            {
+              body: { messageId: message.id, fileData },
+            },
+          )
+
+          if (error) throw error
+          if (data.error) throw new Error(data.error)
+
+          const attachment = data.attachment
           reconcileOptimisticMessage(tempId, { ...message, attachment })
         } catch (error) {
           console.error(error)
           setMessages((prev) => prev.filter((m) => m.id !== tempId))
 
-          // delete everything regarding the message
+          /**
+           * Delete everything regarding that message from the db.
+           */
           await supabase.from('messages').delete().eq('id', message.id) // deletes message_attachment on cascade
-          if (attachment) deleteAttachmentFile(attachment)
+          await deleteAttachmentFile(path)
 
           throw error
         }
@@ -458,11 +424,11 @@ export function useMessages({
       reconcileOptimisticMessage(tempId, message)
     },
     [
-      createMessageAttachment,
       currentUserId,
       deleteAttachmentFile,
       reconcileOptimisticMessage,
       selectedProfileId,
+      uploadAttachmentFile,
     ],
   )
 
@@ -505,7 +471,7 @@ export function useMessages({
       // 4. Best-effort storage cleanup (non-authoritative)
       if (attachment) {
         try {
-          await deleteAttachmentFile(attachment)
+          await deleteAttachmentFile(attachment.path)
         } catch (error) {
           console.warn('Storage cleanup failed', error)
         }

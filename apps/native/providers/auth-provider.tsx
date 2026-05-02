@@ -1,4 +1,3 @@
-// apps/native/providers/auth-provider.tsx
 import useAuth from '@/hooks/use-auth'
 import { UseAuthResult } from '@/types/use-auth'
 import React, { createContext, useContext } from 'react'

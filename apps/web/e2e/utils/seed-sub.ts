@@ -1,6 +1,9 @@
+import type {
+  Subscription,
+  SubscriptionStatus,
+} from '@chatly/types/subscription'
 import { randomUUID } from 'crypto'
 import { supabaseAdmin } from './supabase'
-import type { Subscription, SubscriptionStatus } from '@/types/subscription'
 
 interface SeedSubscriptionInput {
   userId: string

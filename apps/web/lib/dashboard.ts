@@ -1,5 +1,5 @@
-import { Message } from '@/types/message'
-import { Profile } from '@/types/profile'
+import type { Message } from '@chatly/types/message'
+import type { Profile } from '@chatly/types/profile'
 
 /**
  * Determines the partner ID from a message based on the current user's ID.

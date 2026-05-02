@@ -1,5 +1,5 @@
-import { supabase } from './supabase.ts'
 import { parseVariant } from './parse-variant.ts'
+import { supabase } from './supabase.ts'
 /**
  * Handle subscription_created event.
  * Creates or upserts a subscription row.

@@ -1,4 +1,6 @@
 import { getFormattedSeconds } from '@/lib/date'
+import { usePrivateContext } from '@/providers/private-provider'
+import { NativeFile } from '@/types/use-messages'
 import {
   AudioModule,
   RecordingPresets,
@@ -10,6 +12,7 @@ import { Pause, Play, Send, X } from 'lucide-react-native'
 import { useCallback, useEffect } from 'react'
 import { View } from 'react-native'
 import { toast } from 'sonner-native'
+import { MAX_MESSAGE_ATTACHMENT_SIZE } from './chat-input-dropdown'
 import { Button } from './ui/button'
 import { Icon } from './ui/icon'
 import { Text } from './ui/text'
@@ -21,6 +24,7 @@ interface VoiceRecorderProps {
 export default function VoiceRecorder({ closeRecorder }: VoiceRecorderProps) {
   const audioRecorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY)
   const audioRecorderState = useAudioRecorderState(audioRecorder)
+  const { sendMessage, reflectUsageIncrement } = usePrivateContext()
 
   const record = useCallback(async () => {
     await audioRecorder.prepareToRecordAsync()
@@ -57,9 +61,32 @@ export default function VoiceRecorder({ closeRecorder }: VoiceRecorderProps) {
 
   const submit = async () => {
     if (!checkRecordingStatus()) return
+    if (!audioRecorder.uri) return
 
     await audioRecorder.stop()
-    console.log(audioRecorder.uri)
+
+    const arrayBuffer = await fetch(audioRecorder.uri).then((res) =>
+      res.arrayBuffer(),
+    )
+
+    if (arrayBuffer.byteLength > MAX_MESSAGE_ATTACHMENT_SIZE) {
+      toast.error('File must be at most 50 MB')
+      closeRecorder()
+      return
+    }
+
+    const mimeType = 'audio/mp4'
+    const name = `recording_${Date.now()}.${mimeType?.split('/')[1]}`
+
+    const file: NativeFile = {
+      arrayBuffer,
+      mimeType,
+      name,
+      size: arrayBuffer.byteLength,
+    }
+
+    await sendMessage({ file })
+    reflectUsageIncrement('media')
     toast.success('Audio recording sent')
     closeRecorder()
   }

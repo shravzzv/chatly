@@ -1,3 +1,4 @@
+import { usePrivateContext } from '@/providers/private-provider'
 import { Button } from './ui/button'
 import {
   Dialog,
@@ -21,8 +22,10 @@ export default function DeleteMessageAction({
   open,
   setOpen,
 }: DeleteMessageActionProps) {
-  const handleDelete = () => {
-    console.log(`deleted message with id ${id}`)
+  const { deleteMessage } = usePrivateContext()
+
+  const handleDelete = async () => {
+    await deleteMessage(id)
     setOpen(false)
   }
 

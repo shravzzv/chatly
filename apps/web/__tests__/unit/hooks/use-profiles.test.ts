@@ -1,8 +1,8 @@
-import { renderHook, waitFor, act } from '@testing-library/react'
 import { useProfiles } from '@/hooks/use-profiles'
-import { type Profile } from '@/types/profile'
 import { createClient } from '@/utils/supabase/client'
+import type { Profile } from '@chatly/types/profile'
 import { type PostgrestError } from '@supabase/supabase-js'
+import { act, renderHook, waitFor } from '@testing-library/react'
 
 jest.mock('@/utils/supabase/client', () => ({
   createClient: jest.fn(),
