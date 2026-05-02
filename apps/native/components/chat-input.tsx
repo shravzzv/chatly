@@ -59,12 +59,13 @@ export default function ChatInput() {
       return
     }
 
+    if (!text.trim()) return
+
     try {
-      if (!text.trim()) return
       if (!supabase) throw Error('Supabase client not initialized')
 
-      originalMessageRef.current = text
       setIsEnhancing(true)
+      originalMessageRef.current = text
 
       const { data, error } = await supabase.functions.invoke(
         'ai-enhance-text',

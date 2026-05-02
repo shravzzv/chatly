@@ -1,21 +1,18 @@
 import {
-  signup,
-  signin,
-  signInWithProvider,
-  sendPasswordResetEmail,
-  updatePassword,
-  subscribeUser,
-  unsubscribeUser,
-  updateProfile,
   deleteUser,
   getSubscriptions,
-  enhanceText,
-  checkAndIncrementUsage,
+  sendPasswordResetEmail,
+  signin,
+  signInWithProvider,
+  signup,
+  subscribeUser,
+  unsubscribeUser,
+  updatePassword,
+  updateProfile,
 } from '@/app/actions'
-import { createClient } from '@/utils/supabase/server'
 import { createAdminClient } from '@/utils/supabase/admin'
+import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
-import { generateText } from 'ai'
 
 jest.mock('@/utils/supabase/server')
 jest.mock('@/utils/supabase/admin')
@@ -304,143 +301,6 @@ describe('Actions Test Suite', () => {
       const result = await getSubscriptions()
 
       expect(result).toEqual([])
-    })
-  })
-
-  describe('enhanceText', () => {
-    const rpcMock = jest.fn()
-
-    beforeEach(() => {
-      ;(createClient as jest.Mock).mockResolvedValue({
-        rpc: rpcMock,
-      })
-      rpcMock.mockResolvedValue({ data: { used: 1 }, error: null })
-    })
-
-    it('returns original text if input is empty', async () => {
-      expect(await enhanceText('')).toBe('')
-      expect(await enhanceText('   ')).toBe('   ')
-    })
-
-    it('returns enhanced text when AI improves the message', async () => {
-      ;(generateText as jest.Mock).mockResolvedValue({
-        text: 'Hello there!',
-      })
-
-      const result = await enhanceText('hello there')
-      expect(result).toBe('Hello there!')
-    })
-
-    it('returns empty string if AI returns empty text', async () => {
-      ;(generateText as jest.Mock).mockResolvedValue({
-        text: '',
-      })
-
-      const result = await enhanceText('Hello')
-      expect(result).toBe('')
-    })
-
-    it('calls generateText with correct model and prompt', async () => {
-      ;(generateText as jest.Mock).mockResolvedValue({
-        text: 'Hi!',
-      })
-
-      await enhanceText('hi')
-
-      expect(generateText).toHaveBeenCalledWith(
-        expect.objectContaining({
-          model: 'openai/gpt-4o-mini',
-          prompt: 'hi',
-          system: expect.stringContaining('You improve chat messages'),
-        }),
-      )
-    })
-
-    it('throws AI_SERVICE_ERROR if AI throws', async () => {
-      ;(generateText as jest.Mock).mockRejectedValue(
-        new Error('Rate limit exceeded'),
-      )
-
-      await expect(enhanceText('Hello')).rejects.toThrow('AI_SERVICE_ERROR')
-    })
-
-    it('throws USER_ON_FREE_PLAN if usage check fails', async () => {
-      rpcMock.mockResolvedValue({
-        data: null,
-        error: { message: 'USER_ON_FREE_PLAN' },
-      })
-
-      await expect(enhanceText('Hello')).rejects.toThrow('USER_ON_FREE_PLAN')
-    })
-  })
-
-  describe('checkAndIncrementUsage', () => {
-    const rpcMock = jest.fn()
-
-    beforeEach(() => {
-      ;(createClient as jest.Mock).mockResolvedValue({
-        rpc: rpcMock,
-      })
-    })
-
-    it('returns usage data when RPC succeeds', async () => {
-      rpcMock.mockResolvedValue({
-        data: { used: 3, usage_limit: 10 },
-        error: null,
-      })
-
-      const result = await checkAndIncrementUsage('ai')
-
-      expect(result).toEqual({ used: 3, usage_limit: 10 })
-    })
-
-    it('calls check_and_increment_usage RPC with correct usageKind', async () => {
-      rpcMock.mockResolvedValue({ data: {}, error: null })
-
-      await checkAndIncrementUsage('media')
-
-      expect(rpcMock).toHaveBeenCalledWith('check_and_increment_usage', {
-        usage_kind: 'media',
-      })
-    })
-
-    it('throws USER_ON_FREE_PLAN when user is on free plan', async () => {
-      rpcMock.mockResolvedValue({
-        data: null,
-        error: { message: 'USER_ON_FREE_PLAN' },
-      })
-
-      await expect(checkAndIncrementUsage('ai')).rejects.toThrow(
-        'USER_ON_FREE_PLAN',
-      )
-    })
-
-    it('throws USAGE_LIMIT_EXCEEDED when daily limit is exceeded', async () => {
-      rpcMock.mockResolvedValue({
-        data: null,
-        error: { message: 'USAGE_LIMIT_EXCEEDED' },
-      })
-
-      await expect(checkAndIncrementUsage('media')).rejects.toThrow(
-        'USAGE_LIMIT_EXCEEDED',
-      )
-    })
-
-    it('rethrows unknown RPC errors', async () => {
-      const error = { message: 'SOME_OTHER_ERROR', code: 'P0001' }
-
-      rpcMock.mockResolvedValue({
-        data: null,
-        error,
-      })
-
-      await expect(checkAndIncrementUsage('ai')).rejects.toEqual(error)
-    })
-
-    it('throws if RPC call itself rejects', async () => {
-      rpcMock.mockRejectedValue(new Error('network down'))
-
-      await expect(checkAndIncrementUsage('ai')).rejects.toThrow('network down')
     })
   })
 })
