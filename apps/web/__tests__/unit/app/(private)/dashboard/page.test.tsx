@@ -1,7 +1,7 @@
-import { render } from '@testing-library/react'
 import Dashboard from '@/app/(private)/dashboard/page'
 import { getCheckoutUrl } from '@/lib/get-checkout-url'
 import { useChatlyStore } from '@/providers/chatly-store-provider'
+import { render } from '@testing-library/react'
 
 const replaceMock = jest.fn()
 
@@ -26,7 +26,7 @@ jest.mock('@/providers/chatly-store-provider', () => ({
   useChatlyStore: jest.fn(),
 }))
 
-jest.mock('@/hooks/use-profiles', () => ({
+jest.mock('@chatly/hooks/use-profiles', () => ({
   useProfiles: () => ({
     profiles: [],
     filteredProfiles: [],

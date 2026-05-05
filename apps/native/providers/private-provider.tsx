@@ -1,8 +1,9 @@
 import { useMessages } from '@/hooks/use-messages'
 import { usePreviews } from '@/hooks/use-previews'
-import { useProfiles } from '@/hooks/use-profiles'
 import { useTyping } from '@/hooks/use-typing'
 import { useUsage } from '@/hooks/use-usage'
+import { supabase } from '@/lib/supabase'
+import { useProfiles } from '@chatly/hooks/use-profiles'
 import type { Message } from '@chatly/types/message'
 import type { ChatlyPlan, UsageKind } from '@chatly/types/plan'
 import type { Previews } from '@chatly/types/preview'
@@ -106,6 +107,8 @@ const PrivateContext = createContext<PrivateContextValue | null>(null)
  * ```
  */
 export function PrivateProvider({ children }: PropsWithChildren) {
+  if (!supabase) throw Error('Supabase client unavailable')
+
   const [searchQuery, setSearchQuery] = useState('')
   const [upgradeReason, setUpgradeReason] = useState<UsageKind | null>(null)
   const [selectedProfileId, setSelectedProfileId] = useState<string | null>(
@@ -117,7 +120,7 @@ export function PrivateProvider({ children }: PropsWithChildren) {
     filteredProfiles,
     loading: profilesLoading,
     error: profilesError,
-  } = useProfiles(searchQuery)
+  } = useProfiles(searchQuery, supabase)
 
   useEffect(() => {
     if (profilesError) toast.error('Failed to load profiles')

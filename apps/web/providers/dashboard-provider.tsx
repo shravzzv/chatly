@@ -2,9 +2,10 @@
 
 import { useMessages } from '@/hooks/use-messages'
 import { usePreviews } from '@/hooks/use-previews'
-import { useProfiles } from '@/hooks/use-profiles'
 import { useUsage } from '@/hooks/use-usage'
 import type { DashboardContextValue } from '@/types/dashboard'
+import { createClient } from '@/utils/supabase/client'
+import { useProfiles } from '@chatly/hooks/use-profiles'
 import type { UsageKind } from '@chatly/types/plan'
 import { useSearchParams } from 'next/navigation'
 import {
@@ -38,6 +39,7 @@ const DashboardContext = createContext<DashboardContextValue | null>(null)
  * All dashboard components are expected to consume state via `useDashboard`.
  */
 export function DashboardProvider({ children }: PropsWithChildren) {
+  const supabase = createClient()
   const searchParams = useSearchParams()
 
   const [searchQuery, setSearchQuery] = useState('')
@@ -53,7 +55,7 @@ export function DashboardProvider({ children }: PropsWithChildren) {
     filteredProfiles,
     loading: profilesLoading,
     error: profilesError,
-  } = useProfiles(searchQuery)
+  } = useProfiles(searchQuery, supabase)
 
   useEffect(() => {
     if (profilesError) toast.error('Failed to load profiles')

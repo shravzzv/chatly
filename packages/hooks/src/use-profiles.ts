@@ -1,8 +1,7 @@
-import { supabase } from '@/lib/supabase'
-import { UseProfilesResult } from '@/types/use-profiles'
 import type { Profile } from '@chatly/types/profile'
-import { type PostgrestError } from '@supabase/supabase-js'
+import { type PostgrestError, type SupabaseClient } from '@supabase/supabase-js'
 import { useEffect, useMemo, useState } from 'react'
+import type { UseProfilesResult } from '../types/use-profiles'
 
 /**
  * `useProfiles`
@@ -28,18 +27,19 @@ import { useEffect, useMemo, useState } from 'react'
  * Realtime behavior:
  * - INSERT: new profiles are appended automatically
  * - UPDATE: profiles are updated in-place
- *   - If the updated profile belongs to the current user,
- *     global profile state is synchronized
  * - DELETE: removed profiles are pruned from the list
  *
- * @param searchQuery
- * A case-insensitive search string used to filter profiles
- * by `name` or `username`.
+ * @param searchQuery A case-insensitive search string used to
+ * filter profiles by `name` or `username`.
+ * @param supabase A supabase client to make supabase requests.
  *
  * @returns An object containing the full profile list,
  * a filtered subset, and loading/error state.
  */
-export function useProfiles(searchQuery: string): UseProfilesResult {
+export function useProfiles(
+  searchQuery: string,
+  supabase: SupabaseClient,
+): UseProfilesResult {
   const [profiles, setProfiles] = useState<Profile[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<PostgrestError | null>(null)
@@ -52,12 +52,6 @@ export function useProfiles(searchQuery: string): UseProfilesResult {
    */
   useEffect(() => {
     const fetchProfiles = async () => {
-      if (!supabase) {
-        setError(Error('Supabase not initialized') as PostgrestError)
-        setLoading(false)
-        return
-      }
-
       setLoading(true)
 
       try {
@@ -79,14 +73,12 @@ export function useProfiles(searchQuery: string): UseProfilesResult {
     }
 
     fetchProfiles()
-  }, [])
+  }, [supabase])
 
   /**
    * Handle realtime for profiles.
    */
   useEffect(() => {
-    if (!supabase) return
-
     const channel = supabase
       .channel('profiles:realtime')
       .on(
@@ -129,9 +121,9 @@ export function useProfiles(searchQuery: string): UseProfilesResult {
       .subscribe()
 
     return () => {
-      supabase?.removeChannel(channel)
+      supabase.removeChannel(channel)
     }
-  }, [])
+  }, [supabase])
 
   /**
    * Derive a filtered view of profiles based on `searchQuery`.

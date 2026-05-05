@@ -4,14 +4,16 @@ permissions:
 
 on:
   push:
-    branches: [main]
+    branches: [ main ]
     paths:
       - 'apps/web/**'
+      - 'packages/**'
 
   pull_request:
-    branches: [main]
+    branches: [ main ]
     paths:
       - 'apps/web/**'
+      - 'packages/**'
 
 env:
   NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}

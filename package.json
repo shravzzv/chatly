@@ -19,14 +19,17 @@
     "lint:native": "npm run lint:fix -w chatly-native",
     "lint:native:ci": "npm run lint -w chatly-native",
     "build:native": "npm run build -w chatly-native",
-    "preview:native": "npm run preview -w chatly-native"
+    "preview:native": "npm run preview -w chatly-native",
+    "test:hooks": "npm test -w @chatly/hooks",
+    "test:all": "npm run test:hooks && npm run test:web && npm run test:native"
   },
   "dependencies": {
     "@ai-sdk/react": "^3.0.170",
     "@hookform/resolvers": "^5.2.2",
     "ai": "^6.0.168",
     "react-hook-form": "^7.71.2",
-    "zod": "^4.3.6"
+    "zod": "^4.3.6",
+    "@chatly/hooks": "*"
   },
   "devDependencies": {
     "@types/react": "19.1.17",
