@@ -1,24 +1,15 @@
 'use client'
 
 import { PLAN_LIMITS } from '@/data/plans'
-import { UsageMeter } from './usage-meter'
-import { useUsage } from '@/hooks/use-usage'
-import { Skeleton } from './ui/skeleton'
 import { getUsageResetTime } from '@/lib/date'
+import { usePrivateContext } from '@/providers/private-provider'
+import { Skeleton } from './ui/skeleton'
+import { UsageMeter } from './usage-meter'
 
 export function UsageProgress() {
-  /**
-   * Intentionally duplicating these readonly state variables provisionally.
-   *
-   * These are created in the app/dashboard/page.tsx as well.
-   * The dashboard and plan pages are never together in the html.
-   *
-   * A potent solution would be to lift the state up by providing this state
-   * in the private pages layout using context.
-   */
-  const { plan, aiUsed, mediaUsed, loading } = useUsage()
+  const { plan, aiUsed, mediaUsed, usageLoading } = usePrivateContext()
 
-  if (loading) {
+  if (usageLoading) {
     return (
       <div className='space-y-3'>
         {Array.from({ length: 2 }, (_, idx) => (

@@ -2,11 +2,8 @@
 
 import { useMessages } from '@/hooks/use-messages'
 import { usePreviews } from '@/hooks/use-previews'
-import { useUsage } from '@/hooks/use-usage'
-import type { DashboardContextValue } from '@/types/dashboard'
 import { createClient } from '@/utils/supabase/client'
 import { useProfiles } from '@chatly/hooks/use-profiles'
-import type { UsageKind } from '@chatly/types/plan'
 import { useSearchParams } from 'next/navigation'
 import {
   createContext,
@@ -17,6 +14,60 @@ import {
   type PropsWithChildren,
 } from 'react'
 import { toast } from 'sonner'
+import { usePrivateContext } from './private-provider'
+
+import type { Previews } from '@/types/use-previews'
+import type { Message } from '@chatly/types/message'
+import type { ChatlyPlan, UsageKind } from '@chatly/types/plan'
+import type { Profile } from '@chatly/types/profile'
+
+interface DashboardContextValue {
+  // profiles
+  readonly profiles: Profile[]
+  readonly filteredProfiles: Profile[]
+  readonly profilesLoading: boolean
+
+  // previews
+  readonly previews: Previews
+  readonly previewsLoading: boolean
+
+  // messages
+  readonly messages: Message[]
+  readonly messagesLoading: boolean
+  sendMessage: ReturnType<typeof useMessages>['sendMessage']
+  editMessage: ReturnType<typeof useMessages>['editMessage']
+  deleteMessage: ReturnType<typeof useMessages>['deleteMessage']
+
+  // search
+  readonly searchQuery: string
+  setSearchQuery: (q: string) => void
+
+  // selection & UI
+  readonly selectedProfile: Profile | null
+  readonly selectedProfileId: string | null
+  setSelectedProfileId: (id: string | null) => void
+
+  readonly isProfileSelectDialogOpen: boolean
+  openProfileSelectDialog: () => void
+  closeProfileSelectDialog: () => void
+  closeChatPanel: () => void
+
+  // usage
+  readonly plan: ChatlyPlan
+  readonly usageLoading: boolean
+  readonly aiUsed: number
+  readonly canUseAi: boolean
+  readonly aiRemaining: number
+  readonly mediaUsed: number
+  readonly canUseMedia: boolean
+  readonly mediaRemaining: number
+  reflectUsageIncrement: (kind: UsageKind) => void
+
+  // upgrade
+  readonly upgradeReason: UsageKind | null
+  openUpgradeAlertDialog: (reason: UsageKind) => void
+  closeUpgradeAlertDialog: () => void
+}
 
 const DashboardContext = createContext<DashboardContextValue | null>(null)
 
@@ -96,8 +147,7 @@ export function DashboardProvider({ children }: PropsWithChildren) {
   }, [messagesError])
 
   const {
-    loading: usageLoading,
-    error: usageError,
+    usageLoading,
     plan,
     aiRemaining,
     aiUsed,
@@ -106,11 +156,12 @@ export function DashboardProvider({ children }: PropsWithChildren) {
     mediaRemaining,
     mediaUsed,
     reflectUsageIncrement,
-  } = useUsage()
-
-  useEffect(() => {
-    if (usageError) console.warn('Failed to load usage')
-  }, [usageError])
+  } = usePrivateContext()
+  /**
+   * Provisionally providing private context values here.
+   * Refactoring the consumers to use these values directly from
+   * privateContext might be a good idea.
+   */
 
   const openProfileSelectDialog = () => setIsProfileSelectDialogOpen(true)
   const closeProfileSelectDialog = () => setIsProfileSelectDialogOpen(false)
@@ -179,11 +230,9 @@ export function DashboardProvider({ children }: PropsWithChildren) {
  * silent misuse and partial state reads.
  */
 export function useDashboardContext() {
-  const context = useContext(DashboardContext)
-
-  if (!context) {
-    throw new Error('useDashboardContext must be used within DashboardProvider')
+  const ctx = useContext(DashboardContext)
+  if (!ctx) {
+    throw Error('useDashboardContext must be used within DashboardProvider')
   }
-
-  return context
+  return ctx
 }
