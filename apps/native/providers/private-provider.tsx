@@ -1,9 +1,9 @@
 import { useMessages } from '@/hooks/use-messages'
 import { usePreviews } from '@/hooks/use-previews'
 import { useTyping } from '@/hooks/use-typing'
-import { useUsage } from '@/hooks/use-usage'
 import { supabase } from '@/lib/supabase'
 import { useProfiles } from '@chatly/hooks/use-profiles'
+import { useUsage } from '@chatly/hooks/use-usage'
 import type { Message } from '@chatly/types/message'
 import type { ChatlyPlan, UsageKind } from '@chatly/types/plan'
 import type { Previews } from '@chatly/types/preview'
@@ -17,6 +17,7 @@ import {
   type PropsWithChildren,
 } from 'react'
 import { toast } from 'sonner-native'
+import { useAuthContext } from './auth-provider'
 
 interface PrivateContextValue {
   // profiles
@@ -108,6 +109,7 @@ const PrivateContext = createContext<PrivateContextValue | null>(null)
  */
 export function PrivateProvider({ children }: PropsWithChildren) {
   if (!supabase) throw Error('Supabase client unavailable')
+  const { userId: currentUserId } = useAuthContext()
 
   const [searchQuery, setSearchQuery] = useState('')
   const [upgradeReason, setUpgradeReason] = useState<UsageKind | null>(null)
@@ -168,7 +170,7 @@ export function PrivateProvider({ children }: PropsWithChildren) {
     mediaRemaining,
     mediaUsed,
     reflectUsageIncrement,
-  } = useUsage()
+  } = useUsage(supabase, currentUserId)
 
   useEffect(() => {
     if (usageError) console.warn('Failed to load usage')

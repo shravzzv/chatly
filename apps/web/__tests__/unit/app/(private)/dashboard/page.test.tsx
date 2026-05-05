@@ -22,6 +22,23 @@ jest.mock('@/lib/get-checkout-url', () => ({
   getCheckoutUrl: jest.fn(),
 }))
 
+jest.mock('@/providers/private-provider', () => ({
+  usePrivateContext: jest.fn(() => ({
+    usageLoading: false,
+    plan: 'free',
+    aiRemaining: 0,
+    aiUsed: 0,
+    canUseAi: false,
+    canUseMedia: false,
+    mediaRemaining: 0,
+    mediaUsed: 0,
+    reflectUsageIncrement: jest.fn(),
+  })),
+  PrivateProvider: ({ children }: { children: React.ReactNode }) => (
+    <>{children}</>
+  ),
+}))
+
 jest.mock('@/providers/chatly-store-provider', () => ({
   useChatlyStore: jest.fn(),
 }))
