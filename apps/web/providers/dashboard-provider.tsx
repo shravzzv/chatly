@@ -2,8 +2,13 @@
 
 import { useMessages } from '@/hooks/use-messages'
 import { usePreviews } from '@/hooks/use-previews'
+import type { Previews } from '@/types/use-previews'
 import { createClient } from '@/utils/supabase/client'
 import { useProfiles } from '@chatly/hooks/use-profiles'
+import { useTyping } from '@chatly/hooks/use-typing'
+import type { Message } from '@chatly/types/message'
+import type { ChatlyPlan, UsageKind } from '@chatly/types/plan'
+import type { Profile } from '@chatly/types/profile'
 import { useSearchParams } from 'next/navigation'
 import {
   createContext,
@@ -14,12 +19,8 @@ import {
   type PropsWithChildren,
 } from 'react'
 import { toast } from 'sonner'
+import { useChatlyStore } from './chatly-store-provider'
 import { usePrivateContext } from './private-provider'
-
-import type { Previews } from '@/types/use-previews'
-import type { Message } from '@chatly/types/message'
-import type { ChatlyPlan, UsageKind } from '@chatly/types/plan'
-import type { Profile } from '@chatly/types/profile'
 
 interface DashboardContextValue {
   // profiles
@@ -46,11 +47,14 @@ interface DashboardContextValue {
   readonly selectedProfile: Profile | null
   readonly selectedProfileId: string | null
   setSelectedProfileId: (id: string | null) => void
-
   readonly isProfileSelectDialogOpen: boolean
   openProfileSelectDialog: () => void
   closeProfileSelectDialog: () => void
   closeChatPanel: () => void
+
+  // typing
+  readonly isTyping: boolean
+  updateTypingStatus: (isTyping: boolean) => Promise<void>
 
   // usage
   readonly plan: ChatlyPlan
@@ -92,6 +96,7 @@ const DashboardContext = createContext<DashboardContextValue | null>(null)
 export function DashboardProvider({ children }: PropsWithChildren) {
   const supabase = createClient()
   const searchParams = useSearchParams()
+  const currentUserId = useChatlyStore((state) => state.user)?.id ?? null
 
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedProfileId, setSelectedProfileId] = useState<string | null>(
@@ -146,6 +151,12 @@ export function DashboardProvider({ children }: PropsWithChildren) {
     if (messagesError) toast.error('Failed to load messages')
   }, [messagesError])
 
+  const { isTyping, updateTypingStatus } = useTyping(
+    supabase,
+    currentUserId,
+    selectedProfileId,
+  )
+
   const {
     usageLoading,
     plan,
@@ -173,31 +184,40 @@ export function DashboardProvider({ children }: PropsWithChildren) {
   const closeUpgradeAlertDialog = () => setUpgradeReason(null)
 
   const value: DashboardContextValue = {
+    // profiles
     profiles,
     filteredProfiles,
     profilesLoading,
 
+    // previews
     previews,
     previewsLoading,
 
+    // messages
     messages,
     messagesLoading,
     sendMessage,
     editMessage,
     deleteMessage,
 
+    // search
     searchQuery,
     setSearchQuery,
 
+    // selection & UI
     selectedProfile,
     selectedProfileId,
     setSelectedProfileId,
-
     isProfileSelectDialogOpen,
     openProfileSelectDialog,
     closeProfileSelectDialog,
     closeChatPanel,
 
+    // typing
+    isTyping,
+    updateTypingStatus,
+
+    // usage
     usageLoading,
     plan,
     aiRemaining,
@@ -208,16 +228,13 @@ export function DashboardProvider({ children }: PropsWithChildren) {
     mediaUsed,
     reflectUsageIncrement,
 
+    // upgrade
     upgradeReason,
     openUpgradeAlertDialog,
     closeUpgradeAlertDialog,
   }
 
-  return (
-    <DashboardContext.Provider value={value}>
-      {children}
-    </DashboardContext.Provider>
-  )
+  return <DashboardContext value={value}>{children}</DashboardContext>
 }
 
 /**

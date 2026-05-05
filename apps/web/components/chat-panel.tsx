@@ -1,17 +1,15 @@
 'use client'
 
-import { FilePen } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import ChatHeader from './chat-header'
-import MessageList from './message-list'
-import ChatInput from './chat-input'
-import { useTyping } from '@/hooks/use-typing'
 import { useDashboardContext } from '@/providers/dashboard-provider'
+import { FilePen } from 'lucide-react'
+import ChatHeader from './chat-header'
+import ChatInput from './chat-input'
+import MessageList from './message-list'
 
 export default function ChatPanel() {
-  const { selectedProfile, selectedProfileId, openProfileSelectDialog } =
-    useDashboardContext()
-  const { isTyping, updateTypingStatus } = useTyping(selectedProfileId || null)
+  const { selectedProfile, openProfileSelectDialog } = useDashboardContext()
+  const { isTyping, updateTypingStatus } = useDashboardContext()
 
   if (!selectedProfile) {
     return (

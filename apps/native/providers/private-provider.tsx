@@ -1,8 +1,8 @@
 import { useMessages } from '@/hooks/use-messages'
 import { usePreviews } from '@/hooks/use-previews'
-import { useTyping } from '@/hooks/use-typing'
 import { supabase } from '@/lib/supabase'
 import { useProfiles } from '@chatly/hooks/use-profiles'
+import { useTyping } from '@chatly/hooks/use-typing'
 import { useUsage } from '@chatly/hooks/use-usage'
 import type { Message } from '@chatly/types/message'
 import type { ChatlyPlan, UsageKind } from '@chatly/types/plan'
@@ -157,7 +157,11 @@ export function PrivateProvider({ children }: PropsWithChildren) {
     if (messagesError) toast.error('Failed to load messages')
   }, [messagesError])
 
-  const { isTyping, updateTypingStatus } = useTyping(selectedProfileId)
+  const { isTyping, updateTypingStatus } = useTyping(
+    supabase,
+    currentUserId,
+    selectedProfileId,
+  )
 
   const {
     loading: usageLoading,
