@@ -1,13 +1,13 @@
 'use client'
 
 import { useMessages } from '@/hooks/use-messages'
-import { usePreviews } from '@/hooks/use-previews'
-import type { Previews } from '@/types/use-previews'
 import { createClient } from '@/utils/supabase/client'
+import { usePreviews } from '@chatly/hooks/use-previews'
 import { useProfiles } from '@chatly/hooks/use-profiles'
 import { useTyping } from '@chatly/hooks/use-typing'
 import type { Message } from '@chatly/types/message'
 import type { ChatlyPlan, UsageKind } from '@chatly/types/plan'
+import type { Previews } from '@chatly/types/preview'
 import type { Profile } from '@chatly/types/profile'
 import { useSearchParams } from 'next/navigation'
 import {
@@ -128,7 +128,7 @@ export function DashboardProvider({ children }: PropsWithChildren) {
     error: previewsError,
     updatePreview,
     deletePreview,
-  } = usePreviews()
+  } = usePreviews(supabase, currentUserId)
 
   useEffect(() => {
     if (previewsError) toast.error('Failed to load previews')

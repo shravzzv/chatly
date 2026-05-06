@@ -1,12 +1,9 @@
-import { supabase } from '@/lib/supabase'
-import { useAuthContext } from '@/providers/auth-provider'
-import type { UsePreviewsResult } from '@/types/use-previews'
 import { getPartnerId } from '@chatly/lib/messages'
 import { derivePreview, derivePreviews } from '@chatly/lib/previews'
 import type { Message } from '@chatly/types/message'
-import type { Previews } from '@chatly/types/preview'
-import { type PostgrestError } from '@supabase/supabase-js'
+import { type PostgrestError, type SupabaseClient } from '@supabase/supabase-js'
 import { useCallback, useEffect, useState } from 'react'
+import type { Previews, UsePreviewsResult } from '../types/use-previews'
 
 /**
  * `usePreviews`
@@ -28,33 +25,32 @@ import { useCallback, useEffect, useState } from 'react'
  * - does not perform message CRUD
  * - does not decide how errors are surfaced in the UI
  * - does not contain presentation or formatting logic
+ * - does not handle realtime logic. Since previews are derived
+ * form messages, the `useMessages` hook handles and updates previews accordingly.
  *
  * The returned API is intended to be called by higher-level orchestration
  * (e.g. message hooks or realtime handlers), not directly by UI components.
  */
-export function usePreviews(): UsePreviewsResult {
+export function usePreviews(
+  supabase: SupabaseClient,
+  currentUserId: string | null,
+): UsePreviewsResult {
   const [previews, setPreviews] = useState<Previews>({})
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<PostgrestError | null>(null)
-
-  const { userId: currentUserId, isLoading: isAuthLoading } = useAuthContext()
 
   /**
    * Populate previews from the db.
    * If no preview exists for a profile, no key is created for it in the state.
    */
   useEffect(() => {
-    if (!currentUserId || isAuthLoading) {
+    if (!currentUserId) {
       setPreviews({})
       setLoading(false)
       return
     }
 
     const fetchPreviews = async () => {
-      if (!supabase) {
-        setLoading(false)
-        return
-      }
       setLoading(true)
 
       try {
@@ -66,7 +62,7 @@ export function usePreviews(): UsePreviewsResult {
 
         if (error) throw error
 
-        const normalizedMessages: Message[] = data.map((row) => ({
+        const normalizedMessages: Message[] = (data ?? []).map((row) => ({
           id: row.id,
           text: row.text,
           sender_id: row.sender_id,
@@ -87,7 +83,7 @@ export function usePreviews(): UsePreviewsResult {
     }
 
     fetchPreviews()
-  }, [currentUserId, isAuthLoading])
+  }, [currentUserId, supabase])
 
   const updatePreview = useCallback(
     (message: Message) => {
@@ -111,7 +107,8 @@ export function usePreviews(): UsePreviewsResult {
 
   const deletePreview = useCallback(
     async (deletedMsg: Message) => {
-      if (!currentUserId || !supabase) return
+      if (!currentUserId) return
+
       const partnerId = getPartnerId(deletedMsg, currentUserId)
       const currentPreview = previews[partnerId]
 
@@ -148,39 +145,11 @@ export function usePreviews(): UsePreviewsResult {
     [currentUserId, previews],
   )
 
-  /**
-   * Escape hatch for authoritative preview replacement.
-   *
-   * This function bypasses freshness checks and optimistic safeguards.
-   * Callers are expected to supply an authoritative message or `null`.
-   *
-   * Intended for:
-   * - rollback after failed optimistic updates
-   * - recomputation after destructive deletes
-   * - realtime reconciliation when ordering guarantees are violated
-   */
-  const replacePreview = useCallback(
-    (partnerId: string, message: Message | null) => {
-      if (!currentUserId) return
-
-      setPreviews((prev) => {
-        const next = { ...prev }
-
-        if (message) next[partnerId] = derivePreview(message, currentUserId)
-        else delete next[partnerId]
-
-        return next
-      })
-    },
-    [currentUserId],
-  )
-
   return {
     previews,
     loading,
     error,
     updatePreview,
     deletePreview,
-    replacePreview,
   }
 }

@@ -1,6 +1,6 @@
 import { useMessages } from '@/hooks/use-messages'
-import { usePreviews } from '@/hooks/use-previews'
 import { supabase } from '@/lib/supabase'
+import { usePreviews } from '@chatly/hooks/use-previews'
 import { useProfiles } from '@chatly/hooks/use-profiles'
 import { useTyping } from '@chatly/hooks/use-typing'
 import { useUsage } from '@chatly/hooks/use-usage'
@@ -134,7 +134,7 @@ export function PrivateProvider({ children }: PropsWithChildren) {
     error: previewsError,
     updatePreview,
     deletePreview,
-  } = usePreviews()
+  } = usePreviews(supabase, currentUserId)
 
   useEffect(() => {
     if (previewsError) toast.error('Failed to load previews')
