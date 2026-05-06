@@ -1,6 +1,6 @@
-import type { Preview, Previews } from '@/types/use-previews'
 import type { Message } from '@chatly/types/message'
 import type { MessageAttachment } from '@chatly/types/message-attachment'
+import type { Preview, Previews } from '@chatly/types/preview'
 import { getPartnerId } from './dashboard'
 
 /**

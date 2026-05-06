@@ -1,9 +1,10 @@
 import { getPartnerId } from '@chatly/lib/messages'
 import { derivePreview, derivePreviews } from '@chatly/lib/previews'
 import type { Message } from '@chatly/types/message'
+import type { Previews } from '@chatly/types/preview'
 import { type PostgrestError, type SupabaseClient } from '@supabase/supabase-js'
 import { useCallback, useEffect, useState } from 'react'
-import type { Previews, UsePreviewsResult } from '../types/use-previews'
+import type { UsePreviewsResult } from '../types/use-previews'
 
 /**
  * `usePreviews`
