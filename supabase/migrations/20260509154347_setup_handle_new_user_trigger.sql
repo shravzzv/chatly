@@ -1,0 +1,4 @@
+CREATE
+OR REPLACE TRIGGER "handle_new_user"
+AFTER INSERT ON "auth"."users" FOR EACH ROW
+EXECUTE FUNCTION "public"."handle_new_user" ();
