@@ -43,8 +43,14 @@ export default function ChatInputDropdown({
   openVoiceRecorder,
 }: ChatInputDropdownProps) {
   const [isUploading, setIsUploading] = useState(false)
-  const { canUseMedia, mediaUsed, plan, sendMessage, reflectUsageIncrement } =
-    usePrivateContext()
+  const {
+    canUseMedia,
+    mediaUsed,
+    plan,
+    sendMessage,
+    reflectUsageIncrement,
+    openUpgradeAlertDialog,
+  } = usePrivateContext()
 
   type Asset =
     | File
@@ -54,7 +60,7 @@ export default function ChatInputDropdown({
   const getUploadableFile = async (
     asset: Asset,
     kind: MessageAttachmentKind,
-  ): Promise<File | NativeFile> => {
+  ) => {
     // Web cases
     if (asset instanceof File) return asset
     if ('file' in asset && asset.file) return asset.file
@@ -145,6 +151,11 @@ export default function ChatInputDropdown({
   }
 
   const takePhoto = async () => {
+    if (!canUseMedia) {
+      openUpgradeAlertDialog('media')
+      return
+    }
+
     const permission = await ImagePicker.requestCameraPermissionsAsync()
     if (!permission.granted) {
       toast.info('Camera permission is required')
@@ -161,6 +172,11 @@ export default function ChatInputDropdown({
   }
 
   const pickImage = async () => {
+    if (!canUseMedia) {
+      openUpgradeAlertDialog('media')
+      return
+    }
+
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync()
     if (!permission.granted) {
       toast.info('Image permissions are required')
@@ -177,6 +193,11 @@ export default function ChatInputDropdown({
   }
 
   const takeVideo = async () => {
+    if (!canUseMedia) {
+      openUpgradeAlertDialog('media')
+      return
+    }
+
     const permission = await ImagePicker.requestCameraPermissionsAsync()
     if (!permission.granted) {
       toast.info('Video permission is required')
@@ -195,6 +216,11 @@ export default function ChatInputDropdown({
   }
 
   const pickVideo = async () => {
+    if (!canUseMedia) {
+      openUpgradeAlertDialog('media')
+      return
+    }
+
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync()
     if (!permission.granted) {
       toast.info('Video permissions are required')
@@ -211,6 +237,11 @@ export default function ChatInputDropdown({
   }
 
   const pickAudio = async () => {
+    if (!canUseMedia) {
+      openUpgradeAlertDialog('media')
+      return
+    }
+
     const result = await DocumentPicker.getDocumentAsync({ type: 'audio/*' })
 
     if (!result.canceled) {
@@ -219,11 +250,25 @@ export default function ChatInputDropdown({
   }
 
   const pickFile = async () => {
+    if (!canUseMedia) {
+      openUpgradeAlertDialog('media')
+      return
+    }
+
     const result = await DocumentPicker.getDocumentAsync()
 
     if (!result.canceled) {
       await handleSubmit(result.assets[0], 'file')
     }
+  }
+
+  const takeRecording = () => {
+    if (!canUseMedia) {
+      openUpgradeAlertDialog('media')
+      return
+    }
+
+    openVoiceRecorder()
   }
 
   return (
@@ -328,7 +373,7 @@ export default function ChatInputDropdown({
           <DropdownMenuSubContent>
             <DropdownMenuItem
               className='flex cursor-pointer items-center gap-2'
-              onPress={openVoiceRecorder}
+              onPress={takeRecording}
               disabled={isUploading}
             >
               <Icon as={Mic} className='size-4 text-muted-foreground' />
