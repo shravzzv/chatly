@@ -1138,4 +1138,4 @@ GRANT ALL ON TABLES TO "service_role";
 
 --
 -- Dumped schema changes for auth and storage
---
+--;
