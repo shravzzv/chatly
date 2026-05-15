@@ -1,16 +1,6 @@
 import type { Message } from '@chatly/types/message'
+import type { NativeFile } from '@chatly/types/native-file'
 import { SupabaseClient, type PostgrestError } from '@supabase/supabase-js'
-
-/**
- * A native file type enclosing an array buffer.
- * To be used for uploading files via an `ArrayBuffer`.
- */
-export type NativeFile = {
-  arrayBuffer: ArrayBuffer
-  name: string
-  mimeType: string
-  size: number
-}
 
 /**
  * Input payload for sending a message.

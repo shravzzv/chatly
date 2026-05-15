@@ -1,6 +1,6 @@
 import { getFormattedSeconds } from '@/lib/date'
 import { usePrivateContext } from '@/providers/private-provider'
-import { NativeFile } from '@/types/use-messages'
+import { NativeFile } from '@chatly/types/native-file'
 import {
   AudioModule,
   RecordingPresets,

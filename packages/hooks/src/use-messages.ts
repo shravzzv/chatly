@@ -1,10 +1,10 @@
 import { getPartnerId } from '@chatly/lib/messages'
 import type { Message } from '@chatly/types/message'
 import type { MessageAttachment } from '@chatly/types/message-attachment'
+import type { NativeFile } from '@chatly/types/native-file'
 import { type PostgrestError } from '@supabase/supabase-js'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type {
-  NativeFile,
   SendMessageInput,
   UseMessagesArgs,
   UseMessagesResult,

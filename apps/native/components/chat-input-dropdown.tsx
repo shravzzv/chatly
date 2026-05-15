@@ -1,7 +1,7 @@
 import { usePrivateContext } from '@/providers/private-provider'
-import type { NativeFile } from '@/types/use-messages'
 import { PLAN_LIMITS } from '@chatly/lib/billing'
 import type { MessageAttachmentKind } from '@chatly/types/message-attachment'
+import type { NativeFile } from '@chatly/types/native-file'
 import * as DocumentPicker from 'expo-document-picker'
 import * as ImagePicker from 'expo-image-picker'
 import {
