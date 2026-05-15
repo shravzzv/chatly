@@ -1,7 +1,7 @@
 'use client'
 
-import { useMessages } from '@/hooks/use-messages'
 import { createClient } from '@/utils/supabase/client'
+import { useMessages } from '@chatly/hooks/use-messages'
 import { usePreviews } from '@chatly/hooks/use-previews'
 import { useProfiles } from '@chatly/hooks/use-profiles'
 import { useTyping } from '@chatly/hooks/use-typing'
@@ -19,6 +19,7 @@ import {
   type PropsWithChildren,
 } from 'react'
 import { toast } from 'sonner'
+import { v4 as uuidv4 } from 'uuid'
 import { useChatlyStore } from './chatly-store-provider'
 import { usePrivateContext } from './private-provider'
 
@@ -142,9 +143,12 @@ export function DashboardProvider({ children }: PropsWithChildren) {
     deleteMessage,
     editMessage,
   } = useMessages({
+    supabase,
+    currentUserId,
     selectedProfileId,
     updatePreview,
     deletePreview,
+    generateId: uuidv4,
   })
 
   useEffect(() => {

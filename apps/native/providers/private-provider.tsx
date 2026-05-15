@@ -1,5 +1,5 @@
-import { useMessages } from '@/hooks/use-messages'
 import { supabase } from '@/lib/supabase'
+import { useMessages } from '@chatly/hooks/use-messages'
 import { usePreviews } from '@chatly/hooks/use-previews'
 import { useProfiles } from '@chatly/hooks/use-profiles'
 import { useTyping } from '@chatly/hooks/use-typing'
@@ -16,7 +16,9 @@ import {
   useState,
   type PropsWithChildren,
 } from 'react'
+import 'react-native-get-random-values'
 import { toast } from 'sonner-native'
+import { v4 as uuidv4 } from 'uuid'
 import { useAuthContext } from './auth-provider'
 
 interface PrivateContextValue {
@@ -148,9 +150,12 @@ export function PrivateProvider({ children }: PropsWithChildren) {
     deleteMessage,
     editMessage,
   } = useMessages({
+    supabase,
+    currentUserId,
     selectedProfileId,
     updatePreview,
     deletePreview,
+    generateId: uuidv4,
   })
 
   useEffect(() => {

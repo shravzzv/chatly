@@ -1,5 +1,5 @@
 import type { Message } from '@chatly/types/message'
-import { type PostgrestError } from '@supabase/supabase-js'
+import { SupabaseClient, type PostgrestError } from '@supabase/supabase-js'
 
 /**
  * A native file type enclosing an array buffer.
@@ -27,16 +27,53 @@ export type SendMessageInput =
   | { file: File | NativeFile; text?: never }
 
 /**
- * Command for sending a message.
+ * Arguments required by `useMessages`.
  *
- * This function performs:
- * - optimistic UI updates for messages
- * - authoritative database writes
- * - attachment upload (if provided)
+ * These callbacks allow the hook to notify external systems
+ * (e.g. conversation previews) about **authoritative message changes**
+ * without owning that state itself.
  *
- * Errors are thrown and must be handled by the caller.
+ * This keeps message state local and preview state global.
  */
-export type SendMessage = (input: SendMessageInput) => Promise<void>
+export interface UseMessagesArgs {
+  /**
+   * A supabase client to call supabase methods from.
+   */
+  supabase: SupabaseClient
+
+  /**
+   * The user id of the logged in user.
+   */
+  currentUserId: string | null
+
+  /**
+   * The currently active conversation partner.
+   *
+   * When `null`, no messages are fetched and the message list is cleared.
+   */
+  selectedProfileId: string | null
+
+  /**
+   * Called when a message is confirmed or received via realtime.
+   *
+   * Intended to update conversation previews based on authoritative data.
+   */
+  updatePreview: (msg: Message) => void
+
+  /**
+   * Called after a message has been successfully deleted.
+   *
+   * Intended to reconcile conversation previews from an authoritative source.
+   */
+  deletePreview: (msg: Message) => Promise<void>
+
+  /**
+   * Generates unique ids for optimistic entities and storage paths.
+   *
+   * Injected to keep the hook platform-agnostic across web and native.
+   */
+  generateId: () => string
+}
 
 /**
  * Public API returned by `useMessages`.
@@ -82,7 +119,7 @@ export interface UseMessagesResult {
    * - The optimistic message is removed
    * - The error is thrown to the caller
    */
-  sendMessage: SendMessage
+  sendMessage: (input: SendMessageInput) => Promise<void>
 
   /**
    * Deletes a message by id.
@@ -113,36 +150,4 @@ export interface UseMessagesResult {
    * - The error is thrown to the caller
    */
   editMessage: (id: string, text: string) => Promise<void>
-}
-
-/**
- * Arguments required by `useMessages`.
- *
- * These callbacks allow the hook to notify external systems
- * (e.g. conversation previews) about **authoritative message changes**
- * without owning that state itself.
- *
- * This keeps message state local and preview state global.
- */
-export interface UseMessagesArgs {
-  /**
-   * The currently active conversation partner.
-   *
-   * When `null`, no messages are fetched and the message list is cleared.
-   */
-  selectedProfileId: string | null
-
-  /**
-   * Called when a message is confirmed or received via realtime.
-   *
-   * Intended to update conversation previews based on authoritative data.
-   */
-  updatePreview: (msg: Message) => void
-
-  /**
-   * Called after a message has been successfully deleted.
-   *
-   * Intended to reconcile conversation previews from an authoritative source.
-   */
-  deletePreview: (msg: Message) => Promise<void>
 }

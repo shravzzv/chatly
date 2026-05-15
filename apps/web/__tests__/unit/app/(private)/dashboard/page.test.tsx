@@ -5,6 +5,8 @@ import { render } from '@testing-library/react'
 
 const replaceMock = jest.fn()
 
+jest.mock('uuid', () => jest.fn())
+
 jest.mock('next/navigation', () => ({
   useRouter: () => ({
     replace: replaceMock,
@@ -51,7 +53,7 @@ jest.mock('@chatly/hooks/use-profiles', () => ({
   }),
 }))
 
-jest.mock('@/hooks/use-messages', () => ({
+jest.mock('@chatly/hooks/use-messages', () => ({
   useMessages: () => ({
     messages: [],
     loading: false,
