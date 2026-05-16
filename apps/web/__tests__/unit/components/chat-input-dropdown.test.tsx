@@ -1,12 +1,11 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import ChatInputDropdown from '@/components/chat-input-dropdown'
 import { MAX_MESSAGE_ATTACHMENT_SIZE } from '@/data/constants'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { toast } from 'sonner'
 
 const sendMessage = jest.fn()
 const openUpgradeAlertDialog = jest.fn()
-const reflectUsageIncrement = jest.fn()
 let canUseMediaMock = true
 
 jest.mock('@/providers/dashboard-provider', () => ({
@@ -14,7 +13,6 @@ jest.mock('@/providers/dashboard-provider', () => ({
     sendMessage,
     canUseMedia: canUseMediaMock,
     openUpgradeAlertDialog,
-    reflectUsageIncrement,
     mediaUsed: 0,
     mediaRemaining: 5,
     plan: 'free',
@@ -195,31 +193,5 @@ describe('ChatInputDropdown', () => {
         'Upgrade your plan to send media attachments',
       )
     })
-  })
-
-  it('reflects media usage increment after successful upload', async () => {
-    const user = userEvent.setup()
-    sendMessage.mockResolvedValueOnce(undefined)
-
-    render(<ChatInputDropdown />)
-
-    await user.click(screen.getByLabelText('Add attachment'))
-    await user.click(screen.getByText('Image'))
-
-    const imageInput = document.querySelector(
-      'input[type="file"][accept="image/*"]',
-    ) as HTMLInputElement
-    const file = new File(['image'], 'photo.png', { type: 'image/png' })
-
-    fireEvent.change(imageInput, {
-      target: { files: [file] },
-    })
-
-    await waitFor(() => {
-      expect(sendMessage).toHaveBeenCalledWith({ file })
-    })
-
-    expect(reflectUsageIncrement).toHaveBeenCalledTimes(1)
-    expect(reflectUsageIncrement).toHaveBeenCalledWith('media')
   })
 })

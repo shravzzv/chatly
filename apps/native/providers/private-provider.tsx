@@ -60,7 +60,6 @@ interface PrivateContextValue {
   readonly mediaUsed: number
   readonly canUseMedia: boolean
   readonly mediaRemaining: number
-  reflectUsageIncrement: (kind: UsageKind) => void
 
   // upgrade
   readonly upgradeReason: UsageKind | null
@@ -177,7 +176,6 @@ export function PrivateProvider({ children }: PropsWithChildren) {
     canUseMedia,
     mediaRemaining,
     mediaUsed,
-    reflectUsageIncrement,
   } = useUsage(supabase, currentUserId)
 
   useEffect(() => {
@@ -227,7 +225,6 @@ export function PrivateProvider({ children }: PropsWithChildren) {
     canUseMedia,
     mediaRemaining,
     mediaUsed,
-    reflectUsageIncrement,
 
     // upgrade
     upgradeReason,

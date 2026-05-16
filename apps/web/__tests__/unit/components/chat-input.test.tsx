@@ -6,7 +6,6 @@ import { toast } from 'sonner'
 const sendMessage = jest.fn()
 const updateTypingStatus = jest.fn()
 const openUpgradeAlertDialog = jest.fn()
-const reflectUsageIncrement = jest.fn()
 let canUseAiMock = true
 
 jest.mock('@/providers/dashboard-provider', () => ({
@@ -14,7 +13,6 @@ jest.mock('@/providers/dashboard-provider', () => ({
     sendMessage,
     canUseAi: canUseAiMock,
     openUpgradeAlertDialog,
-    reflectUsageIncrement,
   }),
 }))
 
@@ -275,20 +273,6 @@ describe('ChatInput', () => {
       expect(toast.error).toHaveBeenCalledWith(
         'Upgrade your plan to use AI enhancements',
       )
-    })
-
-    it('reflects AI usage increment after successful enhancement', async () => {
-      mockInvoke.mockResolvedValue({
-        data: { enhancedText: 'Hello world' },
-        error: null,
-      })
-
-      const { user, textarea, enhanceButton } = await setup()
-
-      await user.type(textarea, 'Hello')
-      await user.click(enhanceButton)
-
-      expect(reflectUsageIncrement).toHaveBeenCalledWith('ai')
     })
   })
 })

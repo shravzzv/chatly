@@ -34,7 +34,6 @@ jest.mock('@/providers/private-provider', () => ({
     canUseMedia: false,
     mediaRemaining: 0,
     mediaUsed: 0,
-    reflectUsageIncrement: jest.fn(),
   })),
   PrivateProvider: ({ children }: { children: React.ReactNode }) => (
     <>{children}</>

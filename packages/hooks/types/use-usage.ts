@@ -1,4 +1,4 @@
-import type { ChatlyPlan, UsageKind } from '@chatly/types/plan'
+import type { ChatlyPlan } from '@chatly/types/plan'
 import { type PostgrestError } from '@supabase/supabase-js'
 
 /**
@@ -40,18 +40,4 @@ export interface UseUsageResult {
 
   /** Remaining media uploads for today (never negative). */
   readonly mediaRemaining: number
-
-  /**
-   * Mirrors a successful usage increment locally.
-   *
-   * This function exists purely to keep the UI in sync after
-   * a server-validated action succeeds.
-   *
-   * - It does NOT persist data
-   * - It does NOT bypass server enforcement
-   * - It MUST NOT be called optimistically
-   *
-   * Think of this as a *local echo*, not a mutation.
-   */
-  readonly reflectUsageIncrement: (kind: UsageKind) => void
 }

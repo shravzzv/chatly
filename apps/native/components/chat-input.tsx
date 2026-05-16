@@ -15,13 +15,8 @@ import VoiceRecorder from './voice-recorder'
 export default function ChatInput() {
   const [text, setText] = useState('')
   const [isEnhancing, setIsEnhancing] = useState(false)
-  const {
-    updateTypingStatus,
-    sendMessage,
-    canUseAi,
-    reflectUsageIncrement,
-    openUpgradeAlertDialog,
-  } = usePrivateContext()
+  const { updateTypingStatus, sendMessage, canUseAi, openUpgradeAlertDialog } =
+    usePrivateContext()
   const [isVoiceRecorderOpen, setIsVoiceRecorderOpen] = useState(false)
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const originalMessageRef = useRef<string | null>(null)
@@ -76,7 +71,6 @@ export default function ChatInput() {
       if (data.error) throw Error(data.error) // business logic error
 
       setText(data.enhancedText)
-      reflectUsageIncrement('ai')
 
       toast.success('Message enhanced', {
         action: (

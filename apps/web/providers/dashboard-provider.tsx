@@ -66,7 +66,6 @@ interface DashboardContextValue {
   readonly mediaUsed: number
   readonly canUseMedia: boolean
   readonly mediaRemaining: number
-  reflectUsageIncrement: (kind: UsageKind) => void
 
   // upgrade
   readonly upgradeReason: UsageKind | null
@@ -170,7 +169,6 @@ export function DashboardProvider({ children }: PropsWithChildren) {
     canUseMedia,
     mediaRemaining,
     mediaUsed,
-    reflectUsageIncrement,
   } = usePrivateContext()
   /**
    * Provisionally providing private context values here.
@@ -230,7 +228,6 @@ export function DashboardProvider({ children }: PropsWithChildren) {
     canUseMedia,
     mediaRemaining,
     mediaUsed,
-    reflectUsageIncrement,
 
     // upgrade
     upgradeReason,

@@ -24,7 +24,7 @@ interface VoiceRecorderProps {
 export default function VoiceRecorder({ closeRecorder }: VoiceRecorderProps) {
   const audioRecorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY)
   const audioRecorderState = useAudioRecorderState(audioRecorder)
-  const { sendMessage, reflectUsageIncrement } = usePrivateContext()
+  const { sendMessage } = usePrivateContext()
 
   const record = useCallback(async () => {
     await audioRecorder.prepareToRecordAsync()
@@ -86,7 +86,6 @@ export default function VoiceRecorder({ closeRecorder }: VoiceRecorderProps) {
     }
 
     await sendMessage({ file })
-    reflectUsageIncrement('media')
     toast.success('Audio recording sent')
     closeRecorder()
   }
