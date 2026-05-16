@@ -14,7 +14,9 @@
     "test:cov": "jest --coverage",
     "e2e": "cross-env APP_ID=host.exp.exponent maestro test .maestro",
     "build": "eas build --platform android",
-    "preview": "eas build --profile preview --platform android"
+    "preview": "eas build --profile preview --platform android",
+    "build-and-deploy:web": "expo export --platform web && eas deploy",
+    "build-and-deploy:web:prod": "expo export --platform web && eas deploy --prod"
   },
   "dependencies": {
     "@expo-google-fonts/inter": "^0.4.2",
