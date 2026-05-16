@@ -13,9 +13,9 @@
     "test": "jest",
     "test:cov": "jest --coverage",
     "e2e": "cross-env APP_ID=host.exp.exponent maestro test .maestro",
-    "build": "eas build --platform android",
-    "preview": "eas build --profile preview --platform android",
-    "build-and-deploy:web": "expo export --platform web && eas deploy",
+    "build-android:prev": "eas build --profile preview --platform android",
+    "build-android:prod": "eas build --platform android",
+    "build-and-deploy:web:prev": "expo export --platform web && eas deploy",
     "build-and-deploy:web:prod": "expo export --platform web && eas deploy --prod"
   },
   "dependencies": {
@@ -65,7 +65,6 @@
     "react-dom": "19.1.0",
     "react-native": "0.81.5",
     "react-native-gesture-handler": "~2.28.0",
-    "react-native-get-random-values": "~1.11.0",
     "react-native-reanimated": "~4.1.1",
     "react-native-safe-area-context": "~5.6.0",
     "react-native-screens": "~4.16.0",
