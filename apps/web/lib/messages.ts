@@ -1,4 +1,4 @@
-import type { MessageAttachmentKind } from '@/types/message-attachment'
+import type { MessageAttachmentKind } from '@chatly/types/message-attachment'
 
 export const getAttachmentKind = (mimeType: string): MessageAttachmentKind => {
   if (mimeType.startsWith('image/')) return 'image'

@@ -1,10 +1,10 @@
 'use client'
 
 import { useChatlyStore } from '@/providers/chatly-store-provider'
-import { Message as MessageType } from '@/types/message'
+import type { Message as MessageType } from '@chatly/types/message'
+import MessageActions from './message-actions'
 import MessageContent from './message-content'
 import MessageMetadata from './message-metadata'
-import MessageActions from './message-actions'
 
 interface MessageProps {
   message: MessageType

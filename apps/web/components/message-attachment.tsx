@@ -1,15 +1,15 @@
 'use client'
 
-import ImageAttachment from './image-attachment'
+import { getAttachmentKind } from '@/lib/messages'
+import { createClient } from '@/utils/supabase/client'
+import type { MessageAttachment } from '@chatly/types/message-attachment'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import AudioAttachment from './audio-attachment'
 import FileAttachment from './file-attachment'
-import { getAttachmentKind } from '@/lib/messages'
-import type { MessageAttachment } from '@/types/message-attachment'
-import { useCallback, useEffect, useRef, useState } from 'react'
-import { createClient } from '@/utils/supabase/client'
+import ImageAttachment from './image-attachment'
+import MessageAttachmentAlert from './message-attachment-alert'
 import MessageAttachmentSkeleton from './skeletons/message-attachment-skeleton'
 import VideoAttachment from './video-attachment'
-import MessageAttachmentAlert from './message-attachment-alert'
 
 interface MessageAttachmentProps {
   attachment: MessageAttachment

@@ -7,7 +7,7 @@ import UpgradeAlertDialog from '@/components/upgrade-alert-dialog'
 import { getCheckoutUrl } from '@/lib/get-checkout-url'
 import { useChatlyStore } from '@/providers/chatly-store-provider'
 import { DashboardProvider } from '@/providers/dashboard-provider'
-import type { Billing, Plan } from '@/types/subscription'
+import type { Billing, Plan } from '@chatly/types/subscription'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect } from 'react'
 

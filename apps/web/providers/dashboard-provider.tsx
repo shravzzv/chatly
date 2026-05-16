@@ -1,5 +1,15 @@
 'use client'
 
+import { createClient } from '@/utils/supabase/client'
+import { useMessages } from '@chatly/hooks/use-messages'
+import { usePreviews } from '@chatly/hooks/use-previews'
+import { useProfiles } from '@chatly/hooks/use-profiles'
+import { useTyping } from '@chatly/hooks/use-typing'
+import type { Message } from '@chatly/types/message'
+import type { ChatlyPlan, UsageKind } from '@chatly/types/plan'
+import type { Previews } from '@chatly/types/preview'
+import type { Profile } from '@chatly/types/profile'
+import { useSearchParams } from 'next/navigation'
 import {
   createContext,
   useContext,
@@ -8,14 +18,61 @@ import {
   useState,
   type PropsWithChildren,
 } from 'react'
-import { useProfiles } from '@/hooks/use-profiles'
-import { useMessages } from '@/hooks/use-messages'
-import { usePreviews } from '@/hooks/use-previews'
 import { toast } from 'sonner'
-import type { DashboardContextValue } from '@/types/dashboard'
-import { useSearchParams } from 'next/navigation'
-import { useUsage } from '@/hooks/use-usage'
-import { UsageKind } from '@/types/plan'
+import { v4 as uuidv4 } from 'uuid'
+import { useChatlyStore } from './chatly-store-provider'
+import { usePrivateContext } from './private-provider'
+
+interface DashboardContextValue {
+  // profiles
+  readonly profiles: Profile[]
+  readonly filteredProfiles: Profile[]
+  readonly profilesLoading: boolean
+
+  // previews
+  readonly previews: Previews
+  readonly previewsLoading: boolean
+
+  // messages
+  readonly messages: Message[]
+  readonly messagesLoading: boolean
+  sendMessage: ReturnType<typeof useMessages>['sendMessage']
+  editMessage: ReturnType<typeof useMessages>['editMessage']
+  deleteMessage: ReturnType<typeof useMessages>['deleteMessage']
+
+  // search
+  readonly searchQuery: string
+  setSearchQuery: (q: string) => void
+
+  // selection & UI
+  readonly selectedProfile: Profile | null
+  readonly selectedProfileId: string | null
+  setSelectedProfileId: (id: string | null) => void
+  readonly isProfileSelectDialogOpen: boolean
+  openProfileSelectDialog: () => void
+  closeProfileSelectDialog: () => void
+  closeChatPanel: () => void
+
+  // typing
+  readonly isTyping: boolean
+  updateTypingStatus: (isTyping: boolean) => Promise<void>
+
+  // usage
+  readonly plan: ChatlyPlan
+  readonly usageLoading: boolean
+  readonly aiUsed: number
+  readonly canUseAi: boolean
+  readonly aiRemaining: number
+  readonly mediaUsed: number
+  readonly canUseMedia: boolean
+  readonly mediaRemaining: number
+  reflectUsageIncrement: (kind: UsageKind) => void
+
+  // upgrade
+  readonly upgradeReason: UsageKind | null
+  openUpgradeAlertDialog: (reason: UsageKind) => void
+  closeUpgradeAlertDialog: () => void
+}
 
 const DashboardContext = createContext<DashboardContextValue | null>(null)
 
@@ -38,7 +95,9 @@ const DashboardContext = createContext<DashboardContextValue | null>(null)
  * All dashboard components are expected to consume state via `useDashboard`.
  */
 export function DashboardProvider({ children }: PropsWithChildren) {
+  const supabase = createClient()
   const searchParams = useSearchParams()
+  const currentUserId = useChatlyStore((state) => state.user)?.id ?? null
 
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedProfileId, setSelectedProfileId] = useState<string | null>(
@@ -53,7 +112,7 @@ export function DashboardProvider({ children }: PropsWithChildren) {
     filteredProfiles,
     loading: profilesLoading,
     error: profilesError,
-  } = useProfiles(searchQuery)
+  } = useProfiles(searchQuery, supabase)
 
   useEffect(() => {
     if (profilesError) toast.error('Failed to load profiles')
@@ -70,7 +129,7 @@ export function DashboardProvider({ children }: PropsWithChildren) {
     error: previewsError,
     updatePreview,
     deletePreview,
-  } = usePreviews()
+  } = usePreviews(supabase, currentUserId)
 
   useEffect(() => {
     if (previewsError) toast.error('Failed to load previews')
@@ -84,18 +143,26 @@ export function DashboardProvider({ children }: PropsWithChildren) {
     deleteMessage,
     editMessage,
   } = useMessages({
+    supabase,
+    currentUserId,
     selectedProfileId,
     updatePreview,
     deletePreview,
+    generateId: uuidv4,
   })
 
   useEffect(() => {
     if (messagesError) toast.error('Failed to load messages')
   }, [messagesError])
 
+  const { isTyping, updateTypingStatus } = useTyping(
+    supabase,
+    currentUserId,
+    selectedProfileId,
+  )
+
   const {
-    loading: usageLoading,
-    error: usageError,
+    usageLoading,
     plan,
     aiRemaining,
     aiUsed,
@@ -104,11 +171,12 @@ export function DashboardProvider({ children }: PropsWithChildren) {
     mediaRemaining,
     mediaUsed,
     reflectUsageIncrement,
-  } = useUsage()
-
-  useEffect(() => {
-    if (usageError) console.warn('Failed to load usage')
-  }, [usageError])
+  } = usePrivateContext()
+  /**
+   * Provisionally providing private context values here.
+   * Refactoring the consumers to use these values directly from
+   * privateContext might be a good idea.
+   */
 
   const openProfileSelectDialog = () => setIsProfileSelectDialogOpen(true)
   const closeProfileSelectDialog = () => setIsProfileSelectDialogOpen(false)
@@ -120,31 +188,40 @@ export function DashboardProvider({ children }: PropsWithChildren) {
   const closeUpgradeAlertDialog = () => setUpgradeReason(null)
 
   const value: DashboardContextValue = {
+    // profiles
     profiles,
     filteredProfiles,
     profilesLoading,
 
+    // previews
     previews,
     previewsLoading,
 
+    // messages
     messages,
     messagesLoading,
     sendMessage,
     editMessage,
     deleteMessage,
 
+    // search
     searchQuery,
     setSearchQuery,
 
+    // selection & UI
     selectedProfile,
     selectedProfileId,
     setSelectedProfileId,
-
     isProfileSelectDialogOpen,
     openProfileSelectDialog,
     closeProfileSelectDialog,
     closeChatPanel,
 
+    // typing
+    isTyping,
+    updateTypingStatus,
+
+    // usage
     usageLoading,
     plan,
     aiRemaining,
@@ -155,16 +232,13 @@ export function DashboardProvider({ children }: PropsWithChildren) {
     mediaUsed,
     reflectUsageIncrement,
 
+    // upgrade
     upgradeReason,
     openUpgradeAlertDialog,
     closeUpgradeAlertDialog,
   }
 
-  return (
-    <DashboardContext.Provider value={value}>
-      {children}
-    </DashboardContext.Provider>
-  )
+  return <DashboardContext value={value}>{children}</DashboardContext>
 }
 
 /**
@@ -177,11 +251,9 @@ export function DashboardProvider({ children }: PropsWithChildren) {
  * silent misuse and partial state reads.
  */
 export function useDashboardContext() {
-  const context = useContext(DashboardContext)
-
-  if (!context) {
-    throw new Error('useDashboardContext must be used within DashboardProvider')
+  const ctx = useContext(DashboardContext)
+  if (!ctx) {
+    throw Error('useDashboardContext must be used within DashboardProvider')
   }
-
-  return context
+  return ctx
 }

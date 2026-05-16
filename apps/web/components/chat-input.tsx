@@ -1,6 +1,5 @@
 'use client'
 
-import { Send, Sparkles, Undo } from 'lucide-react'
 import {
   InputGroup,
   InputGroupAddon,
@@ -8,13 +7,14 @@ import {
   InputGroupTextarea,
 } from '@/components/ui/input-group'
 import { useIsMobile } from '@/hooks/use-mobile'
-import ChatInputDropdown from './chat-input-dropdown'
-import { useRef, useState } from 'react'
 import { useDashboardContext } from '@/providers/dashboard-provider'
-import { Spinner } from './ui/spinner'
-import { enhanceText } from '@/app/actions'
+import { createClient } from '@/utils/supabase/client'
+import { Send, Sparkles, Undo } from 'lucide-react'
+import { useRef, useState } from 'react'
 import { toast } from 'sonner'
+import ChatInputDropdown from './chat-input-dropdown'
 import { Button } from './ui/button'
+import { Spinner } from './ui/spinner'
 
 interface ChatInputProps {
   updateTypingStatus: (isTyping: boolean) => Promise<void>
@@ -85,13 +85,22 @@ export default function ChatInput({ updateTypingStatus }: ChatInputProps) {
     }
 
     if (!text.trim()) return
-    originalMessageRef.current = text
 
     try {
+      const supabase = createClient()
       setIsEnhancing(true)
-      const enhancedText = await enhanceText(text)
+      originalMessageRef.current = text
+
+      const { data, error } = await supabase.functions.invoke(
+        'ai-enhance-text',
+        { body: { text } },
+      )
+
+      if (error) throw error // supabase transport error
+      if (data.error) throw Error(data.error) // business logic error
+
+      setText(data.enhancedText)
       reflectUsageIncrement('ai')
-      setText(enhancedText)
 
       toast.success('Message enhanced', {
         action: (

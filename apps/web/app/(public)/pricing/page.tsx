@@ -1,22 +1,22 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import Link from 'next/link'
-import { Button } from '@/components/ui/button'
+import { getSubscriptions } from '@/app/actions'
+import PricingCard from '@/components/pricing-card'
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion'
-import type { Billing, Subscription } from '@/types/subscription'
-import { useChatlyStore } from '@/providers/chatly-store-provider'
-import { getSubscriptions } from '@/app/actions'
-import { getEffectiveSubscription } from '@/lib/billing'
-import PricingCard from '@/components/pricing-card'
-import { pricingFAQs } from '@/data/pricing-faqs'
+import { Button } from '@/components/ui/button'
 import { PLANS } from '@/data/plans'
+import { pricingFAQs } from '@/data/pricing-faqs'
+import { getEffectiveSubscription } from '@/lib/billing'
 import { getCTAState } from '@/lib/pricing'
+import { useChatlyStore } from '@/providers/chatly-store-provider'
+import type { Billing, Subscription } from '@chatly/types/subscription'
+import Link from 'next/link'
+import { useEffect, useState } from 'react'
 
 export default function Page() {
   const [billingCycle, setBillingCycle] = useState<Billing>('monthly')

@@ -1,9 +1,11 @@
-import { render } from '@testing-library/react'
 import Dashboard from '@/app/(private)/dashboard/page'
 import { getCheckoutUrl } from '@/lib/get-checkout-url'
 import { useChatlyStore } from '@/providers/chatly-store-provider'
+import { render } from '@testing-library/react'
 
 const replaceMock = jest.fn()
+
+jest.mock('uuid', () => jest.fn())
 
 jest.mock('next/navigation', () => ({
   useRouter: () => ({
@@ -22,11 +24,28 @@ jest.mock('@/lib/get-checkout-url', () => ({
   getCheckoutUrl: jest.fn(),
 }))
 
+jest.mock('@/providers/private-provider', () => ({
+  usePrivateContext: jest.fn(() => ({
+    usageLoading: false,
+    plan: 'free',
+    aiRemaining: 0,
+    aiUsed: 0,
+    canUseAi: false,
+    canUseMedia: false,
+    mediaRemaining: 0,
+    mediaUsed: 0,
+    reflectUsageIncrement: jest.fn(),
+  })),
+  PrivateProvider: ({ children }: { children: React.ReactNode }) => (
+    <>{children}</>
+  ),
+}))
+
 jest.mock('@/providers/chatly-store-provider', () => ({
   useChatlyStore: jest.fn(),
 }))
 
-jest.mock('@/hooks/use-profiles', () => ({
+jest.mock('@chatly/hooks/use-profiles', () => ({
   useProfiles: () => ({
     profiles: [],
     filteredProfiles: [],
@@ -34,7 +53,7 @@ jest.mock('@/hooks/use-profiles', () => ({
   }),
 }))
 
-jest.mock('@/hooks/use-messages', () => ({
+jest.mock('@chatly/hooks/use-messages', () => ({
   useMessages: () => ({
     messages: [],
     loading: false,

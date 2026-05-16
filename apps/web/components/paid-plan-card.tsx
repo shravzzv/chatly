@@ -1,4 +1,13 @@
+import { LS_CUSTOMER_PORTAL_URL } from '@/data/constants'
+import {
+  getStatusBadgeClass,
+  getSubscriptionTimeline,
+  PAID_PLAN_HIGHLIGHTS,
+} from '@/lib/billing'
+import { formatRelativeDate } from '@/lib/date'
+import type { Subscription } from '@chatly/types/subscription'
 import Link from 'next/link'
+import { Badge } from './ui/badge'
 import { Button } from './ui/button'
 import {
   Card,
@@ -8,15 +17,6 @@ import {
   CardHeader,
   CardTitle,
 } from './ui/card'
-import { Subscription } from '@/types/subscription'
-import { LS_CUSTOMER_PORTAL_URL } from '@/data/constants'
-import { Badge } from './ui/badge'
-import {
-  getStatusBadgeClass,
-  getSubscriptionTimeline,
-  PAID_PLAN_HIGHLIGHTS,
-} from '@/lib/billing'
-import { formatRelativeDate } from '@/lib/date'
 import { UsageProgress } from './usage-progress'
 
 interface PaidPlanCardProps {

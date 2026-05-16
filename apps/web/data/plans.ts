@@ -1,4 +1,4 @@
-import type { ChatlyPlan } from '@/types/plan'
+import type { ChatlyPlan } from '@chatly/types/plan'
 
 export type PricingPlanName = 'Free' | 'Pro' | 'Enterprise'
 export interface PricingPlan {

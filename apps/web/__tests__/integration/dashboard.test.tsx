@@ -1,6 +1,6 @@
+import Page from '@/app/(private)/dashboard/page'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import Page from '@/app/(private)/dashboard/page'
 
 const replace = jest.fn()
 
@@ -58,7 +58,7 @@ jest.mock('@/providers/dashboard-provider', () => ({
 
 const useMessagesMock = jest.fn()
 
-jest.mock('@/hooks/use-messages', () => ({
+jest.mock('@chatly/hooks/use-messages', () => ({
   useMessages: (args: {
     selectedProfileId: string | null
     updatePreview: (msg: unknown) => void

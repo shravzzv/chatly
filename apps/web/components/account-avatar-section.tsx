@@ -1,15 +1,15 @@
 'use client'
 
 import { Label } from '@/components/ui/label'
-import { Pen } from 'lucide-react'
-import ProfileAvatar from './profile-avatar'
-import { Profile } from '@/types/profile'
-import { createClient } from '@/utils/supabase/client'
-import { toast } from 'sonner'
-import { useState } from 'react'
-import { Spinner } from './ui/spinner'
 import { useChatlyStore } from '@/providers/chatly-store-provider'
+import { createClient } from '@/utils/supabase/client'
+import { Profile } from '@chatly/types/profile'
+import { Pen } from 'lucide-react'
+import { useState } from 'react'
+import { toast } from 'sonner'
 import { v4 } from 'uuid'
+import ProfileAvatar from './profile-avatar'
+import { Spinner } from './ui/spinner'
 
 interface AccountAvatarSectionProps {
   profile: Profile

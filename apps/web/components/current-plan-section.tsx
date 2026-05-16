@@ -1,22 +1,22 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { Subscription } from '@/types/subscription'
 import { getSubscriptions } from '@/app/actions'
-import { toast } from 'sonner'
-import { Alert, AlertDescription, AlertTitle } from './ui/alert'
-import { AlertCircleIcon } from 'lucide-react'
-import CurrentPlanCardSkeleton from './skeletons/current-plan-card-skeleton'
-import FreePlanCard from './free-plan-card'
+import { LS_CUSTOMER_PORTAL_URL } from '@/data/constants'
 import {
   getEffectiveSubscription,
   getLastEndedPaidSubscription,
   isEffectiveSubscription,
 } from '@/lib/billing'
-import PaidPlanCard from './paid-plan-card'
+import type { Subscription } from '@chatly/types/subscription'
+import { AlertCircleIcon } from 'lucide-react'
 import Link from 'next/link'
-import { LS_CUSTOMER_PORTAL_URL } from '@/data/constants'
+import { useEffect, useState } from 'react'
+import { toast } from 'sonner'
 import DemotedPlanAlert from './demoted-plan-alert'
+import FreePlanCard from './free-plan-card'
+import PaidPlanCard from './paid-plan-card'
+import CurrentPlanCardSkeleton from './skeletons/current-plan-card-skeleton'
+import { Alert, AlertDescription, AlertTitle } from './ui/alert'
 
 export default function CurrentPlanSection() {
   const [loading, setLoading] = useState(true)

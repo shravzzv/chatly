@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,7 +9,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Button } from '@/components/ui/button'
+import { MAX_MESSAGE_ATTACHMENT_SIZE } from '@/data/constants'
+import { PLAN_LIMITS } from '@/data/plans'
+import { useDashboardContext } from '@/providers/dashboard-provider'
+import type { MessageAttachmentKind } from '@chatly/types/message-attachment'
 import {
   AudioLines,
   Clapperboard,
@@ -17,11 +20,8 @@ import {
   Paperclip,
   Plus,
 } from 'lucide-react'
+import { useRef, useState } from 'react'
 import { toast } from 'sonner'
-import type { MessageAttachmentKind } from '@/types/message-attachment'
-import { MAX_MESSAGE_ATTACHMENT_SIZE } from '@/data/constants'
-import { useDashboardContext } from '@/providers/dashboard-provider'
-import { PLAN_LIMITS } from '@/data/plans'
 
 export default function ChatInputDropdown() {
   const { sendMessage } = useDashboardContext()

@@ -1,4 +1,4 @@
-import { Billing, Plan } from '@/types/subscription'
+import type { Billing, Plan } from '@chatly/types/subscription'
 
 interface CheckoutLink {
   plan: Plan

@@ -1,10 +1,10 @@
 'use client'
 
-import { Message } from '@/types/message'
-import EditMessageTextAction from './edit-message-text-action'
+import { useChatlyStore } from '@/providers/chatly-store-provider'
+import type { Message } from '@chatly/types/message'
 import DeleteMessageAction from './delete-message-action'
 import DownloadAttachmentAction from './download-attachment-action'
-import { useChatlyStore } from '@/providers/chatly-store-provider'
+import EditMessageTextAction from './edit-message-text-action'
 
 interface MessageActionsProps {
   message: Message

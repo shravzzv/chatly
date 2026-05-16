@@ -1,8 +1,7 @@
-import { render, screen, act } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import ChatInput from '@/components/chat-input'
+import { act, render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { toast } from 'sonner'
-import { enhanceText } from '@/app/actions'
 
 const sendMessage = jest.fn()
 const updateTypingStatus = jest.fn()
@@ -23,15 +22,21 @@ jest.mock('@/hooks/use-mobile', () => ({
   useIsMobile: () => false,
 }))
 
-jest.mock('@/app/actions', () => ({
-  enhanceText: jest.fn(),
-}))
-
 jest.mock('sonner')
 
 jest.mock('@/components/chat-input-dropdown', () => ({
   __esModule: true,
   default: () => <div data-testid='chat-input-dropdown' />,
+}))
+
+const mockInvoke = jest.fn()
+
+jest.mock('@/utils/supabase/client', () => ({
+  createClient: () => ({
+    functions: {
+      invoke: mockInvoke,
+    },
+  }),
 }))
 
 const setup = async () => {
@@ -129,21 +134,31 @@ describe('ChatInput', () => {
 
   describe('message enhancement', () => {
     it('enhances message text when clicking enhance button', async () => {
-      ;(enhanceText as jest.Mock).mockResolvedValue('Hello world')
+      mockInvoke.mockResolvedValue({
+        data: { enhancedText: 'Hello world' },
+        error: null,
+      })
 
       const { user, textarea, enhanceButton } = await setup()
 
       await user.type(textarea, 'Helo world')
       await user.click(enhanceButton)
 
-      expect(enhanceText).toHaveBeenCalledWith('Helo world')
+      mockInvoke.mockResolvedValue({
+        data: { enhancedText: 'Hello world' },
+        error: null,
+      })
       expect(textarea).toHaveValue('Hello world')
     })
 
     it('disables input and buttons while enhancing', async () => {
-      let resolveEnhance!: (v: string) => void
-      ;(enhanceText as jest.Mock).mockImplementation(
-        () => new Promise((res) => (resolveEnhance = res)),
+      let resolveEnhance!: (v: any) => void
+
+      mockInvoke.mockImplementation(
+        () =>
+          new Promise((res) => {
+            resolveEnhance = res
+          }),
       )
 
       const { user, textarea, enhanceButton, sendButton } = await setup()
@@ -156,12 +171,15 @@ describe('ChatInput', () => {
       expect(sendButton).toBeDisabled()
 
       await act(async () => {
-        resolveEnhance('Hello!')
+        resolveEnhance({ data: { enhancedText: 'Hello!' }, error: null })
       })
     })
 
     it('shows success toast with Undo action when enhancement changes text', async () => {
-      ;(enhanceText as jest.Mock).mockResolvedValue('Hello!')
+      mockInvoke.mockResolvedValue({
+        data: { enhancedText: 'Hello!' },
+        error: null,
+      })
 
       const { user, textarea, enhanceButton } = await setup()
 
@@ -180,7 +198,10 @@ describe('ChatInput', () => {
     })
 
     it('undo restores the original message', async () => {
-      ;(enhanceText as jest.Mock).mockResolvedValue('Hello!')
+      mockInvoke.mockResolvedValue({
+        data: { enhancedText: 'Hello!' },
+        error: null,
+      })
 
       const { user, textarea, enhanceButton } = await setup()
 
@@ -198,7 +219,10 @@ describe('ChatInput', () => {
     })
 
     it('shows error toast if enhancement fails', async () => {
-      ;(enhanceText as jest.Mock).mockRejectedValue(new Error('AI error'))
+      mockInvoke.mockResolvedValue({
+        data: { error: 'AI_SERVICE_ERROR' },
+        error: null,
+      })
 
       const { user, textarea, enhanceButton } = await setup()
 
@@ -218,13 +242,14 @@ describe('ChatInput', () => {
       await user.click(enhanceButton)
 
       expect(openUpgradeAlertDialog).toHaveBeenCalledWith('ai')
-      expect(enhanceText).not.toHaveBeenCalled()
+      expect(mockInvoke).not.toHaveBeenCalled()
     })
 
     it('shows usage limit toast when AI daily limit is exceeded', async () => {
-      ;(enhanceText as jest.Mock).mockRejectedValue(
-        new Error('USAGE_LIMIT_EXCEEDED'),
-      )
+      mockInvoke.mockResolvedValue({
+        data: { error: 'USAGE_LIMIT_EXCEEDED' },
+        error: null,
+      })
 
       const { user, textarea, enhanceButton } = await setup()
 
@@ -237,9 +262,10 @@ describe('ChatInput', () => {
     })
 
     it('shows upgrade toast when server reports free plan', async () => {
-      ;(enhanceText as jest.Mock).mockRejectedValue(
-        new Error('USER_ON_FREE_PLAN'),
-      )
+      mockInvoke.mockResolvedValue({
+        data: { error: 'USER_ON_FREE_PLAN' },
+        error: null,
+      })
 
       const { user, textarea, enhanceButton } = await setup()
 
@@ -252,7 +278,10 @@ describe('ChatInput', () => {
     })
 
     it('reflects AI usage increment after successful enhancement', async () => {
-      ;(enhanceText as jest.Mock).mockResolvedValue('Hello world')
+      mockInvoke.mockResolvedValue({
+        data: { enhancedText: 'Hello world' },
+        error: null,
+      })
 
       const { user, textarea, enhanceButton } = await setup()
 

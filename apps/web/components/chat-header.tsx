@@ -1,13 +1,13 @@
 'use client'
 
-import { ArrowLeft } from 'lucide-react'
-import { getDisplayName } from '@/lib/dashboard'
 import ProfileAvatar from '@/components/profile-avatar'
-import { Profile } from '@/types/profile'
 import { useIsMobile } from '@/hooks/use-mobile'
+import { getDisplayName } from '@/lib/dashboard'
 import { useChatlyStore } from '@/providers/chatly-store-provider'
-import { Button } from './ui/button'
 import { useDashboardContext } from '@/providers/dashboard-provider'
+import { Profile } from '@chatly/types/profile'
+import { ArrowLeft } from 'lucide-react'
+import { Button } from './ui/button'
 
 interface ChatHeaderProps {
   selectedProfile: Profile

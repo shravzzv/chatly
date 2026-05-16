@@ -1,6 +1,8 @@
 import { cn } from '@/lib/utils'
-import type { Message } from '@/types/message'
+import { getAttachmentKind } from '@chatly/lib/messages'
+import type { Message } from '@chatly/types/message'
 import MessageAttachment from './message-attachment'
+import MessageAttachmentSkeleton from './skeletons/message-attachment-skeleton'
 import { Text } from './ui/text'
 
 interface MessageContentProps {
@@ -14,7 +16,16 @@ export default function MessageContent({
 }: MessageContentProps) {
   const attachment = message.attachment
 
-  if (attachment) return <MessageAttachment attachment={attachment} />
+  if (attachment) {
+    const attachmentKind = getAttachmentKind(attachment.mime_type)
+
+    // 'optimistic' is only used as an optimistic update while uploading
+    return attachment.id === 'optimistic' ? (
+      <MessageAttachmentSkeleton kind={attachmentKind} />
+    ) : (
+      <MessageAttachment attachment={attachment} />
+    )
+  }
 
   return (
     <Text

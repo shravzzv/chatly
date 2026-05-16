@@ -1,8 +1,8 @@
 'use client'
 
 import { useDashboardContext } from '@/providers/dashboard-provider'
+import type { Preview } from '@chatly/types/preview'
 import { Skeleton } from './ui/skeleton'
-import type { Preview } from '@/types/use-previews'
 
 interface ConversationPreviewSubtitleProps {
   preview: Preview

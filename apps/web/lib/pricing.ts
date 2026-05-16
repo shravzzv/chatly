@@ -1,8 +1,8 @@
+import { LS_CUSTOMER_PORTAL_URL } from '@/data/constants'
 import { PricingPlanName } from '@/data/plans'
-import { Billing, Plan, Subscription } from '@/types/subscription'
+import type { Billing, Plan, Subscription } from '@chatly/types/subscription'
 import { User } from '@supabase/supabase-js'
 import { getCheckoutUrl } from './get-checkout-url'
-import { LS_CUSTOMER_PORTAL_URL } from '@/data/constants'
 
 interface GetCTAStateProps {
   user: User | null

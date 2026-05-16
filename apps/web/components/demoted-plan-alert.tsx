@@ -1,11 +1,11 @@
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { type Subscription } from '@/types/subscription'
-import { AlertCircleIcon } from 'lucide-react'
-import { Button } from './ui/button'
-import Link from 'next/link'
 import { LS_CUSTOMER_PORTAL_URL } from '@/data/constants'
-import { Badge } from './ui/badge'
 import { getStatusBadgeClass } from '@/lib/billing'
+import type { Subscription } from '@chatly/types/subscription'
+import { AlertCircleIcon } from 'lucide-react'
+import Link from 'next/link'
+import { Badge } from './ui/badge'
+import { Button } from './ui/button'
 
 interface DemotedPlanAlertProps {
   subscription: Subscription

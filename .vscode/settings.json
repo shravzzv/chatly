@@ -1,5 +1,5 @@
 {
-  "deno.enablePaths": ["apps/web/supabase/functions"],
+  "deno.enablePaths": ["supabase/functions"],
   "deno.lint": true,
   "deno.unstable": [
     "bare-node-builtins",
@@ -26,6 +26,11 @@
       "name": "native",
       "rootPath": "apps/native",
       "jestCommandLine": "npm test -w chatly-native --"
+    },
+    {
+      "name": "hooks",
+      "rootPath": "packages/hooks",
+      "jestCommandLine": "npm test -w @chatly/hooks --"
     }
   ]
 }

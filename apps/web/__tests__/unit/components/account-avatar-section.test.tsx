@@ -1,10 +1,10 @@
-import '@testing-library/jest-dom'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import AccountAvatarSection from '@/components/account-avatar-section'
-import { Profile } from '@/types/profile'
 import { ChatlyStoreProvider } from '@/providers/chatly-store-provider'
-import { toast } from 'sonner'
+import type { Profile } from '@chatly/types/profile'
 import { User } from '@supabase/supabase-js'
+import '@testing-library/jest-dom'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { toast } from 'sonner'
 
 jest.mock('next/navigation')
 

@@ -1,4 +1,5 @@
 import { cn } from '@/lib/utils'
+import { usePrivateContext } from '@/providers/private-provider'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Sparkles } from 'lucide-react-native'
 import { Controller, useForm } from 'react-hook-form'
@@ -38,6 +39,7 @@ export default function EditMessageTextAction({
   open,
   setOpen,
 }: EditMessageTextActionProps) {
+  const { editMessage } = usePrivateContext()
   const {
     control,
     handleSubmit,
@@ -48,8 +50,8 @@ export default function EditMessageTextAction({
     defaultValues: { text },
   })
 
-  const onSubmit = (data: FormSchema) => {
-    console.log(`Edited message with id ${id} and test ${data.text}`)
+  const onSubmit = async (data: FormSchema) => {
+    await editMessage(id, data.text)
     setOpen(false)
     reset()
   }

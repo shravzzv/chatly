@@ -11,6 +11,9 @@ const config: Config = {
   coverageProvider: 'v8',
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/$1',
+    '^@chatly/hooks/(.*)$': '<rootDir>/../../packages/hooks/src/$1',
+    '^@chatly/types/(.*)$': '<rootDir>/../../packages/types/src/$1',
+    '^@chatly/lib/(.*)$': '<rootDir>/../../packages/lib/src/$1',
   },
   roots: ['<rootDir>/__tests__'],
   setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],

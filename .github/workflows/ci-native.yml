@@ -7,11 +7,13 @@ on:
     branches: [main]
     paths:
       - 'apps/native/**'
+      - 'packages/**'
 
   pull_request:
     branches: [main]
     paths:
       - 'apps/native/**'
+      - 'packages/**'
 
 jobs:
   lint-native:

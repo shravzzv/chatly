@@ -1,6 +1,6 @@
-import { User } from '@supabase/supabase-js'
-import { Billing, Plan } from '@/types/subscription'
 import { checkoutLinks } from '@/data/checkout-links'
+import type { Billing, Plan } from '@chatly/types/subscription'
+import { User } from '@supabase/supabase-js'
 
 /**
  * Generates a Lemon Squeezy checkout URL for a given plan and billing cycle.

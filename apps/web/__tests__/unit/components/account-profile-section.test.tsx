@@ -1,9 +1,9 @@
-import '@testing-library/jest-dom'
-import { render, screen } from '@testing-library/react'
 import AccountProfileSection from '@/components/account-profile-section'
 import { ChatlyStoreProvider } from '@/providers/chatly-store-provider'
+import type { Profile } from '@chatly/types/profile'
 import { User } from '@supabase/supabase-js'
-import { Profile } from '@/types/profile'
+import '@testing-library/jest-dom'
+import { render, screen } from '@testing-library/react'
 
 jest.mock('next/navigation')
 

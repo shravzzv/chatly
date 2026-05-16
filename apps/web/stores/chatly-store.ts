@@ -1,8 +1,8 @@
-import { createStore } from 'zustand/vanilla'
-import { type User } from '@supabase/supabase-js'
-import { type Profile } from '@/types/profile'
 import { createClient } from '@/utils/supabase/client'
+import type { Profile } from '@chatly/types/profile'
+import { type User } from '@supabase/supabase-js'
 import { toast } from 'sonner'
+import { createStore } from 'zustand/vanilla'
 
 export interface ChatlyState {
   user: User | null

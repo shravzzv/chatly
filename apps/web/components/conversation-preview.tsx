@@ -1,12 +1,12 @@
 'use client'
 
+import ProfileAvatar from '@/components/profile-avatar'
 import { Button } from '@/components/ui/button'
 import { getDisplayName } from '@/lib/dashboard'
-import ProfileAvatar from '@/components/profile-avatar'
-import { Profile } from '@/types/profile'
 import { useChatlyStore } from '@/providers/chatly-store-provider'
-import ConversationPreviewSubtitle from './conversation-preview-subtitle'
 import { useDashboardContext } from '@/providers/dashboard-provider'
+import { Profile } from '@chatly/types/profile'
+import ConversationPreviewSubtitle from './conversation-preview-subtitle'
 
 interface ConversationPreviewProps {
   profile: Profile

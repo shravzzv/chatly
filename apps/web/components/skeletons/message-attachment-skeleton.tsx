@@ -1,5 +1,5 @@
+import { MessageAttachmentKind } from '@chatly/types/message-attachment'
 import { Skeleton } from '../ui/skeleton'
-import { MessageAttachmentKind } from '@/types/message-attachment'
 import FileAttachmentSkeleton from './file-attachment-skeleton'
 
 interface MessageAttachmentSkeletonProps {
