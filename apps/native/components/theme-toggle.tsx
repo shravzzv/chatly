@@ -22,7 +22,7 @@ export function ThemeToggle() {
   const { theme, updateTheme } = useThemeContext()
 
   return (
-    <View className='mx-auto flex-row gap-1 rounded-md border border-border p-1'>
+    <View className='flex-row gap-1 rounded-md border border-border p-1'>
       {modes.map(({ mode, IconValue }) => {
         const isActive = theme === mode
 

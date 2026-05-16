@@ -28,6 +28,7 @@ export default function PrivateLayout() {
         options={{
           title: 'Account',
           tabBarIcon: ({ color }) => <User size={28} color={color} />,
+          headerShadowVisible: true,
         }}
       />
 
