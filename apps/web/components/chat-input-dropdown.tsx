@@ -27,13 +27,8 @@ export default function ChatInputDropdown() {
   const { sendMessage } = useDashboardContext()
   const [open, setOpen] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
-  const {
-    plan,
-    mediaUsed,
-    canUseMedia,
-    openUpgradeAlertDialog,
-    reflectUsageIncrement,
-  } = useDashboardContext()
+  const { plan, mediaUsed, canUseMedia, openUpgradeAlertDialog } =
+    useDashboardContext()
 
   const imageInputRef = useRef<HTMLInputElement>(null)
   const videoInputRef = useRef<HTMLInputElement>(null)
@@ -65,7 +60,6 @@ export default function ChatInputDropdown() {
 
     try {
       await sendMessage({ file })
-      reflectUsageIncrement('media')
       setOpen(false)
     } catch (error) {
       console.error(error)

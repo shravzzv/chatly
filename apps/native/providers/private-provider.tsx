@@ -9,6 +9,7 @@ import type { ChatlyPlan, UsageKind } from '@chatly/types/plan'
 import type { Previews } from '@chatly/types/preview'
 import type { Profile } from '@chatly/types/profile'
 import { type PostgrestError } from '@supabase/supabase-js'
+import * as Crypto from 'expo-crypto'
 import {
   createContext,
   useContext,
@@ -16,9 +17,7 @@ import {
   useState,
   type PropsWithChildren,
 } from 'react'
-import 'react-native-get-random-values'
 import { toast } from 'sonner-native'
-import { v4 as uuidv4 } from 'uuid'
 import { useAuthContext } from './auth-provider'
 
 interface PrivateContextValue {
@@ -61,7 +60,6 @@ interface PrivateContextValue {
   readonly mediaUsed: number
   readonly canUseMedia: boolean
   readonly mediaRemaining: number
-  reflectUsageIncrement: (kind: UsageKind) => void
 
   // upgrade
   readonly upgradeReason: UsageKind | null
@@ -155,7 +153,7 @@ export function PrivateProvider({ children }: PropsWithChildren) {
     selectedProfileId,
     updatePreview,
     deletePreview,
-    generateId: uuidv4,
+    generateId: Crypto.randomUUID,
   })
 
   useEffect(() => {
@@ -178,7 +176,6 @@ export function PrivateProvider({ children }: PropsWithChildren) {
     canUseMedia,
     mediaRemaining,
     mediaUsed,
-    reflectUsageIncrement,
   } = useUsage(supabase, currentUserId)
 
   useEffect(() => {
@@ -228,7 +225,6 @@ export function PrivateProvider({ children }: PropsWithChildren) {
     canUseMedia,
     mediaRemaining,
     mediaUsed,
-    reflectUsageIncrement,
 
     // upgrade
     upgradeReason,

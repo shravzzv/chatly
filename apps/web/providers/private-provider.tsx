@@ -2,7 +2,7 @@
 
 import { createClient } from '@/utils/supabase/client'
 import { useUsage } from '@chatly/hooks/use-usage'
-import type { ChatlyPlan, UsageKind } from '@chatly/types/plan'
+import type { ChatlyPlan } from '@chatly/types/plan'
 import {
   createContext,
   useContext,
@@ -21,7 +21,6 @@ interface PrivateContextValue {
   readonly mediaUsed: number
   readonly canUseMedia: boolean
   readonly mediaRemaining: number
-  reflectUsageIncrement: (kind: UsageKind) => void
 }
 
 const PrivateContext = createContext<PrivateContextValue | null>(null)
@@ -47,7 +46,6 @@ export function PrivateProvider({ children }: PropsWithChildren) {
     canUseMedia,
     mediaRemaining,
     mediaUsed,
-    reflectUsageIncrement,
   } = useUsage(supabase, currentUserId)
 
   useEffect(() => {
@@ -63,7 +61,6 @@ export function PrivateProvider({ children }: PropsWithChildren) {
     canUseMedia,
     mediaRemaining,
     mediaUsed,
-    reflectUsageIncrement,
   }
 
   return (

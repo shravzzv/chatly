@@ -1,5 +1,5 @@
 import { getCurrentPlan, PLAN_LIMITS } from '@chatly/lib/billing'
-import type { ChatlyPlan, UsageKind } from '@chatly/types/plan'
+import type { ChatlyPlan } from '@chatly/types/plan'
 import type { Subscription } from '@chatly/types/subscription'
 import { type PostgrestError, type SupabaseClient } from '@supabase/supabase-js'
 import { useEffect, useState } from 'react'
@@ -39,7 +39,6 @@ interface Usage {
  * This hook does NOT subscribe to realtime updates.
  * Instead, it:
  * - Initializes from the database on mount
- * - Optionally mirrors *successful* usage via `reflectUsageIncrement`
  *
  * This avoids:
  * - Realtime fanout on hot paths
@@ -62,37 +61,6 @@ export const useUsage = (
   const canUseMedia = mediaUsed < PLAN_LIMITS[plan].media
   const aiRemaining = Math.max(0, PLAN_LIMITS[plan].ai - aiUsed)
   const mediaRemaining = Math.max(0, PLAN_LIMITS[plan].media - mediaUsed)
-
-  /**
-   * Mirrors a successful usage increment locally.
-   *
-   * This is a **UI-only helper** used after the server has already
-   * accepted and recorded a usage event (e.g. AI enhancement succeeded,
-   * media upload completed).
-   *
-   * It exists to:
-   * - Keep the UI responsive without refetching
-   * - Ensure immediate consistency for limits and progress bars
-   *
-   * ⚠️ This function:
-   * - Does NOT write to the database
-   * - Does NOT perform validation
-   * - Must ONLY be called after server success
-   *
-   * Calling this optimistically without server confirmation
-   * would desynchronize the UI from reality.
-   */
-  const reflectUsageIncrement = (kind: UsageKind) => {
-    setUsage((prev) => {
-      if (!prev) return prev
-      const key = kind === 'ai' ? 'ai_used' : 'media_used'
-
-      return {
-        ...prev,
-        [key]: prev[key] + 1,
-      }
-    })
-  }
 
   /**
    * Fetch usage on mount.
@@ -200,6 +168,5 @@ export const useUsage = (
     canUseMedia,
     aiRemaining,
     mediaRemaining,
-    reflectUsageIncrement,
   }
 }

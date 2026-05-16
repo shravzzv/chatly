@@ -43,14 +43,8 @@ export default function ChatInputDropdown({
   openVoiceRecorder,
 }: ChatInputDropdownProps) {
   const [isUploading, setIsUploading] = useState(false)
-  const {
-    canUseMedia,
-    mediaUsed,
-    plan,
-    sendMessage,
-    reflectUsageIncrement,
-    openUpgradeAlertDialog,
-  } = usePrivateContext()
+  const { canUseMedia, mediaUsed, plan, sendMessage, openUpgradeAlertDialog } =
+    usePrivateContext()
 
   type Asset =
     | File
@@ -119,7 +113,6 @@ export default function ChatInputDropdown({
       setIsUploading(true)
 
       await sendMessage({ file })
-      reflectUsageIncrement('media')
     } catch (error) {
       console.error(error)
 

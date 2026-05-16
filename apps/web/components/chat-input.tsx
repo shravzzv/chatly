@@ -24,12 +24,8 @@ export default function ChatInput({ updateTypingStatus }: ChatInputProps) {
   const [text, setText] = useState('')
   const [isEnhancing, setIsEnhancing] = useState(false)
 
-  const {
-    sendMessage,
-    canUseAi,
-    openUpgradeAlertDialog,
-    reflectUsageIncrement,
-  } = useDashboardContext()
+  const { sendMessage, canUseAi, openUpgradeAlertDialog } =
+    useDashboardContext()
   const isMobileView = useIsMobile()
 
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -100,7 +96,6 @@ export default function ChatInput({ updateTypingStatus }: ChatInputProps) {
       if (data.error) throw Error(data.error) // business logic error
 
       setText(data.enhancedText)
-      reflectUsageIncrement('ai')
 
       toast.success('Message enhanced', {
         action: (
