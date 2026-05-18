@@ -7,19 +7,11 @@ import AccountSecuritySection from '@/components/account-security-section'
 import AccountPageSkeleton from '@/components/skeletons/account-page-skeleton'
 import { Screen } from '@/components/ui/screen'
 import { Separator } from '@/components/ui/separator'
-import { useAuthContext } from '@/providers/auth-provider'
 import { usePrivateContext } from '@/providers/private-provider'
-import { useMemo } from 'react'
 import { ScrollView, View } from 'react-native'
 
 export default function Account() {
-  const { userId } = useAuthContext()
-  const { profiles, profilesError, profilesLoading } = usePrivateContext()
-
-  const profile = useMemo(
-    () => profiles.find((p) => p.user_id === userId),
-    [profiles, userId],
-  )
+  const { profile, profilesError, profilesLoading } = usePrivateContext()
 
   if (profilesLoading) return <AccountPageSkeleton />
   if (profilesError || !profile) return <AccountErrorAlert />
