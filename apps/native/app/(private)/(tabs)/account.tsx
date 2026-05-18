@@ -1,33 +1,36 @@
-import { ThemeToggle } from '@/components/theme-toggle'
-import { Button } from '@/components/ui/button'
+import AccountAvatarSection from '@/components/account-avatar-section'
+import AccountDangerZone from '@/components/account-danger-zone'
+import AccountErrorAlert from '@/components/account-error-alert'
+import AccountPreferences from '@/components/account-preferences'
+import AccountProfileSection from '@/components/account-profile-section'
+import AccountSecuritySection from '@/components/account-security-section'
+import AccountPageSkeleton from '@/components/skeletons/account-page-skeleton'
 import { Screen } from '@/components/ui/screen'
-import { Text } from '@/components/ui/text'
-import { supabase } from '@/lib/supabase'
-import { router } from 'expo-router'
-import { toast } from 'sonner-native'
+import { Separator } from '@/components/ui/separator'
+import { usePrivateContext } from '@/providers/private-provider'
+import { ScrollView, View } from 'react-native'
 
 export default function Account() {
-  const handleLogout = async () => {
-    if (!supabase) return
+  const { profile, profilesError, profilesLoading } = usePrivateContext()
 
-    const { error } = await supabase.auth.signOut()
-
-    if (error) {
-      console.error('Failed to sign out', error)
-      return
-    }
-
-    router.replace('/signin')
-    toast.success('Signed out')
-  }
+  if (profilesLoading) return <AccountPageSkeleton />
+  if (profilesError || !profile) return <AccountErrorAlert />
 
   return (
-    <Screen className='items-center gap-4'>
-      <ThemeToggle />
-
-      <Button onPress={handleLogout} className='w-fit'>
-        <Text>Log out</Text>
-      </Button>
+    <Screen className='px-0 py-0 md:py-0'>
+      <ScrollView>
+        <View className='mx-auto w-full max-w-md gap-4 rounded-lg px-8 py-2'>
+          <AccountAvatarSection profile={profile} />
+          <Separator />
+          <AccountProfileSection profile={profile} />
+          <Separator />
+          <AccountPreferences />
+          <Separator />
+          <AccountSecuritySection />
+          <Separator />
+          <AccountDangerZone />
+        </View>
+      </ScrollView>
     </Screen>
   )
 }

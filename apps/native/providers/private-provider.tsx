@@ -14,11 +14,13 @@ import {
   createContext,
   useContext,
   useEffect,
+  useMemo,
   useState,
   type PropsWithChildren,
 } from 'react'
 import { toast } from 'sonner-native'
 import { useAuthContext } from './auth-provider'
+import { useThemeContext } from './theme-provider'
 
 interface PrivateContextValue {
   // profiles
@@ -26,6 +28,7 @@ interface PrivateContextValue {
   readonly filteredProfiles: Profile[]
   readonly profilesLoading: boolean
   readonly profilesError: PostgrestError | null
+  readonly profile: Profile | null
 
   // previews
   readonly previews: Previews
@@ -128,6 +131,23 @@ export function PrivateProvider({ children }: PropsWithChildren) {
     if (profilesError) toast.error('Failed to load profiles')
   }, [profilesError])
 
+  const profile = useMemo(
+    () => profiles.find((p) => p.user_id === currentUserId) ?? null,
+    [currentUserId, profiles],
+  )
+
+  const { theme, updateTheme } = useThemeContext()
+
+  /**
+   * Hydrate and sync local app theme from the authenticated
+   * user's persisted profile preference.
+   */
+  useEffect(() => {
+    if (!profile?.theme) return
+
+    if (profile.theme !== theme) updateTheme(profile.theme)
+  }, [profile?.theme, theme, updateTheme])
+
   const {
     previews,
     loading: previewsLoading,
@@ -191,6 +211,7 @@ export function PrivateProvider({ children }: PropsWithChildren) {
     filteredProfiles,
     profilesLoading,
     profilesError,
+    profile,
 
     // previews
     previews,
