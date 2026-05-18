@@ -1,7 +1,7 @@
+import AccountAvatarSection from '@/components/account-avatar-section'
 import AccountDangerZone from '@/components/account-danger-zone'
 import AccountErrorAlert from '@/components/account-error-alert'
 import AccountPreferences from '@/components/account-preferences'
-import AccountProfilePicture from '@/components/account-profile-picture'
 import AccountProfileSection from '@/components/account-profile-section'
 import AccountSecuritySection from '@/components/account-security-section'
 import AccountPageSkeleton from '@/components/skeletons/account-page-skeleton'
@@ -28,7 +28,7 @@ export default function Account() {
     <Screen className='px-0 py-0 md:py-0'>
       <ScrollView>
         <View className='mx-auto w-full max-w-md gap-4 rounded-lg px-8 py-2'>
-          <AccountProfilePicture profile={profile} />
+          <AccountAvatarSection profile={profile} />
           <Separator />
           <AccountProfileSection profile={profile} />
           <Separator />
