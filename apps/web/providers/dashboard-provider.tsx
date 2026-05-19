@@ -3,7 +3,6 @@
 import { createClient } from '@/utils/supabase/client'
 import { useMessages } from '@chatly/hooks/use-messages'
 import { usePreviews } from '@chatly/hooks/use-previews'
-import { useProfiles } from '@chatly/hooks/use-profiles'
 import { useTyping } from '@chatly/hooks/use-typing'
 import type { Message } from '@chatly/types/message'
 import type { ChatlyPlan, UsageKind } from '@chatly/types/plan'
@@ -28,6 +27,7 @@ interface DashboardContextValue {
   readonly profiles: Profile[]
   readonly filteredProfiles: Profile[]
   readonly profilesLoading: boolean
+  readonly profile: Profile | null
 
   // previews
   readonly previews: Previews
@@ -98,29 +98,12 @@ export function DashboardProvider({ children }: PropsWithChildren) {
   const searchParams = useSearchParams()
   const currentUserId = useChatlyStore((state) => state.user)?.id ?? null
 
-  const [searchQuery, setSearchQuery] = useState('')
   const [selectedProfileId, setSelectedProfileId] = useState<string | null>(
     () => searchParams.get('senderId'),
   )
   const [isProfileSelectDialogOpen, setIsProfileSelectDialogOpen] =
     useState(false)
   const [upgradeReason, setUpgradeReason] = useState<UsageKind | null>(null)
-
-  const {
-    profiles,
-    filteredProfiles,
-    loading: profilesLoading,
-    error: profilesError,
-  } = useProfiles(searchQuery, supabase)
-
-  useEffect(() => {
-    if (profilesError) toast.error('Failed to load profiles')
-  }, [profilesError])
-
-  const selectedProfile = useMemo(
-    () => profiles.find((p) => p.user_id === selectedProfileId) ?? null,
-    [profiles, selectedProfileId],
-  )
 
   const {
     previews,
@@ -161,6 +144,14 @@ export function DashboardProvider({ children }: PropsWithChildren) {
   )
 
   const {
+    profiles,
+    profilesLoading,
+    filteredProfiles,
+    profile,
+
+    searchQuery,
+    setSearchQuery,
+
     usageLoading,
     plan,
     aiRemaining,
@@ -176,6 +167,11 @@ export function DashboardProvider({ children }: PropsWithChildren) {
    * privateContext might be a good idea.
    */
 
+  const selectedProfile = useMemo(
+    () => profiles.find((p) => p.user_id === selectedProfileId) ?? null,
+    [profiles, selectedProfileId],
+  )
+
   const openProfileSelectDialog = () => setIsProfileSelectDialogOpen(true)
   const closeProfileSelectDialog = () => setIsProfileSelectDialogOpen(false)
   const closeChatPanel = () => setSelectedProfileId(null)
@@ -190,6 +186,7 @@ export function DashboardProvider({ children }: PropsWithChildren) {
     profiles,
     filteredProfiles,
     profilesLoading,
+    profile,
 
     // previews
     previews,

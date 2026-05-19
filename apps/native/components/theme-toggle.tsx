@@ -50,6 +50,7 @@ export function ThemeToggle() {
 
   const handleThemeChange = async (mode: ThemeMode) => {
     const prevTheme = theme
+    if (mode === prevTheme) return
     await updateTheme(mode)
 
     try {

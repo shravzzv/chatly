@@ -93,14 +93,4 @@ describe('ModeToggle', () => {
 
     expect(updateProfile).toHaveBeenCalledWith({ theme: 'dark' })
   })
-
-  it('does not sync theme when logged out', async () => {
-    renderWithStore({ profile: null })
-
-    const user = userEvent.setup()
-    await user.click(screen.getByRole('button'))
-    await user.click(await screen.findByText('Dark'))
-
-    expect(updateProfile).not.toHaveBeenCalled()
-  })
 })

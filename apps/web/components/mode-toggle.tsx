@@ -8,15 +8,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { useChatlyStore } from '@/providers/chatly-store-provider'
 import type { Theme } from '@chatly/types/profile'
 import { Check, Moon, Sun } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { toast } from 'sonner'
 
 export function ModeToggle() {
-  const setProfile = useChatlyStore((state) => state.setProfile)
-  const profile = useChatlyStore((state) => state.profile)
   const { theme, setTheme } = useTheme()
 
   const handleThemeChange = async (value: Theme) => {
@@ -24,16 +21,13 @@ export function ModeToggle() {
     if (value === prevTheme) return
     setTheme(value)
 
-    if (profile) {
-      const { updatedProfile } = await updateProfile({ theme: value })
-
-      if (updatedProfile) {
-        setProfile(updatedProfile)
-        toast.info('Theme synced successfully')
-      } else {
-        setTheme(prevTheme as string)
-        toast.error('Theme sync failed')
-      }
+    try {
+      await updateProfile({ theme: value })
+      toast.info('Theme synced successfully')
+    } catch (error) {
+      console.error('Error updating profile in ModeToggle', error)
+      toast.error('Theme sync failed')
+      setTheme(prevTheme as string)
     }
   }
 

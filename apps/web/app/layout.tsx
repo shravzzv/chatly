@@ -1,4 +1,3 @@
-import { CrossDeviceThemeSync } from '@/components/cross-device-theme-sync'
 import { ThemeProvider } from '@/components/theme-provider'
 import { Toaster } from '@/components/ui/sonner'
 import { ChatlyStoreProvider } from '@/providers/chatly-store-provider'
@@ -122,7 +121,6 @@ export default async function RootLayout({
           >
             {children}
             <Toaster richColors />
-            <CrossDeviceThemeSync />
           </ThemeProvider>
         </ChatlyStoreProvider>
         <SpeedInsights />

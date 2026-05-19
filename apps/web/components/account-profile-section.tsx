@@ -1,22 +1,22 @@
 'use client'
 
-import { Button } from './ui/button'
-import { Separator } from './ui/separator'
-import { z } from 'zod'
-import { Controller, useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { Field, FieldError, FieldGroup, FieldLabel } from './ui/field'
-import { Input } from './ui/input'
-import { Spinner } from './ui/spinner'
-import { Textarea } from './ui/textarea'
-import { toast } from 'sonner'
-import AccountAvatarSection from './account-avatar-section'
 import { updateProfile } from '@/app/actions'
-import { Alert, AlertDescription, AlertTitle } from './ui/alert'
+import { usePrivateContext } from '@/providers/private-provider'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { AlertCircleIcon } from 'lucide-react'
 import { useEffect } from 'react'
+import { Controller, useForm } from 'react-hook-form'
+import { toast } from 'sonner'
+import { z } from 'zod'
+import AccountAvatarSection from './account-avatar-section'
 import AccountProfileSectionSkeleton from './skeletons/account-profile-section-skeleton'
-import { useChatlyStore } from '@/providers/chatly-store-provider'
+import { Alert, AlertDescription, AlertTitle } from './ui/alert'
+import { Button } from './ui/button'
+import { Field, FieldError, FieldGroup, FieldLabel } from './ui/field'
+import { Input } from './ui/input'
+import { Separator } from './ui/separator'
+import { Spinner } from './ui/spinner'
+import { Textarea } from './ui/textarea'
 
 const formSchema = z.object({
   name: z
@@ -36,8 +36,7 @@ const formSchema = z.object({
 })
 
 export default function AccountProfileSection() {
-  const profile = useChatlyStore((state) => state.profile)
-  const setProfile = useChatlyStore((state) => state.setProfile)
+  const { profile } = usePrivateContext()
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -73,7 +72,6 @@ export default function AccountProfileSection() {
       return
     }
 
-    setProfile(result.updatedProfile)
     toast.success('Profile updated successfully')
     form.reset(result.updatedProfile)
   }

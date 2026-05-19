@@ -14,6 +14,8 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar'
+import { useChatlyStore } from '@/providers/chatly-store-provider'
+import { usePrivateContext } from '@/providers/private-provider'
 import {
   Download,
   EllipsisVertical,
@@ -23,7 +25,6 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import ProfileAvatar from './profile-avatar'
-import { useChatlyStore } from '@/providers/chatly-store-provider'
 import NavUserSkeleton from './skeletons/nav-user-skeleton'
 
 const getUserIdentity = (name: string | null, username: string | null) => {
@@ -44,7 +45,7 @@ const getUserIdentity = (name: string | null, username: string | null) => {
 
 export function NavUser() {
   const { isMobile } = useSidebar()
-  const profile = useChatlyStore((state) => state.profile)
+  const { profile } = usePrivateContext()
   const logout = useChatlyStore((state) => state.logout)
 
   if (!profile) return <NavUserSkeleton />

@@ -1,4 +1,5 @@
 import { AppSidebar } from '@/components/app-sidebar'
+import { CrossDeviceThemeSync } from '@/components/cross-device-theme-sync'
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
 import { PrivateProvider } from '@/providers/private-provider'
 import { cookies } from 'next/headers'
@@ -25,6 +26,7 @@ export default async function Layout({
         <AppSidebar />
         <SidebarInset>{children}</SidebarInset>
       </SidebarProvider>
+      <CrossDeviceThemeSync />
     </PrivateProvider>
   )
 }
