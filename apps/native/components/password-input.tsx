@@ -14,6 +14,7 @@ interface PasswordInputProps {
   onSubmitEditing?: () => void
   editable?: boolean
   placeholder?: string
+  id?: string
 }
 
 export default function PasswordInput({
@@ -24,13 +25,14 @@ export default function PasswordInput({
   placeholder = 'password',
   onChangeText,
   onSubmitEditing,
+  id = 'password',
 }: PasswordInputProps) {
   const [visible, setVisible] = useState(false)
 
   return (
     <View className='relative'>
       <Input
-        id='password'
+        id={id}
         ref={inputRef}
         value={value ?? ''}
         editable={editable}
