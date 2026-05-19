@@ -2,10 +2,10 @@ import { supabase } from '@/lib/supabase'
 import { router } from 'expo-router'
 import { View } from 'react-native'
 import { toast } from 'sonner-native'
+import AccountEmailInput from './account-email-input'
 import AccountEmailStatus from './account-email-status'
 import PasswordInput from './password-input'
 import { Button } from './ui/button'
-import { Input } from './ui/input'
 import { Label } from './ui/label'
 import { Text } from './ui/text'
 
@@ -29,12 +29,7 @@ export default function AccountSecuritySection() {
       <Text className='font-semibold text-lg'>Security</Text>
 
       <AccountEmailStatus />
-
-      <Label>Email</Label>
-      <Input value='test@test.com' />
-      <Button className='w-fit' disabled>
-        <Text>Update email</Text>
-      </Button>
+      <AccountEmailInput />
 
       <Label>Password</Label>
       <PasswordInput value='' onChangeText={() => {}} placeholder='••••••••' />
