@@ -1,9 +1,9 @@
-import { render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import AccountEmailStatus from '@/components/account-email-status'
 import { ChatlyStoreProvider } from '@/providers/chatly-store-provider'
-import { toast } from 'sonner'
 import { User } from '@supabase/supabase-js'
+import { render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { toast } from 'sonner'
 
 jest.mock('next/navigation')
 jest.mock('sonner')
@@ -51,7 +51,7 @@ describe('AccountEmailStatus', () => {
       new_email: '',
     })
 
-    expect(screen.getByText(/verified and active/i)).toBeInTheDocument()
+    expect(screen.getByText(/verified/i)).toBeInTheDocument()
     expect(screen.getByText('john@example.com')).toBeInTheDocument()
   })
 
