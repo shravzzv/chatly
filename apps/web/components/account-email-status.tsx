@@ -50,10 +50,10 @@ export default function AccountEmailStatus() {
   }
 
   return (
-    <Alert>
+    <Alert className='border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-50'>
       <AlertCircleIcon />
       <AlertTitle>Confirm your new email</AlertTitle>
-      <AlertDescription className='space-y-2'>
+      <AlertDescription>
         <p>
           We&apos;ve sent a confirmation link to{' '}
           <strong>{user.new_email}</strong>.
