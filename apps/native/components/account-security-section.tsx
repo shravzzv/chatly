@@ -2,6 +2,7 @@ import { supabase } from '@/lib/supabase'
 import { router } from 'expo-router'
 import { View } from 'react-native'
 import { toast } from 'sonner-native'
+import AccountEmailStatus from './account-email-status'
 import PasswordInput from './password-input'
 import { Button } from './ui/button'
 import { Input } from './ui/input'
@@ -27,13 +28,7 @@ export default function AccountSecuritySection() {
     <View className='my-4 gap-4'>
       <Text className='font-semibold text-lg'>Security</Text>
 
-      <Text className='text-sm text-emerald-600'>
-        Your email{' '}
-        <Text className='font-bold text-sm text-emerald-600'>
-          test@test.com
-        </Text>{' '}
-        is verified and active.
-      </Text>
+      <AccountEmailStatus />
 
       <Label>Email</Label>
       <Input value='test@test.com' />

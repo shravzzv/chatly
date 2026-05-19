@@ -1,3 +1,5 @@
+import { type User } from '@supabase/supabase-js'
+
 /**
  * Result returned by {@link useAuth} and exposed via {@link useAuthContext}.
  *
@@ -7,7 +9,16 @@
  */
 export interface UseAuthResult {
   /**
+   * The currently authenticated Supabase user derived from the active session.
+   *
+   * Returns `null` when the user is signed out or the session
+   * has not yet been established.
+   */
+  user: User | null
+
+  /**
    * The id of the current user.
+   *
    * This value is `null` if unauthenticated.
    */
   userId: string | null
