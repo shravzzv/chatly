@@ -37,6 +37,7 @@ export default function PrivateLayout() {
         options={{
           title: 'Plan',
           tabBarIcon: ({ color }) => <CreditCard size={28} color={color} />,
+          headerShadowVisible: false,
         }}
       />
     </Tabs>
