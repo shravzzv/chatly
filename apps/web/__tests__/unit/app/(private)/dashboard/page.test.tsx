@@ -1,6 +1,7 @@
 import Dashboard from '@/app/(private)/dashboard/page'
 import { getCheckoutUrl } from '@/lib/get-checkout-url'
 import { useChatlyStore } from '@/providers/chatly-store-provider'
+import { Profile } from '@chatly/types/profile'
 import { render } from '@testing-library/react'
 
 const replaceMock = jest.fn()
@@ -34,6 +35,8 @@ jest.mock('@/providers/private-provider', () => ({
     canUseMedia: false,
     mediaRemaining: 0,
     mediaUsed: 0,
+    profiles: [],
+    profile: {} as Profile,
   })),
   PrivateProvider: ({ children }: { children: React.ReactNode }) => (
     <>{children}</>

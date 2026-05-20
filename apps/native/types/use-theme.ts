@@ -19,5 +19,5 @@ export interface UseThemeResult {
    * Persists automatically and updates NativeWind so
    * `dark:` classes react immediately.
    */
-  updateTheme: (theme: ThemeMode) => void
+  updateTheme: (theme: ThemeMode) => Promise<void>
 }

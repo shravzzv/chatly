@@ -1,11 +1,11 @@
 'use client'
 
 import { useChatlyStore } from '@/providers/chatly-store-provider'
-import { Button } from './ui/button'
-import { toast } from 'sonner'
 import { createClient } from '@/utils/supabase/client'
+import { AlertCircleIcon, BadgeCheck } from 'lucide-react'
+import { toast } from 'sonner'
 import { Alert, AlertDescription, AlertTitle } from './ui/alert'
-import { AlertCircleIcon } from 'lucide-react'
+import { Button } from './ui/button'
 
 export default function AccountEmailStatus() {
   const user = useChatlyStore((state) => state.user)
@@ -35,17 +35,25 @@ export default function AccountEmailStatus() {
 
   if (!newEmail) {
     return (
-      <p className='text-sm font-medium text-emerald-600'>
-        Your email <strong>{user.email}</strong> is verified and active.
-      </p>
+      <Alert className='border-emerald-200 bg-emerald-50 text-emerald-600 dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-200'>
+        <BadgeCheck className='text-emerald-600' />
+
+        <AlertTitle>Email verified</AlertTitle>
+        <AlertDescription>
+          <p className='text-primary'>
+            Your email <span className='font-bold'>{user.email}</span> has been
+            confirmed and is active.
+          </p>
+        </AlertDescription>
+      </Alert>
     )
   }
 
   return (
-    <Alert>
+    <Alert className='border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-50'>
       <AlertCircleIcon />
       <AlertTitle>Confirm your new email</AlertTitle>
-      <AlertDescription className='space-y-2'>
+      <AlertDescription>
         <p>
           We&apos;ve sent a confirmation link to{' '}
           <strong>{user.new_email}</strong>.

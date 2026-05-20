@@ -1,8 +1,8 @@
 'use client'
 
-import { useEffect } from 'react'
+import { usePrivateContext } from '@/providers/private-provider'
 import { useTheme } from 'next-themes'
-import { useChatlyStore } from '@/providers/chatly-store-provider'
+import { useEffect } from 'react'
 
 /**
  * CrossDeviceThemeSync
@@ -14,7 +14,8 @@ import { useChatlyStore } from '@/providers/chatly-store-provider'
  * It only reacts to authoritative profile updates.
  */
 export function CrossDeviceThemeSync() {
-  const profileTheme = useChatlyStore((s) => s.profile?.theme)
+  const { profile } = usePrivateContext()
+  const profileTheme = profile?.theme
   const { theme: currentTheme, setTheme } = useTheme()
 
   useEffect(() => {

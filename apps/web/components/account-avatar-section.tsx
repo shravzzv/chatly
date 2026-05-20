@@ -1,7 +1,6 @@
 'use client'
 
 import { Label } from '@/components/ui/label'
-import { useChatlyStore } from '@/providers/chatly-store-provider'
 import { createClient } from '@/utils/supabase/client'
 import { Profile } from '@chatly/types/profile'
 import { Pen } from 'lucide-react'
@@ -19,7 +18,6 @@ export default function AccountAvatarSection({
   profile,
 }: AccountAvatarSectionProps) {
   const [loading, setLoading] = useState(false)
-  const setProfile = useChatlyStore((state) => state.setProfile)
 
   const handleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -52,7 +50,7 @@ export default function AccountAvatarSection({
         .from('avatars')
         .getPublicUrl(`${profile.user_id}/avatar`)
 
-      const { data: updatedProfile, error: updateError } = await supabase
+      const { error: updateError } = await supabase
         .from('profiles')
         .update({ avatar_url: `${data.publicUrl}?v=${v4()}` })
         .eq('user_id', profile.user_id)
@@ -62,7 +60,6 @@ export default function AccountAvatarSection({
       if (updateError) throw updateError
 
       toast.success('Avatar updated successfully')
-      setProfile(updatedProfile)
     } catch (error) {
       toast.error('Upload failed')
       console.error(error)
