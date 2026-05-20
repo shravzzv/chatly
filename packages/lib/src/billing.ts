@@ -4,6 +4,9 @@ import type {
   SubscriptionStatus,
 } from '@chatly/types/subscription'
 
+export const LS_CUSTOMER_PORTAL_URL =
+  'https://chatly-store.lemonsqueezy.com/billing'
+
 /**
  * Lightweight feature highlights shown in the UI for paid plans.
  *
