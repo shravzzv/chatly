@@ -259,6 +259,48 @@ export function getStatusBadgeClass(status: SubscriptionStatus): string {
   }
 }
 
+export function getStatusBadgeClassNative(status: SubscriptionStatus): string {
+  switch (status) {
+    case 'active':
+    case 'on_trial':
+      return 'bg-green-500/10 border-green-300'
+
+    case 'paused':
+    case 'past_due':
+    case 'unpaid':
+      return 'bg-orange-500/10 border-orange-300'
+
+    case 'expired':
+    case 'cancelled':
+      return 'bg-red-500/10 border-red-300'
+
+    default:
+      return ''
+  }
+}
+
+export function getStatusBadgeTextClassNative(
+  status: SubscriptionStatus,
+): string {
+  switch (status) {
+    case 'active':
+    case 'on_trial':
+      return 'text-green-700'
+
+    case 'paused':
+    case 'past_due':
+    case 'unpaid':
+      return 'text-orange-700'
+
+    case 'expired':
+    case 'cancelled':
+      return 'text-red-700'
+
+    default:
+      return ''
+  }
+}
+
 export type PricingPlanName = 'Free' | 'Pro' | 'Enterprise'
 export interface PricingPlan {
   name: PricingPlanName

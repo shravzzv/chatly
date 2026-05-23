@@ -1,8 +1,11 @@
 import {
+  getStatusBadgeClassNative,
+  getStatusBadgeTextClassNative,
   getSubscriptionTimeline,
   LS_CUSTOMER_PORTAL_URL,
   PAID_PLAN_HIGHLIGHTS,
 } from '@chatly/lib/billing'
+import { formatRelativeDate } from '@chatly/lib/date'
 import type { Subscription } from '@chatly/types/subscription'
 import { Link } from 'expo-router'
 import { View } from 'react-native'
@@ -16,31 +19,7 @@ import {
   CardTitle,
 } from './ui/card'
 import { Text } from './ui/text'
-
-function pluralize(count: number, singular: string) {
-  return count === 1 ? singular : `${singular}s`
-}
-
-const formatRelativeDate = (date: string) => {
-  const target = new Date(date)
-  const now = new Date()
-
-  const diffMs = target.getTime() - now.getTime()
-  const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24))
-
-  if (diffDays < 0) return null
-  if (diffDays === 0) return 'today'
-  if (diffDays === 1) return 'tomorrow'
-  if (diffDays < 7) {
-    return `in ${diffDays} ${pluralize(diffDays, 'day')}`
-  }
-  if (diffDays < 30) {
-    const weeks = Math.round(diffDays / 7)
-    return `in ${weeks} ${pluralize(weeks, 'week')}`
-  }
-  const months = Math.round(diffDays / 30)
-  return `in ${months} ${pluralize(months, 'month')}`
-}
+import { UsageProgress } from './usage-progress'
 
 interface PaidPlanCardProps {
   subscription: Subscription
@@ -55,10 +34,16 @@ export default function PaidPlanCard({ subscription }: PaidPlanCardProps) {
       <CardHeader className='flex-row items-start justify-between space-y-1 md:space-y-0'>
         <View className='flex-1 gap-2'>
           <CardTitle className='flex flex-col items-start gap-2 font-medium text-xl capitalize'>
-            <Text className='font-medium capitalize'>{subscription.plan}</Text>
+            <Text className='font-medium text-lg capitalize'>
+              {subscription.plan}
+            </Text>
 
-            <Badge className='border-green-600/20 bg-green-500/10 text-green-700'>
-              <Text className='capitalize text-card-foreground'>
+            <Badge
+              className={`${getStatusBadgeClassNative(subscription.status)}`}
+            >
+              <Text
+                className={`${getStatusBadgeTextClassNative(subscription.status)} font-semibold capitalize`}
+              >
                 {subscription.status.replace('_', ' ')}
               </Text>
             </Badge>
@@ -75,7 +60,7 @@ export default function PaidPlanCard({ subscription }: PaidPlanCardProps) {
       </CardHeader>
 
       <CardContent className='gap-4'>
-        <View className='space-y-1'>
+        <View className='gap-1'>
           {highlights.map((item, index) => (
             <View key={index} className='flex-row items-start'>
               <Text className='mr-2 text-sm text-muted-foreground'>
@@ -96,7 +81,7 @@ export default function PaidPlanCard({ subscription }: PaidPlanCardProps) {
           </Text>
         )}
 
-        {/* <UsageProgress /> */}
+        <UsageProgress />
       </CardContent>
     </Card>
   )
