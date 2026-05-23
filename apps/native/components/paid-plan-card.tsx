@@ -1,8 +1,8 @@
 import {
   getSubscriptionTimeline,
-  LS_CUSTOMER_PORTAL_URL,
   PAID_PLAN_HIGHLIGHTS,
 } from '@chatly/lib/billing'
+import { LS_CUSTOMER_PORTAL_URL } from '@chatly/lib/data'
 import { formatRelativeDate } from '@chatly/lib/date'
 import type { Subscription } from '@chatly/types/subscription'
 import { Link } from 'expo-router'

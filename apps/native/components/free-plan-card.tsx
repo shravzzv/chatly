@@ -22,7 +22,7 @@ export default function FreePlanCard({ hideAction }: FreePlanCardProps) {
         <CardTitle className='font-bold text-xl'>Free</CardTitle>
 
         {!hideAction && (
-          <Link href='/' asChild>
+          <Link href={'/pricing'} asChild>
             <Button>
               <Text>Upgrade</Text>
             </Button>

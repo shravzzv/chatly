@@ -1,4 +1,4 @@
-import { LS_CUSTOMER_PORTAL_URL } from '@chatly/lib/billing'
+import { LS_CUSTOMER_PORTAL_URL } from '@chatly/lib/data'
 import { Link } from 'expo-router'
 import { AlertCircleIcon } from 'lucide-react-native'
 import { Alert, AlertDescription, AlertTitle } from './ui/alert'

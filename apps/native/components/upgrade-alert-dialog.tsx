@@ -1,4 +1,5 @@
 import { usePrivateContext } from '@/providers/private-provider'
+import { LS_CUSTOMER_PORTAL_URL } from '@chatly/lib/data'
 import { Link } from 'expo-router'
 import { Button } from './ui/button'
 import {
@@ -11,8 +12,6 @@ import {
   DialogTitle,
 } from './ui/dialog'
 import { Text } from './ui/text'
-export const LS_CUSTOMER_PORTAL_URL =
-  'https://chatly-store.lemonsqueezy.com/billing'
 
 export default function UpgradeAlertDialog() {
   const { plan, upgradeReason, closeUpgradeAlertDialog } = usePrivateContext()

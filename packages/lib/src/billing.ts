@@ -1,11 +1,19 @@
 import type { ChatlyPlan } from '@chatly/types/plan'
 import type {
+  Billing,
+  Plan,
   Subscription,
   SubscriptionStatus,
 } from '@chatly/types/subscription'
+import { User } from '@supabase/supabase-js'
+import { checkoutLinks, LS_CUSTOMER_PORTAL_URL } from './data'
 
-export const LS_CUSTOMER_PORTAL_URL =
-  'https://chatly-store.lemonsqueezy.com/billing'
+interface GetCTAStateProps {
+  user: User | null
+  sub: Subscription | null
+  billingCycle: Billing
+  planName: PricingPlanName
+}
 
 /**
  * Lightweight feature highlights shown in the UI for paid plans.
@@ -315,4 +323,103 @@ export const PLAN_LIMITS: Record<ChatlyPlan, { ai: number; media: number }> = {
   free: { ai: 0, media: 0 },
   pro: { ai: 5, media: 5 },
   enterprise: { ai: 20, media: 50 },
+}
+
+/**
+ * Resolves the primary CTA (label + destination) for a pricing plan card
+ * based on authentication and subscription state.
+ *
+ * Rules:
+ * - Checkout is only used when the user has no subscription.
+ * - All plan changes for subscribed users go through the billing portal.
+ * - Free plan always routes to dashboard when authenticated.
+ */
+export const getCTAState = ({
+  user,
+  sub,
+  billingCycle,
+  planName,
+}: GetCTAStateProps) => {
+  const isAuthenticated = !!user
+  const hasActiveSub = !!sub
+  const isForFreePlan = planName === 'Free'
+
+  // 1. Unauthenticated
+  if (!isAuthenticated) {
+    return {
+      label: 'Get Started',
+      href: isForFreePlan
+        ? '/signup'
+        : `/signup?plan=${planName.toLowerCase()}&billing=${billingCycle}`,
+    }
+  }
+
+  // 2. Authenticated, NO subscription
+  if (!hasActiveSub) {
+    return {
+      label: isForFreePlan ? 'Go to Dashboard' : 'Upgrade',
+      href: isForFreePlan
+        ? '/dashboard'
+        : getCheckoutUrl(planName.toLowerCase() as Plan, billingCycle, user)!,
+    }
+  }
+
+  // 3. Authenticated, HAS subscription
+  return {
+    label: isForFreePlan ? 'Go to Dashboard' : 'Manage Billing',
+    href: isForFreePlan ? '/dashboard' : LS_CUSTOMER_PORTAL_URL,
+  }
+}
+
+/**
+ * Generates a Lemon Squeezy checkout URL for a given plan and billing cycle.
+ *
+ * Behavior:
+ * - Resolves the base checkout URL from static `checkoutLinks`
+ * - Optionally enriches the URL with user-specific metadata
+ * - Returns `null` when no matching checkout link exists
+ *
+ * User handling:
+ * - If `user` is `null`, returns the raw checkout URL
+ * - If `user` is provided:
+ *   - Prefills the checkout email
+ *   - Attaches the internal user id as custom metadata
+ *
+ * This allows:
+ * - Anonymous users to start checkout
+ * - Authenticated users to have a prefilled, traceable checkout
+ *
+ * @param plan
+ * The subscription plan being purchased (e.g. `free`, `pro`)
+ *
+ * @param billing
+ * The billing cadence for the plan (e.g. `monthly`, `yearly`)
+ *
+ * @param user
+ * The currently authenticated user, if available.
+ * Used to prefill checkout details and associate the purchase
+ * with an internal user id.
+ *
+ * @returns
+ * - A fully-qualified checkout URL when a matching plan/billing exists
+ * - `null` when no checkout link is defined for the given inputs
+ */
+export const getCheckoutUrl = (
+  plan: Plan,
+  billing: Billing,
+  user: User | null,
+) => {
+  const base = checkoutLinks.find(
+    (link) => link.plan === plan && link.billing === billing,
+  )?.url
+
+  if (!base) return null
+  if (!user) return base
+
+  const params = new URLSearchParams({
+    'checkout[email]': user.email ?? '',
+    'checkout[custom][user_id]': user.id,
+  })
+
+  return `${base}?${params.toString()}`
 }
