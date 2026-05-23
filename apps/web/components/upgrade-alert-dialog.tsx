@@ -11,9 +11,9 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { useDashboardContext } from '@/providers/dashboard-provider'
-import { Button } from './ui/button'
-import { LS_CUSTOMER_PORTAL_URL } from '@/data/constants'
+import { LS_CUSTOMER_PORTAL_URL } from '@chatly/lib/data'
 import Link from 'next/link'
+import { Button } from './ui/button'
 
 export default function UpgradeAlertDialog() {
   const { plan, upgradeReason, closeUpgradeAlertDialog } = useDashboardContext()

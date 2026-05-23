@@ -12,9 +12,9 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
-import { LS_CUSTOMER_PORTAL_URL } from '@/data/constants'
 import { getEffectiveSubscription } from '@/lib/billing'
 import { useChatlyStore } from '@/providers/chatly-store-provider'
+import { LS_CUSTOMER_PORTAL_URL } from '@chatly/lib/data'
 import { Subscription } from '@chatly/types/subscription'
 import Link from 'next/link'
 import { useState } from 'react'
