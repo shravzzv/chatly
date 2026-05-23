@@ -1,22 +1,19 @@
 'use client'
 
 import { getSubscriptions } from '@/app/actions'
-import { LS_CUSTOMER_PORTAL_URL } from '@/data/constants'
 import {
   getEffectiveSubscription,
   getLastEndedPaidSubscription,
   isEffectiveSubscription,
-} from '@/lib/billing'
+} from '@chatly/lib/billing'
 import type { Subscription } from '@chatly/types/subscription'
-import { AlertCircleIcon } from 'lucide-react'
-import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import DemotedPlanAlert from './demoted-plan-alert'
 import FreePlanCard from './free-plan-card'
+import MultipleSubscriptionsAlert from './multiple-subscriptions-alert'
 import PaidPlanCard from './paid-plan-card'
 import CurrentPlanCardSkeleton from './skeletons/current-plan-card-skeleton'
-import { Alert, AlertDescription, AlertTitle } from './ui/alert'
 
 export default function CurrentPlanSection() {
   const [loading, setLoading] = useState(true)
@@ -62,23 +59,7 @@ export default function CurrentPlanSection() {
   return (
     <section className='space-y-4'>
       <PaidPlanCard subscription={effectiveSub} />
-
-      {hasOtherEligibleSubs && (
-        <Alert>
-          <AlertCircleIcon />
-          <AlertTitle>You have multiple subscriptions</AlertTitle>
-          <AlertDescription>
-            <p>
-              Only the most effective subscription is used. Please cancel the
-              others in the{' '}
-              <Link href={LS_CUSTOMER_PORTAL_URL} className='underline'>
-                billing portal
-              </Link>
-              .
-            </p>
-          </AlertDescription>
-        </Alert>
-      )}
+      {hasOtherEligibleSubs && <MultipleSubscriptionsAlert />}
     </section>
   )
 }

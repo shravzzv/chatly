@@ -1,6 +1,4 @@
 import {
-  getStatusBadgeClassNative,
-  getStatusBadgeTextClassNative,
   getSubscriptionTimeline,
   LS_CUSTOMER_PORTAL_URL,
   PAID_PLAN_HIGHLIGHTS,
@@ -39,11 +37,13 @@ export default function PaidPlanCard({ subscription }: PaidPlanCardProps) {
             </Text>
 
             <Badge
-              className={`${getStatusBadgeClassNative(subscription.status)}`}
+              variant={
+                ['expired', 'cancelled'].includes(subscription.status)
+                  ? 'destructive'
+                  : 'default'
+              }
             >
-              <Text
-                className={`${getStatusBadgeTextClassNative(subscription.status)} font-semibold capitalize`}
-              >
+              <Text className='font-semibold capitalize'>
                 {subscription.status.replace('_', ' ')}
               </Text>
             </Badge>

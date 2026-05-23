@@ -1,8 +1,12 @@
+import DemotedPlanAlert from '@/components/demoted-plan-alert'
+import FreePlanCard from '@/components/free-plan-card'
+import MultipleSubscriptionsAlert from '@/components/multiple-subscriptions-alert'
 import PaidPlanCard from '@/components/paid-plan-card'
 import { Screen } from '@/components/ui/screen'
 import { Separator } from '@/components/ui/separator'
 import { Text } from '@/components/ui/text'
 import type { Subscription } from '@chatly/types/subscription'
+import { ScrollView, View } from 'react-native'
 
 export const mockExpiredSubscription: Subscription = {
   id: '6e2b83a4-712c-4f9e-b9ad-d48e2354a112',
@@ -34,17 +38,22 @@ export const mockActiveSubscription: Subscription = {
 
 export default function Page() {
   return (
-    <Screen className='mx-auto w-full max-w-xl gap-4'>
-      {/* <DemotedPlanAlert subscription={mockExpiredSubscription} />
-      <FreePlanCard hideAction /> */}
+    <Screen className='px-0 py-0 md:py-0'>
+      <ScrollView>
+        <View className='mx-auto w-full max-w-xl gap-4 px-8 py-4'>
+          <DemotedPlanAlert subscription={mockExpiredSubscription} />
+          <FreePlanCard hideAction />
 
-      <PaidPlanCard subscription={mockActiveSubscription} />
+          <PaidPlanCard subscription={mockActiveSubscription} />
+          <MultipleSubscriptionsAlert />
 
-      <Separator />
+          <Separator />
 
-      <Text className='text-xs text-muted-foreground'>
-        Billing and payments are managed securely.
-      </Text>
+          <Text className='text-xs text-muted-foreground'>
+            Billing and payments are managed securely.
+          </Text>
+        </View>
+      </ScrollView>
     </Screen>
   )
 }
