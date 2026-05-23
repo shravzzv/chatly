@@ -1,9 +1,7 @@
 import { supabase } from '@/lib/supabase'
 import { useAuthContext } from '@/providers/auth-provider'
-import {
-  getEffectiveSubscription,
-  LS_CUSTOMER_PORTAL_URL,
-} from '@chatly/lib/billing'
+import { getEffectiveSubscription } from '@chatly/lib/billing'
+import { LS_CUSTOMER_PORTAL_URL } from '@chatly/lib/data'
 import type { Subscription } from '@chatly/types/subscription'
 import { Link, router } from 'expo-router'
 import { useCallback, useState } from 'react'

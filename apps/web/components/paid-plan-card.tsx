@@ -1,10 +1,10 @@
-import { LS_CUSTOMER_PORTAL_URL } from '@/data/constants'
 import {
   getStatusBadgeClass,
   getSubscriptionTimeline,
   PAID_PLAN_HIGHLIGHTS,
 } from '@/lib/billing'
 import { formatRelativeDate } from '@/lib/date'
+import { LS_CUSTOMER_PORTAL_URL } from '@chatly/lib/data'
 import type { Subscription } from '@chatly/types/subscription'
 import Link from 'next/link'
 import { Badge } from './ui/badge'
