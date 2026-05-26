@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase'
 import Constants from 'expo-constants'
 import * as Notifications from 'expo-notifications'
+import { router } from 'expo-router'
 import { useEffect, useState } from 'react'
 import { Platform, View } from 'react-native'
 import { toast } from 'sonner-native'
@@ -159,14 +160,32 @@ export default function NotificationsToggle() {
       setEnabled(true)
     }
 
+    const handleNotificationTap = (
+      response: Notifications.NotificationResponse,
+    ) => {
+      const senderId = response.notification.request.content.data?.senderId
+
+      if (!senderId) return
+      router.push(`/chat/${String(senderId)}`)
+    }
+
+    const hydrateInitialNotification = () => {
+      const response = Notifications.getLastNotificationResponse()
+      if (!response) return
+      handleNotificationTap(response)
+    }
+
     hydratePushState()
+    hydrateInitialNotification()
 
     const notificationListener = Notifications.addNotificationReceivedListener(
       () => {},
     )
 
     const responseListener =
-      Notifications.addNotificationResponseReceivedListener(() => {})
+      Notifications.addNotificationResponseReceivedListener(
+        handleNotificationTap,
+      )
 
     return () => {
       notificationListener.remove()
