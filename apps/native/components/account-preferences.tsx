@@ -1,12 +1,9 @@
-import { useState } from 'react'
-import { View } from 'react-native'
+import { Platform, View } from 'react-native'
+import NotificationsToggle from './notifications-toggle'
 import { ThemeToggle } from './theme-toggle'
-import { Switch } from './ui/switch'
 import { Text } from './ui/text'
 
 export default function AccountPreferences() {
-  const [isSwitchChecked, setIsSwitchChecked] = useState(false)
-
   return (
     <View className='my-4 gap-4'>
       <Text className='font-semibold text-lg'>Preferences</Text>
@@ -16,13 +13,7 @@ export default function AccountPreferences() {
         <ThemeToggle />
       </View>
 
-      <View className='flex-row items-center justify-between'>
-        <Text>Notifications</Text>
-        <Switch
-          checked={isSwitchChecked}
-          onCheckedChange={() => setIsSwitchChecked((prev) => !prev)}
-        />
-      </View>
+      {Platform.OS !== 'web' && <NotificationsToggle />}
     </View>
   )
 }
