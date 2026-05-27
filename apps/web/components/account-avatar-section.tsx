@@ -1,9 +1,11 @@
 'use client'
 
 import { Label } from '@/components/ui/label'
+import { cn } from '@/lib/utils'
+import { useNetworkContext } from '@/providers/network-provider'
 import { createClient } from '@/utils/supabase/client'
 import { Profile } from '@chatly/types/profile'
-import { Pen } from 'lucide-react'
+import { Pen, WifiOff } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { v4 } from 'uuid'
@@ -18,6 +20,7 @@ export default function AccountAvatarSection({
   profile,
 }: AccountAvatarSectionProps) {
   const [loading, setLoading] = useState(false)
+  const { isOnline } = useNetworkContext()
 
   const handleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -76,14 +79,15 @@ export default function AccountAvatarSection({
         accept='image/*'
         className='sr-only'
         onChange={handleChange}
-        disabled={loading}
+        disabled={loading || !isOnline}
       />
 
       <Label
         htmlFor='avatar'
-        className={`group relative shrink-0 cursor-pointer transition-transform active:scale-95 ${
-          loading ? 'cursor-not-allowed' : ''
-        }`}
+        className={cn(
+          'group relative shrink-0 cursor-pointer transition-transform active:scale-95',
+          loading && 'cursor-not-allowed',
+        )}
       >
         <div className={loading ? 'opacity-50 grayscale-[0.5]' : ''}>
           <ProfileAvatar profile={profile} height={24} width={24} />
@@ -91,20 +95,32 @@ export default function AccountAvatarSection({
 
         {/* Overlay UI */}
         <div
-          className={`absolute inset-0 flex items-center justify-center rounded-full transition-all duration-200 ${
+          className={cn(
+            'absolute inset-0 flex items-center justify-center rounded-full transition-all duration-200',
             loading
               ? 'bg-black/20 opacity-100'
-              : 'bg-black/40 opacity-0 group-hover:opacity-100'
-          }`}
+              : 'bg-black/40 opacity-0 group-hover:opacity-100',
+          )}
         >
           {loading ? (
             <Spinner className='h-8 w-8 text-white' />
           ) : (
             <div className='flex flex-col items-center gap-1 text-white'>
-              <Pen className='h-5 w-5' />
-              <span className='text-[10px] font-medium tracking-wider uppercase'>
-                Edit
-              </span>
+              {isOnline ? (
+                <>
+                  <Pen className='h-5 w-5' />
+                  <span className='text-[10px] font-medium tracking-wider uppercase'>
+                    Edit
+                  </span>
+                </>
+              ) : (
+                <>
+                  <WifiOff className='h-5 w-5' />
+                  <span className='text-[10px] font-medium tracking-wider uppercase'>
+                    Offline
+                  </span>
+                </>
+              )}
             </div>
           )}
         </div>
