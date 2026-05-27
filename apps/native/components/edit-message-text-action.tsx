@@ -1,7 +1,6 @@
 import { cn } from '@/lib/utils'
 import { usePrivateContext } from '@/providers/private-provider'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Sparkles } from 'lucide-react-native'
 import { Controller, useForm } from 'react-hook-form'
 import { Platform, View } from 'react-native'
 import * as z from 'zod'
@@ -15,7 +14,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from './ui/dialog'
-import { Icon } from './ui/icon'
 import { Spinner } from './ui/spinner'
 import { Text } from './ui/text'
 import { Textarea } from './ui/textarea'
@@ -87,15 +85,6 @@ export default function EditMessageTextAction({
                   numberOfLines={Platform.select({ web: 4, native: 5 })}
                   className='min-h-1 flex-1 resize-none border-0 border-none text-sm shadow-none outline-none placeholder:text-muted-foreground focus-visible:ring-0 active:outline-none dark:bg-transparent'
                 />
-
-                <Button
-                  size='icon'
-                  variant='secondary'
-                  className='shrink-0 rounded-full'
-                  disabled={!field.value}
-                >
-                  <Icon as={Sparkles} />
-                </Button>
               </View>
 
               {errors.text && (
