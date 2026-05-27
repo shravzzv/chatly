@@ -22,6 +22,12 @@ jest.mock('@/app/actions', () => ({
   updateProfile: jest.fn(),
 }))
 
+jest.mock('@/providers/network-provider', () => ({
+  useNetworkContext: () => ({
+    isOnline: true,
+  }),
+}))
+
 interface RenderWithStoreOptions {
   user?: User | null
   profile?: Profile | null
