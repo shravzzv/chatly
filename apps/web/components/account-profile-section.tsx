@@ -1,6 +1,7 @@
 'use client'
 
 import { updateProfile } from '@/app/actions'
+import { useNetworkContext } from '@/providers/network-provider'
 import { usePrivateContext } from '@/providers/private-provider'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { AlertCircleIcon } from 'lucide-react'
@@ -37,6 +38,7 @@ const formSchema = z.object({
 
 export default function AccountProfileSection() {
   const { profile } = usePrivateContext()
+  const { isOnline } = useNetworkContext()
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -86,9 +88,7 @@ export default function AccountProfileSection() {
     })
   }, [profile, form])
 
-  if (!profile) {
-    return <AccountProfileSectionSkeleton />
-  }
+  if (!profile) return <AccountProfileSectionSkeleton />
 
   return (
     <section className='space-y-4'>
@@ -111,6 +111,8 @@ export default function AccountProfileSection() {
                     aria-invalid={fieldState.invalid}
                     autoComplete='on'
                     placeholder='John Doe'
+                    disabled={!isOnline}
+                    className='disabled:cursor-not-allowed'
                   />
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
@@ -133,6 +135,8 @@ export default function AccountProfileSection() {
                     aria-invalid={fieldState.invalid}
                     placeholder='johndoe'
                     autoComplete='username'
+                    disabled={!isOnline}
+                    className='disabled:cursor-not-allowed'
                   />
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
@@ -153,7 +157,8 @@ export default function AccountProfileSection() {
                   id='form-rhf-textarea-about'
                   aria-invalid={fieldState.invalid}
                   placeholder="I'm a software engineer..."
-                  className='min-h-30'
+                  className='min-h-30 disabled:cursor-not-allowed'
+                  disabled={!isOnline}
                 />
                 {fieldState.invalid && (
                   <FieldError errors={[fieldState.error]} />
@@ -175,8 +180,8 @@ export default function AccountProfileSection() {
           <Field>
             <Button
               type='submit'
-              className='max-w-fit cursor-pointer'
-              disabled={!isDirty || isSubmitting}
+              className='max-w-fit cursor-pointer disabled:cursor-not-allowed'
+              disabled={!isDirty || isSubmitting || !isOnline}
             >
               {isSubmitting ? (
                 <>
