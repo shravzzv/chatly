@@ -1,9 +1,9 @@
+import { deleteUser, getSubscriptions } from '@/app/actions'
+import AccountDangerZone from '@/components/account-danger-zone'
+import { useChatlyStore } from '@/providers/chatly-store-provider'
 import '@testing-library/jest-dom'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import AccountDangerZone from '@/components/account-danger-zone'
-import { useChatlyStore } from '@/providers/chatly-store-provider'
-import { getSubscriptions, deleteUser } from '@/app/actions'
 
 jest.mock('@/providers/chatly-store-provider', () => ({
   useChatlyStore: jest.fn(),
@@ -12,6 +12,12 @@ jest.mock('@/providers/chatly-store-provider', () => ({
 jest.mock('@/app/actions', () => ({
   getSubscriptions: jest.fn(),
   deleteUser: jest.fn(),
+}))
+
+jest.mock('@/providers/network-provider', () => ({
+  useNetworkContext: () => ({
+    isOnline: true,
+  }),
 }))
 
 describe('Account danger zone', () => {
