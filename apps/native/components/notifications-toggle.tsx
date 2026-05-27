@@ -172,7 +172,10 @@ export default function NotificationsToggle() {
     const hydrateInitialNotification = () => {
       const response = Notifications.getLastNotificationResponse()
       if (!response) return
-      handleNotificationTap(response)
+
+      requestAnimationFrame(() => {
+        handleNotificationTap(response)
+      })
     }
 
     hydratePushState()
