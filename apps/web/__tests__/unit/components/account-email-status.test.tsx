@@ -8,6 +8,12 @@ import { toast } from 'sonner'
 jest.mock('next/navigation')
 jest.mock('sonner')
 
+jest.mock('@/providers/network-provider', () => ({
+  useNetworkContext: () => ({
+    isOnline: true,
+  }),
+}))
+
 jest.mock('@/utils/supabase/client', () => {
   const resend = jest.fn()
 

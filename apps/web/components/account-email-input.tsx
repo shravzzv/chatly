@@ -1,21 +1,19 @@
 'use client'
 
-import { Button } from './ui/button'
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
 } from '@/components/ui/input-group'
-import { Label } from './ui/label'
 import { useChatlyStore } from '@/providers/chatly-store-provider'
-import z from 'zod'
-import { Controller, useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { Field, FieldError } from './ui/field'
-import { Spinner } from './ui/spinner'
-import { toast } from 'sonner'
+import { useNetworkContext } from '@/providers/network-provider'
 import { createClient } from '@/utils/supabase/client'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { AlertDialogCancel } from '@radix-ui/react-alert-dialog'
 import { useEffect, useState } from 'react'
+import { Controller, useForm } from 'react-hook-form'
+import { toast } from 'sonner'
+import z from 'zod'
 import {
   AlertDialog,
   AlertDialogContent,
@@ -24,7 +22,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from './ui/alert-dialog'
-import { AlertDialogCancel } from '@radix-ui/react-alert-dialog'
+import { Button } from './ui/button'
+import { Field, FieldError } from './ui/field'
+import { Label } from './ui/label'
+import { Spinner } from './ui/spinner'
 
 const emailSchema = z.object({
   email: z.email('Please enter a valid email address'),
@@ -33,6 +34,7 @@ const emailSchema = z.object({
 export default function AccountEmailInput() {
   const user = useChatlyStore((state) => state.user)
   const [showDialog, setShowDialog] = useState(false)
+  const { isOnline } = useNetworkContext()
 
   const form = useForm<z.infer<typeof emailSchema>>({
     resolver: zodResolver(emailSchema),
@@ -90,6 +92,7 @@ export default function AccountEmailInput() {
                   placeholder='johndoe@mail.com'
                   autoComplete='email'
                   aria-invalid={fieldState.invalid}
+                  disabled={!isOnline}
                 />
 
                 <InputGroupAddon align='block-start'>
@@ -108,7 +111,7 @@ export default function AccountEmailInput() {
           <Button
             type='submit'
             className='max-w-fit cursor-pointer'
-            disabled={!isDirty || isSubmitting}
+            disabled={!isDirty || isSubmitting || !isOnline}
           >
             {isSubmitting ? (
               <>

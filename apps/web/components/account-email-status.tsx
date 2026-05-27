@@ -1,6 +1,7 @@
 'use client'
 
 import { useChatlyStore } from '@/providers/chatly-store-provider'
+import { useNetworkContext } from '@/providers/network-provider'
 import { createClient } from '@/utils/supabase/client'
 import { AlertCircleIcon, BadgeCheck } from 'lucide-react'
 import { toast } from 'sonner'
@@ -10,6 +11,7 @@ import { Button } from './ui/button'
 export default function AccountEmailStatus() {
   const user = useChatlyStore((state) => state.user)
   const newEmail = user?.new_email
+  const { isOnline } = useNetworkContext()
 
   const handleSendConfirmation = async () => {
     if (!newEmail) return
@@ -68,7 +70,8 @@ export default function AccountEmailStatus() {
           variant='outline'
           size='sm'
           onClick={handleSendConfirmation}
-          className='mt-2 cursor-pointer'
+          className='mt-2 cursor-pointer disabled:cursor-not-allowed'
+          disabled={!isOnline}
         >
           Resend confirmation email
         </Button>
