@@ -108,6 +108,6 @@ export default function MessageAttachment({
     case 'audio':
       return <AudioAttachment signedUrl={signedUrl} />
     default:
-      return <FileAttachment attachment={attachment} signedUrl={signedUrl} />
+      return <FileAttachment attachment={attachment} />
   }
 }
