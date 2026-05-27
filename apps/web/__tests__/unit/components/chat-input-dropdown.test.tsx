@@ -19,6 +19,12 @@ jest.mock('@/providers/dashboard-provider', () => ({
   }),
 }))
 
+jest.mock('@/providers/network-provider', () => ({
+  useNetworkContext: () => ({
+    isOnline: true,
+  }),
+}))
+
 jest.mock('sonner')
 
 describe('ChatInputDropdown', () => {
