@@ -12,6 +12,7 @@ import {
 import { MAX_MESSAGE_ATTACHMENT_SIZE } from '@/data/constants'
 import { PLAN_LIMITS } from '@/data/plans'
 import { useDashboardContext } from '@/providers/dashboard-provider'
+import { useNetworkContext } from '@/providers/network-provider'
 import type { MessageAttachmentKind } from '@chatly/types/message-attachment'
 import {
   AudioLines,
@@ -29,6 +30,7 @@ export default function ChatInputDropdown() {
   const [isUploading, setIsUploading] = useState(false)
   const { plan, mediaUsed, canUseMedia, openUpgradeAlertDialog } =
     useDashboardContext()
+  const { isOnline } = useNetworkContext()
 
   const imageInputRef = useRef<HTMLInputElement>(null)
   const videoInputRef = useRef<HTMLInputElement>(null)
@@ -105,7 +107,7 @@ export default function ChatInputDropdown() {
         accept='image/*'
         className='sr-only'
         onChange={(e) => handleFileChange(e, 'image')}
-        disabled={isUploading}
+        disabled={isUploading || !isOnline}
       />
       <input
         ref={videoInputRef}
@@ -113,7 +115,7 @@ export default function ChatInputDropdown() {
         accept='video/*'
         className='sr-only'
         onChange={(e) => handleFileChange(e, 'video')}
-        disabled={isUploading}
+        disabled={isUploading || !isOnline}
       />
       <input
         ref={audioInputRef}
@@ -121,7 +123,7 @@ export default function ChatInputDropdown() {
         accept='audio/*'
         className='sr-only'
         onChange={(e) => handleFileChange(e, 'audio')}
-        disabled={isUploading}
+        disabled={isUploading || !isOnline}
       />
       <input
         ref={fileInputRef}
@@ -129,7 +131,7 @@ export default function ChatInputDropdown() {
         accept='*'
         className='sr-only'
         onChange={(e) => handleFileChange(e, 'file')}
-        disabled={isUploading}
+        disabled={isUploading || !isOnline}
       />
 
       <DropdownMenu open={open} onOpenChange={setOpen}>
@@ -157,36 +159,36 @@ export default function ChatInputDropdown() {
           )}
 
           <DropdownMenuItem
-            className='flex cursor-pointer items-center gap-2'
+            className='flex cursor-pointer items-center gap-2 disabled:cursor-not-allowed'
             onSelect={(e) => triggerPicker(e, imageInputRef)}
-            disabled={isUploading}
+            disabled={isUploading || !isOnline}
           >
             <ImagePlus className='text-muted-foreground h-4 w-4' />
             Image
           </DropdownMenuItem>
 
           <DropdownMenuItem
-            className='flex cursor-pointer items-center gap-2'
+            className='flex cursor-pointer items-center gap-2 disabled:cursor-not-allowed'
             onSelect={(e) => triggerPicker(e, videoInputRef)}
-            disabled={isUploading}
+            disabled={isUploading || !isOnline}
           >
             <Clapperboard className='text-muted-foreground h-4 w-4' />
             Video
           </DropdownMenuItem>
 
           <DropdownMenuItem
-            className='flex cursor-pointer items-center gap-2'
+            className='flex cursor-pointer items-center gap-2 disabled:cursor-not-allowed'
             onSelect={(e) => triggerPicker(e, audioInputRef)}
-            disabled={isUploading}
+            disabled={isUploading || !isOnline}
           >
             <AudioLines className='text-muted-foreground h-4 w-4' />
             Audio
           </DropdownMenuItem>
 
           <DropdownMenuItem
-            className='flex cursor-pointer items-center gap-2'
+            className='flex cursor-pointer items-center gap-2 disabled:cursor-not-allowed'
             onSelect={(e) => triggerPicker(e, fileInputRef)}
-            disabled={isUploading}
+            disabled={isUploading || !isOnline}
           >
             <Paperclip className='text-muted-foreground h-4 w-4' />
             File

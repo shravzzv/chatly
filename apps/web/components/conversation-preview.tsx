@@ -3,8 +3,10 @@
 import ProfileAvatar from '@/components/profile-avatar'
 import { Button } from '@/components/ui/button'
 import { getDisplayName } from '@/lib/dashboard'
+import { cn } from '@/lib/utils'
 import { useChatlyStore } from '@/providers/chatly-store-provider'
 import { useDashboardContext } from '@/providers/dashboard-provider'
+import { useNetworkContext } from '@/providers/network-provider'
 import { Profile } from '@chatly/types/profile'
 import ConversationPreviewSubtitle from './conversation-preview-subtitle'
 
@@ -15,6 +17,8 @@ interface ConversationPreviewProps {
 export default function ConversationPreview({
   profile,
 }: ConversationPreviewProps) {
+  const { isOnline } = useNetworkContext()
+
   const {
     previews,
     selectedProfile,
@@ -33,8 +37,12 @@ export default function ConversationPreview({
     <Button
       variant='ghost'
       size='lg'
-      className={`hover:bg-muted w-full cursor-pointer justify-start gap-3 rounded-xl px-4 py-8 text-left transition ${selectedProfile?.id === profile.id ? 'bg-muted' : ''}`}
+      className={cn(
+        'hover:bg-muted w-full cursor-pointer justify-start gap-3 rounded-xl px-4 py-8 text-left transition disabled:cursor-not-allowed',
+        selectedProfile?.id === profile.id && 'bg-muted',
+      )}
       onClick={handleClick}
+      disabled={!isOnline}
     >
       <ProfileAvatar profile={profile} />
 

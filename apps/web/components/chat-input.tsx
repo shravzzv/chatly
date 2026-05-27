@@ -144,7 +144,7 @@ export default function ChatInput({ updateTypingStatus }: ChatInputProps) {
           onChange={handleTextChange}
           onKeyDown={handleKeyDown}
           className='placeholder:text-muted-foreground max-h-50 min-h-10 resize-none overflow-y-auto border-0 text-sm outline-none focus-visible:ring-0'
-          disabled={isEnhancing}
+          disabled={isEnhancing || !isOnline}
         />
 
         <InputGroupAddon align='inline-end' className='shrink-0'>
