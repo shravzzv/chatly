@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabase'
 import { THEME } from '@/lib/theme'
 import { cn } from '@/lib/utils'
 import { useAuthContext } from '@/providers/auth-provider'
+import { useNetworkContext } from '@/providers/network-provider'
 import { downloadBlob, getAttachmentKind } from '@chatly/lib/messages'
 import type { Message as MessageType } from '@chatly/types/message'
 import { useActionSheet } from '@expo/react-native-action-sheet'
@@ -31,12 +32,13 @@ export function Message({ message }: MessageProps) {
   const { showActionSheetWithOptions } = useActionSheet()
   const { colorScheme } = useColorScheme()
   const { id, text, attachment } = message
+  const { isOnline } = useNetworkContext()
 
   // derived booleans
   const hasText = typeof text === 'string' && text.trim().length > 0
   const hasAttachment = !!attachment
   const isOwn = message.sender_id === currentUserId
-  const denySheet = !isOwn && hasText
+  const denySheet = !isOnline || (!isOwn && hasText)
   const allowDelete = isOwn
   const allowEdit = isOwn && hasText && !hasAttachment
   const allowDownload = !hasText && hasAttachment
@@ -198,6 +200,7 @@ export function Message({ message }: MessageProps) {
               size='icon'
               className='p-0'
               onPress={() => setIsEditDialogOpen(true)}
+              disabled={!isOnline}
             >
               <Icon as={Pen} className='size-4 text-muted-foreground' />
             </Button>
@@ -208,13 +211,19 @@ export function Message({ message }: MessageProps) {
               variant='ghost'
               size='icon'
               onPress={() => setIsDeleteDialogOpen(true)}
+              disabled={!isOnline}
             >
               <Icon as={Trash} className='size-4 text-muted-foreground' />
             </Button>
           )}
 
           {allowDownload && (
-            <Button variant='ghost' size='icon' onPress={handleDownload}>
+            <Button
+              variant='ghost'
+              size='icon'
+              onPress={handleDownload}
+              disabled={!isOnline}
+            >
               <Icon as={Download} className='size-4 text-muted-foreground' />
             </Button>
           )}
