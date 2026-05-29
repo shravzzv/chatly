@@ -1,3 +1,4 @@
+import { useNetworkContext } from '@/providers/network-provider'
 import { usePrivateContext } from '@/providers/private-provider'
 import { PLAN_LIMITS } from '@chatly/lib/billing'
 import type { MessageAttachmentKind } from '@chatly/types/message-attachment'
@@ -45,6 +46,7 @@ export default function ChatInputDropdown({
   const [isUploading, setIsUploading] = useState(false)
   const { canUseMedia, mediaUsed, plan, sendMessage, openUpgradeAlertDialog } =
     usePrivateContext()
+  const { isOnline } = useNetworkContext()
 
   type Asset =
     | File
@@ -303,11 +305,11 @@ export default function ChatInputDropdown({
             <Text>Image</Text>
           </DropdownMenuSubTrigger>
 
-          <DropdownMenuSubContent disabled={isUploading}>
+          <DropdownMenuSubContent>
             <DropdownMenuItem
               className='flex cursor-pointer items-center gap-2'
               onPress={takePhoto}
-              disabled={isUploading}
+              disabled={isUploading || !isOnline}
             >
               <Icon as={Camera} className='size-4 text-muted-foreground' />
               <Text>Camera</Text>
@@ -316,7 +318,7 @@ export default function ChatInputDropdown({
             <DropdownMenuItem
               className='flex cursor-pointer items-center gap-2'
               onPress={pickImage}
-              disabled={isUploading}
+              disabled={isUploading || !isOnline}
             >
               <Icon as={Image} className='size-4 text-muted-foreground' />
               <Text>File</Text>
@@ -337,7 +339,7 @@ export default function ChatInputDropdown({
             <DropdownMenuItem
               className='flex cursor-pointer items-center gap-2'
               onPress={takeVideo}
-              disabled={isUploading}
+              disabled={isUploading || !isOnline}
             >
               <Icon as={Video} className='size-4 text-muted-foreground' />
               <Text>Record</Text>
@@ -346,7 +348,7 @@ export default function ChatInputDropdown({
             <DropdownMenuItem
               className='flex cursor-pointer items-center gap-2'
               onPress={pickVideo}
-              disabled={isUploading}
+              disabled={isUploading || !isOnline}
             >
               <Icon as={FilePlay} className='size-4 text-muted-foreground' />
               <Text>File</Text>
@@ -367,7 +369,7 @@ export default function ChatInputDropdown({
             <DropdownMenuItem
               className='flex cursor-pointer items-center gap-2'
               onPress={takeRecording}
-              disabled={isUploading}
+              disabled={isUploading || !isOnline}
             >
               <Icon as={Mic} className='size-4 text-muted-foreground' />
               <Text>Record</Text>
@@ -376,7 +378,7 @@ export default function ChatInputDropdown({
             <DropdownMenuItem
               className='flex cursor-pointer items-center gap-2'
               onPress={pickAudio}
-              disabled={isUploading}
+              disabled={isUploading || !isOnline}
             >
               <Icon as={BookAudio} className='size-4 text-muted-foreground' />
               <Text>File</Text>
@@ -387,7 +389,7 @@ export default function ChatInputDropdown({
         <DropdownMenuItem
           className='flex cursor-pointer items-center gap-2'
           onPress={pickFile}
-          disabled={isUploading}
+          disabled={isUploading || !isOnline}
         >
           <Icon as={Paperclip} className='size-4 text-muted-foreground' />
           <Text>File</Text>
