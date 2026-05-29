@@ -1,4 +1,5 @@
 // apps/native/app/_layout.tsx
+import NetworkShell from '@/components/network-shell'
 import { Spinner } from '@/components/ui/spinner'
 import { Text } from '@/components/ui/text'
 import '@/global.css'
@@ -6,6 +7,7 @@ import { handleAuthRedirect } from '@/lib/auth'
 import { NAV_THEME } from '@/lib/theme'
 import { cn } from '@/lib/utils'
 import AuthProvider, { useAuthContext } from '@/providers/auth-provider'
+import { NetworkProvider } from '@/providers/network-provider'
 import ThemeProvider from '@/providers/theme-provider'
 import {
   Inter_400Regular,
@@ -58,9 +60,13 @@ export default function RootLayout() {
   if (!loaded && !error) return null
 
   return (
-    <AuthProvider>
-      <InnerRootLayout />
-    </AuthProvider>
+    <NetworkProvider>
+      <NetworkShell>
+        <AuthProvider>
+          <InnerRootLayout />
+        </AuthProvider>
+      </NetworkShell>
+    </NetworkProvider>
   )
 }
 
