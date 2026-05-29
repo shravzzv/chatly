@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import { useAuthContext } from '@/providers/auth-provider'
+import { useNetworkContext } from '@/providers/network-provider'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as Linking from 'expo-linking'
 import { useEffect, useState } from 'react'
@@ -32,6 +33,7 @@ type FormSchema = z.infer<typeof formSchema>
 export default function AccountEmailInput() {
   const { user } = useAuthContext()
   const [showDialog, setShowDialog] = useState(false)
+  const { isOnline } = useNetworkContext()
 
   const {
     handleSubmit,
@@ -99,7 +101,7 @@ export default function AccountEmailInput() {
               submitBehavior='submit'
               value={field.value}
               onChangeText={field.onChange}
-              editable={!isSubmitting}
+              editable={!isSubmitting && isOnline}
               onSubmitEditing={handleSubmit(onSubmit)}
               className={cn(
                 errors.email && 'border-destructive text-destructive',
@@ -120,7 +122,7 @@ export default function AccountEmailInput() {
 
       <Button
         className='w-fit max-w-fit cursor-pointer disabled:cursor-not-allowed'
-        disabled={!isDirty || isSubmitting}
+        disabled={!isDirty || isSubmitting || !isOnline}
         onPress={handleSubmit(onSubmit)}
       >
         {isSubmitting ? (

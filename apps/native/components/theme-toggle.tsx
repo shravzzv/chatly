@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button'
 import { Icon } from '@/components/ui/icon'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
+import { useNetworkContext } from '@/providers/network-provider'
 import { useThemeContext } from '@/providers/theme-provider'
 import type { ThemeMode } from '@/types/use-theme'
 import { Profile } from '@chatly/types/profile'
@@ -47,6 +48,7 @@ const modes: { mode: ThemeMode; IconValue: LucideIcon }[] = [
 
 export function ThemeToggle() {
   const { theme, updateTheme } = useThemeContext()
+  const { isOnline } = useNetworkContext()
 
   const handleThemeChange = async (mode: ThemeMode) => {
     const prevTheme = theme
@@ -75,6 +77,7 @@ export function ThemeToggle() {
             className='border-border'
             onPress={() => handleThemeChange(mode)}
             variant={isActive ? 'default' : 'ghost'}
+            disabled={!isOnline}
           >
             <Icon
               as={IconValue}

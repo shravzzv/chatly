@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import { useAuthContext } from '@/providers/auth-provider'
+import { useNetworkContext } from '@/providers/network-provider'
 import { getEffectiveSubscription } from '@chatly/lib/billing'
 import { LS_CUSTOMER_PORTAL_URL } from '@chatly/lib/data'
 import type { Subscription } from '@chatly/types/subscription'
@@ -29,6 +30,7 @@ export default function AccountDangerZone() {
   const [deleting, setDeleting] = useState(false)
   const isCancelled = sub?.status === 'cancelled' && sub.ends_at
   const { userId } = useAuthContext()
+  const { isOnline } = useNetworkContext()
 
   const getSubscriptions = useCallback(async (): Promise<Subscription[]> => {
     if (!supabase) throw Error('Supabase client absent')
@@ -97,6 +99,7 @@ export default function AccountDangerZone() {
             variant='destructive'
             className='w-fit cursor-pointer'
             onPress={handleDeleteIntent}
+            disabled={!isOnline}
           >
             {checkingSub ? (
               <>
@@ -133,7 +136,7 @@ export default function AccountDangerZone() {
             <Button
               variant='destructive'
               className='cursor-pointer'
-              disabled={deleting}
+              disabled={deleting || !isOnline}
               onPress={handleConfirmDelete}
             >
               {deleting ? (

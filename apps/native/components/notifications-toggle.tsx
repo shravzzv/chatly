@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase'
+import { useNetworkContext } from '@/providers/network-provider'
 import Constants from 'expo-constants'
 import * as Notifications from 'expo-notifications'
 import { router } from 'expo-router'
@@ -98,6 +99,7 @@ export default function NotificationsToggle() {
   const [expoPushToken, setExpoPushToken] = useState('')
   const [enabled, setEnabled] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const { isOnline } = useNetworkContext()
 
   const handleToggleChange = async (nextEnabled: boolean) => {
     try {
@@ -203,7 +205,11 @@ export default function NotificationsToggle() {
       {isLoading ? (
         <Spinner />
       ) : (
-        <Switch checked={enabled} onCheckedChange={handleToggleChange} />
+        <Switch
+          checked={enabled}
+          onCheckedChange={handleToggleChange}
+          disabled={!isOnline}
+        />
       )}
     </View>
   )

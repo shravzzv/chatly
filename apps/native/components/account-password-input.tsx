@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
+import { useNetworkContext } from '@/providers/network-provider'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Controller, useForm } from 'react-hook-form'
 import { View } from 'react-native'
@@ -21,6 +22,8 @@ const formSchema = z.object({
 type FormSchema = z.infer<typeof formSchema>
 
 export default function AccountPasswordInput() {
+  const { isOnline } = useNetworkContext()
+
   const {
     handleSubmit,
     control,
@@ -73,7 +76,7 @@ export default function AccountPasswordInput() {
               placeholder='••••••••'
               value={field.value}
               onChangeText={field.onChange}
-              editable={!isSubmitting}
+              editable={!isSubmitting && isOnline}
               onSubmitEditing={handleSubmit(onSubmit)}
               className={cn(
                 errors.password && 'border-destructive text-destructive',
@@ -98,7 +101,7 @@ export default function AccountPasswordInput() {
 
       <Button
         className='w-fit max-w-fit cursor-pointer disabled:cursor-not-allowed'
-        disabled={!isDirty || isSubmitting}
+        disabled={!isDirty || isSubmitting || !isOnline}
         onPress={handleSubmit(onSubmit)}
       >
         {isSubmitting ? (

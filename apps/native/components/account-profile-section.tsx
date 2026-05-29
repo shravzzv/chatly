@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
+import { useNetworkContext } from '@/providers/network-provider'
 import { Profile } from '@chatly/types/profile'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { AlertCircleIcon } from 'lucide-react-native'
@@ -91,6 +92,8 @@ interface AccountProfileSectionProps {
 export default function AccountProfileSection({
   profile,
 }: AccountProfileSectionProps) {
+  const { isOnline } = useNetworkContext()
+
   const {
     handleSubmit,
     control,
@@ -169,6 +172,7 @@ export default function AccountProfileSection({
               className={cn(
                 errors.name && 'border-destructive text-destructive',
               )}
+              editable={isOnline}
             />
 
             {errors.name && (
@@ -207,6 +211,7 @@ export default function AccountProfileSection({
               className={cn(
                 errors.username && 'border-destructive text-destructive',
               )}
+              editable={isOnline}
             />
 
             {errors.username && (
@@ -246,6 +251,7 @@ export default function AccountProfileSection({
                 errors.bio && 'border-destructive text-destructive',
                 'placeholder:text-muted-foreground',
               )}
+              editable={isOnline}
             />
 
             {errors.bio && (
@@ -269,7 +275,7 @@ export default function AccountProfileSection({
 
       <Button
         className='w-fit max-w-fit cursor-pointer disabled:cursor-not-allowed'
-        disabled={!isDirty || isSubmitting}
+        disabled={!isDirty || isSubmitting || !isOnline}
         onPress={handleSubmit(onSubmit)}
       >
         {isSubmitting ? (

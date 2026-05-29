@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase'
+import { useNetworkContext } from '@/providers/network-provider'
 import { router } from 'expo-router'
 import { useState } from 'react'
 import { View } from 'react-native'
@@ -21,6 +22,7 @@ export default function AccountLogoutActions() {
   const [loggingOut, setLoggingOut] = useState<
     'local' | 'global' | 'others' | null
   >(null)
+  const { isOnline } = useNetworkContext()
 
   const handleLogout = async (scope: 'local' | 'global' | 'others') => {
     if (!supabase) return
@@ -47,7 +49,7 @@ export default function AccountLogoutActions() {
       <Button
         onPress={() => handleLogout('local')}
         className='w-fit'
-        disabled={loggingOut !== null}
+        disabled={loggingOut !== null || !isOnline}
       >
         {loggingOut === 'local' ? (
           <>
@@ -88,7 +90,7 @@ export default function AccountLogoutActions() {
             variant='secondary'
             size='sm'
             onPress={() => handleLogout('others')}
-            disabled={loggingOut !== null}
+            disabled={loggingOut !== null || !isOnline}
           >
             {loggingOut === 'others' ? (
               <>
@@ -110,7 +112,7 @@ export default function AccountLogoutActions() {
             <Button
               className='cursor-pointer'
               onPress={() => handleLogout('global')}
-              disabled={loggingOut !== null}
+              disabled={loggingOut !== null || !isOnline}
             >
               {loggingOut === 'global' ? (
                 <>
