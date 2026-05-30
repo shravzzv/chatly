@@ -1,7 +1,7 @@
+import SupportPage from '@/app/(public)/support/page'
+import { DISCORD_SERVER_INVITE_URL, SUPPORT_EMAIL } from '@chatly/lib/data'
 import '@testing-library/jest-dom'
 import { render, screen } from '@testing-library/react'
-import { DISCORD_SERVER_INVITE_URL, SUPPORT_EMAIL } from '@/data/constants'
-import SupportPage from '@/app/(public)/support/page'
 
 describe('Support page', () => {
   it('renders the support heading', () => {

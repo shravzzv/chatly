@@ -1,8 +1,8 @@
-import Link from 'next/link'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { DISCORD_SERVER_INVITE_URL, SUPPORT_EMAIL } from '@chatly/lib/data'
 import { Mail, MessageCircle } from 'lucide-react'
-import { DISCORD_SERVER_INVITE_URL, SUPPORT_EMAIL } from '@/data/constants'
+import Link from 'next/link'
 
 export default function Page() {
   return (

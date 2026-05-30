@@ -1,4 +1,4 @@
-import { LS_CUSTOMER_PORTAL_URL } from '@/data/constants'
+import { LS_CUSTOMER_PORTAL_URL } from '@chatly/lib/data'
 import { expect, test } from '@playwright/test'
 import { loginAsUser } from './utils/auth'
 import { cleanupSubscriptions, cleanupUsers } from './utils/cleanup'

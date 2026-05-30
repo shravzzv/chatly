@@ -9,10 +9,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { MAX_MESSAGE_ATTACHMENT_SIZE } from '@/data/constants'
 import { PLAN_LIMITS } from '@/data/plans'
 import { useDashboardContext } from '@/providers/dashboard-provider'
 import { useNetworkContext } from '@/providers/network-provider'
+import { MAX_MESSAGE_ATTACHMENT_SIZE } from '@chatly/lib/data'
 import type { MessageAttachmentKind } from '@chatly/types/message-attachment'
 import {
   AudioLines,
