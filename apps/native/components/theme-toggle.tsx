@@ -6,6 +6,7 @@ import { useNetworkContext } from '@/providers/network-provider'
 import { useThemeContext } from '@/providers/theme-provider'
 import type { ThemeMode } from '@/types/use-theme'
 import { Profile } from '@chatly/types/profile'
+import * as Haptics from 'expo-haptics'
 import {
   type LucideIcon,
   Monitor,
@@ -51,6 +52,8 @@ export function ThemeToggle() {
   const { isOnline } = useNetworkContext()
 
   const handleThemeChange = async (mode: ThemeMode) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+
     const prevTheme = theme
     if (mode === prevTheme) return
     await updateTheme(mode)

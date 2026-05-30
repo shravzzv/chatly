@@ -5,6 +5,7 @@ import { useNetworkContext } from '@/providers/network-provider'
 import type { NativeFile } from '@chatly/types/native-file'
 import type { Profile } from '@chatly/types/profile'
 import * as Crypto from 'expo-crypto'
+import * as Haptics from 'expo-haptics'
 import * as ImagePicker from 'expo-image-picker'
 import { useState } from 'react'
 import { Image, Pressable, View } from 'react-native'
@@ -97,6 +98,7 @@ export default function AccountAvatarSection({
 
   const handlePickImage = async () => {
     if (loading) return
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft)
 
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync()
     if (!permission.granted) {

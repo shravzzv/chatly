@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase'
 import { useNetworkContext } from '@/providers/network-provider'
 import Constants from 'expo-constants'
+import * as Haptics from 'expo-haptics'
 import * as Notifications from 'expo-notifications'
 import { router } from 'expo-router'
 import { useEffect, useState } from 'react'
@@ -102,6 +103,8 @@ export default function NotificationsToggle() {
   const { isOnline } = useNetworkContext()
 
   const handleToggleChange = async (nextEnabled: boolean) => {
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
+
     try {
       setIsLoading(true)
 

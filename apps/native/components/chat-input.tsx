@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase'
 import { useNetworkContext } from '@/providers/network-provider'
 import { usePrivateContext } from '@/providers/private-provider'
+import * as Haptics from 'expo-haptics'
 import { Send, Sparkles, Undo } from 'lucide-react-native'
 import { useRef, useState } from 'react'
 import { Platform, View } from 'react-native'
@@ -38,6 +39,8 @@ export default function ChatInput() {
 
   const handleTextSubmit = async () => {
     if (!text.trim()) return
+
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
     updateTypingStatus(false)
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current)
 
@@ -45,6 +48,7 @@ export default function ChatInput() {
       await sendMessage({ text })
       setText('')
     } catch (error) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error)
       console.error(error)
       toast.error('Failed to send message')
     }

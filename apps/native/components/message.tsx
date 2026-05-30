@@ -8,6 +8,7 @@ import { downloadBlob, getAttachmentKind } from '@chatly/lib/messages'
 import type { Message as MessageType } from '@chatly/types/message'
 import { useActionSheet } from '@expo/react-native-action-sheet'
 import { Directory, File, Paths } from 'expo-file-system'
+import * as Haptics from 'expo-haptics'
 import * as MediaLibrary from 'expo-media-library'
 import { Download, Pen, Trash } from 'lucide-react-native'
 import { useColorScheme } from 'nativewind'
@@ -185,7 +186,12 @@ export function Message({ message }: MessageProps) {
           isOwn ? 'items-end' : 'items-start',
           'w-full max-w-[80%] rounded-lg sm:max-w-[60%]',
         )}
-        onLongPress={() => !denySheet && openActionSheet()}
+        onLongPress={() => {
+          if (denySheet) return
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy)
+
+          openActionSheet()
+        }}
       >
         <MessageContent message={message} isOwn={isOwn} />
       </Pressable>
