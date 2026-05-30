@@ -96,22 +96,6 @@ npm run dev:web
 npm run dev:native
 ```
 
-### Environment Variables
-
-The following environment variables are required in your `.env.local`:
-
-```bash
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
-SUPABASE_SERVICE_ROLE_KEY=
-NEXT_PUBLIC_SITE_URL=
-NEXT_PUBLIC_VAPID_PUBLIC_KEY=
-VAPID_PRIVATE_KEY=
-AI_GATEWAY_API_KEY=
-```
-
-_Note: Billing-related features require a valid Lemon Squeezy configuration._
-
 ## Billing & Usage Enforcement
 
 Chatly employs a server-side daily usage window strategy:
