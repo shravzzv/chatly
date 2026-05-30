@@ -8,6 +8,7 @@ import {
 } from '@/components/ui/input-group'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useDashboardContext } from '@/providers/dashboard-provider'
+import { useNetworkContext } from '@/providers/network-provider'
 import { createClient } from '@/utils/supabase/client'
 import { Send, Sparkles, Undo } from 'lucide-react'
 import { useRef, useState } from 'react'
@@ -23,6 +24,7 @@ interface ChatInputProps {
 export default function ChatInput({ updateTypingStatus }: ChatInputProps) {
   const [text, setText] = useState('')
   const [isEnhancing, setIsEnhancing] = useState(false)
+  const { isOnline } = useNetworkContext()
 
   const { sendMessage, canUseAi, openUpgradeAlertDialog } =
     useDashboardContext()
@@ -142,7 +144,7 @@ export default function ChatInput({ updateTypingStatus }: ChatInputProps) {
           onChange={handleTextChange}
           onKeyDown={handleKeyDown}
           className='placeholder:text-muted-foreground max-h-50 min-h-10 resize-none overflow-y-auto border-0 text-sm outline-none focus-visible:ring-0'
-          disabled={isEnhancing}
+          disabled={isEnhancing || !isOnline}
         />
 
         <InputGroupAddon align='inline-end' className='shrink-0'>
@@ -151,7 +153,7 @@ export default function ChatInput({ updateTypingStatus }: ChatInputProps) {
             size='icon-sm'
             className='cursor-pointer rounded-full disabled:cursor-not-allowed'
             onClick={enhanceMessage}
-            disabled={!text.trim() || isEnhancing}
+            disabled={!text.trim() || isEnhancing || !isOnline}
             title='Enhance message'
             aria-label='Enhance message'
           >
@@ -165,7 +167,7 @@ export default function ChatInput({ updateTypingStatus }: ChatInputProps) {
             size='icon-sm'
             className='cursor-pointer rounded-full disabled:cursor-not-allowed'
             onClick={handleTextSubmit}
-            disabled={!text.trim() || isEnhancing}
+            disabled={!text.trim() || isEnhancing || !isOnline}
             title='Send message'
             aria-label='Send message'
           >

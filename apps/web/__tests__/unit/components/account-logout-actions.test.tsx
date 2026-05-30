@@ -1,6 +1,6 @@
+import AccountLogoutActions from '@/components/account-logout-actions'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import AccountLogoutActions from '@/components/account-logout-actions'
 
 const logoutMock = jest.fn<
   Promise<void>,
@@ -12,6 +12,12 @@ jest.mock('@/providers/chatly-store-provider', () => ({
     selector({
       logout: logoutMock,
     }),
+}))
+
+jest.mock('@/providers/network-provider', () => ({
+  useNetworkContext: () => ({
+    isOnline: true,
+  }),
 }))
 
 describe('AccountLogoutActions', () => {

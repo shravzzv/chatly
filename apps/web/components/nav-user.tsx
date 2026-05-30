@@ -14,7 +14,9 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar'
+import { cn } from '@/lib/utils'
 import { useChatlyStore } from '@/providers/chatly-store-provider'
+import { useNetworkContext } from '@/providers/network-provider'
 import { usePrivateContext } from '@/providers/private-provider'
 import {
   Download,
@@ -47,6 +49,7 @@ export function NavUser() {
   const { isMobile } = useSidebar()
   const { profile } = usePrivateContext()
   const logout = useChatlyStore((state) => state.logout)
+  const { isOnline } = useNetworkContext()
 
   if (!profile) return <NavUserSkeleton />
   const { name, username } = profile
@@ -58,7 +61,7 @@ export function NavUser() {
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton
               size='lg'
-              className='data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground cursor-pointer'
+              className='data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground cursor-pointer disabled:cursor-not-allowed'
             >
               <ProfileAvatar profile={profile} rounded='lg' />
               {getUserIdentity(name, username)}
@@ -81,15 +84,35 @@ export function NavUser() {
 
             <DropdownMenuSeparator />
 
-            <DropdownMenuItem className='cursor-pointer' asChild>
-              <Link href='/support'>
+            <DropdownMenuItem
+              className='cursor-pointer disabled:cursor-not-allowed'
+              asChild
+              disabled={!isOnline}
+            >
+              <Link
+                href='/support'
+                className={cn(
+                  !isOnline && 'pointer-events-none cursor-not-allowed',
+                )}
+              >
                 <LifeBuoy />
                 Support
               </Link>
             </DropdownMenuItem>
 
-            <DropdownMenuItem className='group cursor-pointer' asChild>
-              <Link href='/download' rel='noopener noreferrer' target='_blank'>
+            <DropdownMenuItem
+              className='group cursor-pointer disabled:cursor-not-allowed'
+              asChild
+              disabled={!isOnline}
+            >
+              <Link
+                href='/download'
+                rel='noopener noreferrer'
+                target='_blank'
+                className={cn(
+                  !isOnline && 'pointer-events-none cursor-not-allowed',
+                )}
+              >
                 <Download />
                 Download apps
                 <ExternalLink className='text-muted-foreground ml-auto transition-opacity group-hover:opacity-100 sm:opacity-0' />
@@ -100,8 +123,9 @@ export function NavUser() {
 
             <DropdownMenuItem
               variant='destructive'
-              className='cursor-pointer'
+              className='cursor-pointer disabled:cursor-not-allowed'
               onClick={() => logout('local')}
+              disabled={!isOnline}
             >
               <LogOut />
               Log out

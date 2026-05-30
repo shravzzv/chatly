@@ -1,3 +1,5 @@
+import { subscribeUser, unsubscribeUser } from '@/app/actions'
+import { NotificationsToggle } from '@/components/notifications-toggle'
 import {
   render,
   screen,
@@ -5,8 +7,6 @@ import {
   waitForElementToBeRemoved,
 } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { NotificationsToggle } from '@/components/notifications-toggle'
-import { subscribeUser, unsubscribeUser } from '@/app/actions'
 import { toast } from 'sonner'
 
 jest.mock('next/navigation')
@@ -22,6 +22,12 @@ jest.mock('sonner', () => ({
     error: jest.fn(),
     info: jest.fn(),
   },
+}))
+
+jest.mock('@/providers/network-provider', () => ({
+  useNetworkContext: () => ({
+    isOnline: true,
+  }),
 }))
 
 beforeEach(() => {

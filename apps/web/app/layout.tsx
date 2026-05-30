@@ -1,14 +1,15 @@
 import { ThemeProvider } from '@/components/theme-provider'
 import { Toaster } from '@/components/ui/sonner'
 import { ChatlyStoreProvider } from '@/providers/chatly-store-provider'
+import { NetworkProvider } from '@/providers/network-provider'
 import { createClient } from '@/utils/supabase/server'
 import { type Profile } from '@chatly/types/profile'
 import { Analytics } from '@vercel/analytics/next'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
+import NetworkShell from '../components/network-shell'
 import './globals.css'
-
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' })
 
 export const metadata: Metadata = {
@@ -112,17 +113,19 @@ export default async function RootLayout({
   return (
     <html lang='en' suppressHydrationWarning className={inter.variable}>
       <body className='antialiased'>
-        <ChatlyStoreProvider hydrationData={{ user, profile }}>
-          <ThemeProvider
-            attribute='class'
-            defaultTheme={profile?.theme || 'system'}
-            enableSystem
-            disableTransitionOnChange
-          >
-            {children}
-            <Toaster richColors />
-          </ThemeProvider>
-        </ChatlyStoreProvider>
+        <NetworkProvider>
+          <ChatlyStoreProvider hydrationData={{ user, profile }}>
+            <ThemeProvider
+              attribute='class'
+              defaultTheme={profile?.theme || 'system'}
+              enableSystem
+              disableTransitionOnChange
+            >
+              <NetworkShell>{children}</NetworkShell>
+              <Toaster richColors />
+            </ThemeProvider>
+          </ChatlyStoreProvider>
+        </NetworkProvider>
         <SpeedInsights />
         <Analytics />
       </body>

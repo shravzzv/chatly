@@ -1,5 +1,7 @@
 import { supabase } from '@/lib/supabase'
+import { useNetworkContext } from '@/providers/network-provider'
 import { usePrivateContext } from '@/providers/private-provider'
+import * as Haptics from 'expo-haptics'
 import { Send, Sparkles, Undo } from 'lucide-react-native'
 import { useRef, useState } from 'react'
 import { Platform, View } from 'react-native'
@@ -20,6 +22,7 @@ export default function ChatInput() {
   const [isVoiceRecorderOpen, setIsVoiceRecorderOpen] = useState(false)
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const originalMessageRef = useRef<string | null>(null)
+  const { isOnline } = useNetworkContext()
 
   const handleTextChange = (text: string) => {
     setText(text)
@@ -36,6 +39,8 @@ export default function ChatInput() {
 
   const handleTextSubmit = async () => {
     if (!text.trim()) return
+
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
     updateTypingStatus(false)
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current)
 
@@ -43,6 +48,7 @@ export default function ChatInput() {
       await sendMessage({ text })
       setText('')
     } catch (error) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error)
       console.error(error)
       toast.error('Failed to send message')
     }
@@ -136,7 +142,7 @@ export default function ChatInput() {
               value={text}
               onChangeText={handleTextChange}
               onSubmitEditing={handleTextSubmit}
-              editable={!isEnhancing}
+              editable={!isEnhancing && isOnline}
             />
 
             <View className='flex-row items-center gap-1.5 py-1 pb-1'>
@@ -144,7 +150,7 @@ export default function ChatInput() {
                 variant='secondary'
                 size='icon'
                 className='size-8 shrink-0 rounded-full'
-                disabled={!text.trim() || isEnhancing}
+                disabled={!text.trim() || isEnhancing || !isOnline}
                 onPress={enhanceMessage}
               >
                 {isEnhancing ? (
@@ -158,7 +164,7 @@ export default function ChatInput() {
                 size='icon'
                 className='size-8 shrink-0 rounded-full'
                 onPress={handleTextSubmit}
-                disabled={!text.trim() || isEnhancing}
+                disabled={!text.trim() || isEnhancing || !isOnline}
               >
                 <Icon as={Send} className='size-4 text-primary-foreground' />
               </Button>

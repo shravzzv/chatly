@@ -6,6 +6,7 @@ import { Spinner } from '@/components/ui/spinner'
 import { Text } from '@/components/ui/text'
 import { cn } from '@/lib/utils'
 import { usePrivateContext } from '@/providers/private-provider'
+import * as Haptics from 'expo-haptics'
 import { router } from 'expo-router'
 import { Info } from 'lucide-react-native'
 import { FlatList, View } from 'react-native'
@@ -74,7 +75,10 @@ export default function Page() {
         renderItem={({ item: profile }) => (
           <ConversationPreview
             profile={profile}
-            onPress={() => router.push(`/chat/${profile.user_id}`)}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+              router.push(`/chat/${profile.user_id}`)
+            }}
             preview={previews[profile.user_id]}
             isPreviewLoading={previewsLoading}
           />

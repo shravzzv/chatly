@@ -1,6 +1,6 @@
 'use client'
 
-import { formatDateHeader } from '@/lib/date'
+import { formatDateHeader } from '@chatly/lib/date'
 import type { Message as MessageType } from '@chatly/types/message'
 import { useRef } from 'react'
 import { Message } from './message'

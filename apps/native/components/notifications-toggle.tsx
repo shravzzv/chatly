@@ -1,5 +1,7 @@
 import { supabase } from '@/lib/supabase'
+import { useNetworkContext } from '@/providers/network-provider'
 import Constants from 'expo-constants'
+import * as Haptics from 'expo-haptics'
 import * as Notifications from 'expo-notifications'
 import { router } from 'expo-router'
 import { useEffect, useState } from 'react'
@@ -98,8 +100,11 @@ export default function NotificationsToggle() {
   const [expoPushToken, setExpoPushToken] = useState('')
   const [enabled, setEnabled] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const { isOnline } = useNetworkContext()
 
   const handleToggleChange = async (nextEnabled: boolean) => {
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
+
     try {
       setIsLoading(true)
 
@@ -172,7 +177,10 @@ export default function NotificationsToggle() {
     const hydrateInitialNotification = () => {
       const response = Notifications.getLastNotificationResponse()
       if (!response) return
-      handleNotificationTap(response)
+
+      requestAnimationFrame(() => {
+        handleNotificationTap(response)
+      })
     }
 
     hydratePushState()
@@ -200,7 +208,11 @@ export default function NotificationsToggle() {
       {isLoading ? (
         <Spinner />
       ) : (
-        <Switch checked={enabled} onCheckedChange={handleToggleChange} />
+        <Switch
+          checked={enabled}
+          onCheckedChange={handleToggleChange}
+          disabled={!isOnline}
+        />
       )}
     </View>
   )

@@ -1,10 +1,16 @@
-import { render, screen } from '@testing-library/react'
 import AccountEmailInput from '@/components/account-email-input'
 import { ChatlyStoreProvider } from '@/providers/chatly-store-provider'
 import { User } from '@supabase/supabase-js'
+import { render, screen } from '@testing-library/react'
 
 jest.mock('next/navigation')
 jest.mock('sonner')
+
+jest.mock('@/providers/network-provider', () => ({
+  useNetworkContext: () => ({
+    isOnline: true,
+  }),
+}))
 
 jest.mock('@/utils/supabase/client', () => ({
   createClient: () => ({

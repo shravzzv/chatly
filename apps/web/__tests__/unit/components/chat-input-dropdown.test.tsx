@@ -1,5 +1,5 @@
 import ChatInputDropdown from '@/components/chat-input-dropdown'
-import { MAX_MESSAGE_ATTACHMENT_SIZE } from '@/data/constants'
+import { MAX_MESSAGE_ATTACHMENT_SIZE } from '@chatly/lib/data'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { toast } from 'sonner'
@@ -16,6 +16,12 @@ jest.mock('@/providers/dashboard-provider', () => ({
     mediaUsed: 0,
     mediaRemaining: 5,
     plan: 'free',
+  }),
+}))
+
+jest.mock('@/providers/network-provider', () => ({
+  useNetworkContext: () => ({
+    isOnline: true,
   }),
 }))
 

@@ -1,9 +1,8 @@
 'use client'
 
-import { Button } from './ui/button'
 import { useChatlyStore } from '@/providers/chatly-store-provider'
+import { useNetworkContext } from '@/providers/network-provider'
 import { useState } from 'react'
-import { Spinner } from './ui/spinner'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,21 +14,24 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from './ui/alert-dialog'
+import { Button } from './ui/button'
+import { Spinner } from './ui/spinner'
 
 export default function AccountLogoutActions() {
   const logout = useChatlyStore((state) => state.logout)
   const [loggingOut, setLoggingOut] = useState<
     'local' | 'global' | 'others' | null
   >(null)
+  const { isOnline } = useNetworkContext()
 
-  const handleLocalLogout = async () => {
+  const handleLocalLogout = () => {
     setLoggingOut('local')
-    await logout('local')
+    logout('local')
   }
 
-  const handleGlobalLogout = async () => {
+  const handleGlobalLogout = () => {
     setLoggingOut('global')
-    await logout('global')
+    logout('global')
   }
 
   const handleOtherLogout = async () => {
@@ -41,9 +43,9 @@ export default function AccountLogoutActions() {
   return (
     <div className='flex flex-col gap-3 sm:flex-row sm:items-center'>
       <Button
-        disabled={loggingOut !== null}
+        disabled={loggingOut !== null || !isOnline}
         onClick={handleLocalLogout}
-        className='cursor-pointer'
+        className='cursor-pointer disabled:cursor-not-allowed'
       >
         {loggingOut === 'local' ? (
           <>
@@ -59,8 +61,8 @@ export default function AccountLogoutActions() {
         <AlertDialogTrigger asChild>
           <Button
             variant='outline'
-            className='cursor-pointer'
-            disabled={loggingOut !== null}
+            className='cursor-pointer disabled:cursor-not-allowed'
+            disabled={loggingOut !== null || !isOnline}
           >
             Log out of all sessions
           </Button>
@@ -80,10 +82,10 @@ export default function AccountLogoutActions() {
 
           <Button
             onClick={handleOtherLogout}
-            className='w-max cursor-pointer'
+            className='w-max cursor-pointer disabled:cursor-not-allowed'
             variant='secondary'
             size='sm'
-            disabled={loggingOut !== null}
+            disabled={loggingOut !== null || !isOnline}
             type='button'
           >
             {loggingOut === 'others' ? (
@@ -104,9 +106,9 @@ export default function AccountLogoutActions() {
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
-              className='cursor-pointer'
+              className='cursor-pointer disabled:cursor-not-allowed'
               onClick={handleGlobalLogout}
-              disabled={loggingOut !== null}
+              disabled={loggingOut !== null || !isOnline}
             >
               {loggingOut === 'global' ? (
                 <>

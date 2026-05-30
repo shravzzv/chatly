@@ -1,4 +1,5 @@
 import { useAuthContext } from '@/providers/auth-provider'
+import { useNetworkContext } from '@/providers/network-provider'
 import { Preview } from '@chatly/types/preview'
 import { Profile } from '@chatly/types/profile'
 import { Pressable, View } from 'react-native'
@@ -20,11 +21,13 @@ export default function ConversationPreview({
   isPreviewLoading,
 }: ConversationPreviewProps) {
   const { userId } = useAuthContext()
+  const { isOnline } = useNetworkContext()
 
   return (
     <Pressable
       onPress={onPress}
       className='w-full cursor-pointer flex-row items-center gap-3 rounded-xl bg-primary-foreground px-3 py-3 hover:bg-muted active:opacity-70'
+      disabled={!isOnline}
     >
       <ProfileAvatar profile={profile} />
 

@@ -20,7 +20,6 @@
     "lint:native:ci": "npm run lint -w chatly-native",
     "build-android:native:prev": "npm run build-android:prev -w chatly-native",
     "build-android:native:prod": "npm run build-android:prod -w chatly-native",
-    "preview:native": "npm run preview -w chatly-native",
     "build-and-deploy:native:web:prev": "npm run build-and-deploy:web:prev -w chatly-native",
     "build-and-deploy:native:web:prod": "npm run build-and-deploy:web:prod -w chatly-native",
     "test:hooks": "npm test -w @chatly/hooks",

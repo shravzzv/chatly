@@ -1,7 +1,5 @@
 'use client'
 
-import { Trash } from 'lucide-react'
-import { Button } from './ui/button'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,6 +12,9 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import { useDashboardContext } from '@/providers/dashboard-provider'
+import { useNetworkContext } from '@/providers/network-provider'
+import { Trash } from 'lucide-react'
+import { Button } from './ui/button'
 
 interface DeleteMessageActionProps {
   id: string
@@ -21,6 +22,7 @@ interface DeleteMessageActionProps {
 
 export default function DeleteMessageAction({ id }: DeleteMessageActionProps) {
   const { deleteMessage } = useDashboardContext()
+  const { isOnline } = useNetworkContext()
 
   return (
     <AlertDialog>
@@ -28,7 +30,8 @@ export default function DeleteMessageAction({ id }: DeleteMessageActionProps) {
         <Button
           variant='ghost'
           size='icon-sm'
-          className='text-muted-foreground hover:text-destructive cursor-pointer'
+          className='text-muted-foreground hover:text-destructive cursor-pointer disabled:cursor-not-allowed'
+          disabled={!isOnline}
         >
           <Trash className='h-4 w-4' />
         </Button>

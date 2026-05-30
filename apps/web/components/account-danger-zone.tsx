@@ -12,8 +12,10 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
-import { getEffectiveSubscription } from '@/lib/billing'
+import { cn } from '@/lib/utils'
 import { useChatlyStore } from '@/providers/chatly-store-provider'
+import { useNetworkContext } from '@/providers/network-provider'
+import { getEffectiveSubscription } from '@chatly/lib/billing'
 import { LS_CUSTOMER_PORTAL_URL } from '@chatly/lib/data'
 import { Subscription } from '@chatly/types/subscription'
 import Link from 'next/link'
@@ -30,6 +32,7 @@ export default function AccountDangerZone() {
   const [checkingSub, setCheckingSub] = useState(false)
   const [sub, setSub] = useState<Subscription | null>(null)
   const isCancelled = sub?.status === 'cancelled' && sub.ends_at
+  const { isOnline } = useNetworkContext()
 
   const handleDeleteIntent = async () => {
     if (!user) return
@@ -74,9 +77,9 @@ export default function AccountDangerZone() {
         <AlertDialogTrigger asChild>
           <Button
             variant='destructive'
-            className='cursor-pointer'
+            className='cursor-pointer disabled:cursor-not-allowed'
             onClick={handleDeleteIntent}
-            disabled={checkingSub}
+            disabled={checkingSub || !isOnline}
           >
             {checkingSub ? (
               <>
@@ -108,7 +111,7 @@ export default function AccountDangerZone() {
               variant='destructive'
               className='cursor-pointer'
               onClick={handleConfirmDelete}
-              disabled={deleting}
+              disabled={deleting || !isOnline}
             >
               {deleting ? (
                 <>
@@ -158,8 +161,17 @@ export default function AccountDangerZone() {
             >
               Cancel
             </AlertDialogCancel>
-            <AlertDialogAction className='cursor-pointer' asChild>
-              <Link href={LS_CUSTOMER_PORTAL_URL}>Manage Billing</Link>
+            <AlertDialogAction
+              className='cursor-pointer'
+              asChild
+              disabled={!isOnline}
+            >
+              <Link
+                href={LS_CUSTOMER_PORTAL_URL}
+                className={cn(!isOnline && 'pointer-events-none')}
+              >
+                Manage Billing
+              </Link>
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

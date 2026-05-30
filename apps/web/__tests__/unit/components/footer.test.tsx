@@ -1,5 +1,5 @@
 import Footer from '@/components/footer'
-import { DISCORD_SERVER_INVITE_URL, SUBREDDIT_URL } from '@/data/constants'
+import { DISCORD_SERVER_INVITE_URL, SUBREDDIT_URL } from '@chatly/lib/data'
 import { render, screen } from '@testing-library/react'
 
 jest.mock('@/components/mode-toggle', () => ({

@@ -19,6 +19,12 @@ jest.mock('sonner', () => ({
   },
 }))
 
+jest.mock('@/providers/network-provider', () => ({
+  useNetworkContext: () => ({
+    isOnline: true,
+  }),
+}))
+
 jest.mock('@/utils/supabase/client', () => ({
   createClient: () => ({
     storage: {

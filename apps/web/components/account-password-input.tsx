@@ -1,21 +1,22 @@
 'use client'
 
-import { useState } from 'react'
-import { Button } from './ui/button'
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupButton,
   InputGroupInput,
 } from '@/components/ui/input-group'
-import { Label } from './ui/label'
-import { Eye, EyeClosed } from 'lucide-react'
-import z from 'zod'
-import { Controller, useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { Field, FieldError } from './ui/field'
+import { useNetworkContext } from '@/providers/network-provider'
 import { createClient } from '@/utils/supabase/client'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { Eye, EyeClosed } from 'lucide-react'
+import { useState } from 'react'
+import { Controller, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
+import z from 'zod'
+import { Button } from './ui/button'
+import { Field, FieldError } from './ui/field'
+import { Label } from './ui/label'
 import { Spinner } from './ui/spinner'
 
 const passwordSchema = z.object({
@@ -27,6 +28,7 @@ const passwordSchema = z.object({
 
 export default function AccountPasswordInput() {
   const [isVisible, setIsVisible] = useState(false)
+  const { isOnline } = useNetworkContext()
 
   const form = useForm<z.infer<typeof passwordSchema>>({
     resolver: zodResolver(passwordSchema),
@@ -75,6 +77,7 @@ export default function AccountPasswordInput() {
                 placeholder='••••••••'
                 autoComplete='new-password'
                 aria-invalid={fieldState.invalid}
+                disabled={!isOnline}
               />
               <InputGroupAddon align='block-start'>
                 <Label htmlFor='password' className='text-foreground'>
@@ -104,7 +107,7 @@ export default function AccountPasswordInput() {
         <Button
           type='submit'
           className='max-w-fit cursor-pointer'
-          disabled={!isDirty || isSubmitting}
+          disabled={!isDirty || isSubmitting || !isOnline}
         >
           {isSubmitting ? (
             <>

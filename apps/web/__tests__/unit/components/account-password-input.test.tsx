@@ -1,12 +1,18 @@
+import AccountPasswordInput from '@/components/account-password-input'
 import '@testing-library/jest-dom'
 import { render, screen, waitFor } from '@testing-library/react'
-import AccountPasswordInput from '@/components/account-password-input'
 import userEvent from '@testing-library/user-event'
 import { toast } from 'sonner'
 
 jest.mock('sonner')
 
 const updateUserMock = jest.fn()
+
+jest.mock('@/providers/network-provider', () => ({
+  useNetworkContext: () => ({
+    isOnline: true,
+  }),
+}))
 
 jest.mock('@/utils/supabase/client', () => ({
   createClient: () => ({

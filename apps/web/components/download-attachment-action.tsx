@@ -1,7 +1,8 @@
 'use client'
 
-import { downloadBlob } from '@/lib/messages'
+import { useNetworkContext } from '@/providers/network-provider'
 import { createClient } from '@/utils/supabase/client'
+import { downloadBlob } from '@chatly/lib/messages'
 import type { Message } from '@chatly/types/message'
 import { Download } from 'lucide-react'
 import { toast } from 'sonner'
@@ -15,6 +16,7 @@ export default function DownloadAttachmentAction({
   message,
 }: DownloadAttachmentActionProps) {
   const attachment = message.attachment
+  const { isOnline } = useNetworkContext()
 
   const handleClick = async () => {
     if (!attachment) return
@@ -36,9 +38,9 @@ export default function DownloadAttachmentAction({
     <Button
       variant='ghost'
       size='icon-sm'
-      className='text-muted-foreground hover:text-foreground cursor-pointer'
+      className='text-muted-foreground hover:text-foreground cursor-pointer disabled:cursor-not-allowed'
       onClick={handleClick}
-      disabled={!attachment}
+      disabled={!attachment || !isOnline}
     >
       <Download className='h-4 w-4' />
     </Button>

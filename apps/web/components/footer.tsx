@@ -1,6 +1,6 @@
+import { DISCORD_SERVER_INVITE_URL, SUBREDDIT_URL } from '@chatly/lib/data'
 import Link from 'next/link'
 import { ModeToggle } from './mode-toggle'
-import { DISCORD_SERVER_INVITE_URL, SUBREDDIT_URL } from '@/data/constants'
 
 export default function Footer() {
   return (

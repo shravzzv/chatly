@@ -1,12 +1,13 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { subscribeUser, unsubscribeUser } from '@/app/actions'
-import { Switch } from '@/components/ui/switch'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { Switch } from '@/components/ui/switch'
+import { useNetworkContext } from '@/providers/network-provider'
+import { AlertCircle } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { Spinner } from './ui/spinner'
-import { AlertCircle } from 'lucide-react'
 
 function urlBase64ToUint8Array(base64String: string) {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4)
@@ -25,6 +26,7 @@ export function NotificationsToggle() {
   const [subscription, setSubscription] = useState<PushSubscription | null>(
     null,
   )
+  const { isOnline } = useNetworkContext()
 
   // Check support and register service worker
   useEffect(() => {
@@ -148,7 +150,7 @@ export function NotificationsToggle() {
         <Switch
           checked={!!subscription}
           onCheckedChange={handleTogglePush}
-          disabled={isLoading}
+          disabled={isLoading || !isOnline}
           className='cursor-pointer'
         />
       )}

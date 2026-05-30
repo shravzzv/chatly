@@ -9,7 +9,7 @@ interface ThemeProviderProps {
 }
 
 /**
- * Provides global theme state for Still.
+ * Provides global theme state for Chatly.
  *
  * Wrap this around your app root so any component can access
  * theme tokens via `useThemeContext`.

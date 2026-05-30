@@ -8,6 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { useNetworkContext } from '@/providers/network-provider'
 import type { Theme } from '@chatly/types/profile'
 import { Check, Moon, Sun } from 'lucide-react'
 import { useTheme } from 'next-themes'
@@ -15,6 +16,7 @@ import { toast } from 'sonner'
 
 export function ModeToggle() {
   const { theme, setTheme } = useTheme()
+  const { isOnline } = useNetworkContext()
 
   const handleThemeChange = async (value: Theme) => {
     const prevTheme = theme
@@ -39,7 +41,11 @@ export function ModeToggle() {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild className='cursor-pointer'>
+      <DropdownMenuTrigger
+        asChild
+        className='cursor-pointer'
+        disabled={!isOnline}
+      >
         <Button variant='outline' size='icon' className='relative'>
           <Sun
             className='h-[1.2rem] w-[1.2rem] scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90'
