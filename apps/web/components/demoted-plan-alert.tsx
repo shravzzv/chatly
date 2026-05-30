@@ -1,5 +1,5 @@
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { getStatusBadgeClass } from '@/lib/billing'
+import { getStatusBadgeClass } from '@chatly/lib/billing'
 import { LS_CUSTOMER_PORTAL_URL } from '@chatly/lib/data'
 import type { Subscription } from '@chatly/types/subscription'
 import { AlertCircleIcon } from 'lucide-react'

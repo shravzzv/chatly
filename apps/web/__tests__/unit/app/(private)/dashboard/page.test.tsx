@@ -1,6 +1,6 @@
 import Dashboard from '@/app/(private)/dashboard/page'
-import { getCheckoutUrl } from '@/lib/get-checkout-url'
 import { useChatlyStore } from '@/providers/chatly-store-provider'
+import { getCheckoutUrl } from '@chatly/lib/billing'
 import { Profile } from '@chatly/types/profile'
 import { render } from '@testing-library/react'
 
@@ -21,7 +21,7 @@ jest.mock('next/navigation', () => ({
   }),
 }))
 
-jest.mock('@/lib/get-checkout-url', () => ({
+jest.mock('@chatly/lib/billing', () => ({
   getCheckoutUrl: jest.fn(),
 }))
 

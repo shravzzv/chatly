@@ -1,7 +1,7 @@
 'use client'
 
-import { getAttachmentKind } from '@/lib/messages'
 import { createClient } from '@/utils/supabase/client'
+import { getAttachmentKind } from '@chatly/lib/messages'
 import type { MessageAttachment } from '@chatly/types/message-attachment'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import AudioAttachment from './audio-attachment'

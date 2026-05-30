@@ -1,4 +1,4 @@
-import { getMessagePreview } from '@/lib/previews'
+import { getMessagePreview } from '@chatly/lib/previews'
 import type { Message } from '@chatly/types/message'
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'

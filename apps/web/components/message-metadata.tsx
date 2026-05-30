@@ -1,4 +1,4 @@
-import { formatEditedTimestamp } from '@/lib/date'
+import { formatEditedTimestamp } from '@chatly/lib/date'
 import type { Message } from '@chatly/types/message'
 
 interface MessageMetadataProps {

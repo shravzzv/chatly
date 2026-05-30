@@ -1,8 +1,8 @@
 'use client'
 
 import { PLAN_LIMITS } from '@/data/plans'
-import { getUsageResetTime } from '@/lib/date'
 import { usePrivateContext } from '@/providers/private-provider'
+import { getUsageResetTime } from '@chatly/lib/date'
 import { Skeleton } from './ui/skeleton'
 import { UsageMeter } from './usage-meter'
 

@@ -2,9 +2,9 @@ import {
   getStatusBadgeClass,
   getSubscriptionTimeline,
   PAID_PLAN_HIGHLIGHTS,
-} from '@/lib/billing'
-import { formatRelativeDate } from '@/lib/date'
+} from '@chatly/lib/billing'
 import { LS_CUSTOMER_PORTAL_URL } from '@chatly/lib/data'
+import { formatRelativeDate } from '@chatly/lib/date'
 import type { Subscription } from '@chatly/types/subscription'
 import Link from 'next/link'
 import { Badge } from './ui/badge'

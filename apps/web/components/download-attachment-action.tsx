@@ -1,8 +1,8 @@
 'use client'
 
-import { downloadBlob } from '@/lib/messages'
 import { useNetworkContext } from '@/providers/network-provider'
 import { createClient } from '@/utils/supabase/client'
+import { downloadBlob } from '@chatly/lib/messages'
 import type { Message } from '@chatly/types/message'
 import { Download } from 'lucide-react'
 import { toast } from 'sonner'

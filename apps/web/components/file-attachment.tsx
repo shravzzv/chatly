@@ -1,4 +1,4 @@
-import { formatFileSize, formatMimeType } from '@/lib/messages'
+import { formatFileSize, formatMimeType } from '@chatly/lib/messages'
 import type { MessageAttachment } from '@chatly/types/message-attachment'
 import FileAttachmentIcon from './file-attachment-icon'
 
