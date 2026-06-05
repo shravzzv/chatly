@@ -31,9 +31,11 @@
     "ai": "^6.0.168",
     "react-hook-form": "^7.71.2",
     "zod": "^4.3.6",
-    "@chatly/hooks": "*"
+    "@chatly/hooks": "*",
+    "@chatly/lib": "*"
   },
   "devDependencies": {
+    "@chatly/types": "*",
     "@types/react": "19.1.17",
     "@types/react-dom": "19.1.7",
     "eslint-config-prettier": "^10.1.8",
