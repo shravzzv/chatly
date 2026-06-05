@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
 import { AlertCircle, CheckCircle, Download } from 'lucide-react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 import qr from '../../../public/android-download-qr.png'
 
@@ -106,8 +107,22 @@ export default function Page() {
 
       <div className='space-y-2'>
         <h2 className='text-xl font-bold'>Android</h2>
-        <p>Scan this QR code to install on android:</p>
-        <Image src={qr} alt='android download qr code' className='size-48' />
+        <p>
+          Click this{' '}
+          <Link
+            href='https://github.com/shravzzv/chatly/releases/download/v1.1.0/chatly.apk'
+            download
+            className='underline underline-offset-2'
+          >
+            link
+          </Link>{' '}
+          or scan this QR to install the android app.
+        </p>
+        <Image
+          src={qr}
+          alt='android download qr code'
+          className='size-48 rounded-sm shadow-lg'
+        />
       </div>
     </div>
   )
