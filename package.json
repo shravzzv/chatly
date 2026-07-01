@@ -27,26 +27,26 @@
   },
   "dependencies": {
     "@ai-sdk/react": "^3.0.170",
-    "@hookform/resolvers": "^5.2.2",
+    "@hookform/resolvers": "^5.4.0",
     "ai": "^6.0.168",
-    "react-hook-form": "^7.71.2",
-    "zod": "^4.3.6",
+    "react-hook-form": "^7.80.0",
+    "zod": "^4.4.3",
     "@chatly/hooks": "*",
     "@chatly/lib": "*"
   },
   "devDependencies": {
     "@chatly/types": "*",
-    "@types/react": "19.1.17",
-    "@types/react-dom": "19.1.7",
+    "@types/react": "19.2.17",
+    "@types/react-dom": "19.2.3",
     "eslint-config-prettier": "^10.1.8",
-    "prettier": "^3.8.1",
-    "prettier-plugin-tailwindcss": "^0.7.2"
+    "prettier": "^3.9.4",
+    "prettier-plugin-tailwindcss": "^0.8.0"
   },
   "overrides": {
-    "react": "19.1.0",
-    "react-dom": "19.1.0",
-    "@types/react": "19.1.17",
-    "@types/react-dom": "19.1.7",
+    "react": "19.2.7",
+    "react-dom": "19.2.7",
+    "@types/react": "19.2.17",
+    "@types/react-dom": "19.2.3",
     "react-native-svg": "15.12.1"
   }
 }
